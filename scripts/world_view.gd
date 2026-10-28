@@ -269,15 +269,22 @@ func _draw_particles() -> void:
 
 func _draw_floaters() -> void:
 	var size := int(17.0 * track.unit)
+	var margin := 12.0 * track.unit
 	for f in _floaters:
 		var t: float = f["t"] / FLOAT_TIME
 		var col: Color = f["color"]
+		var text: String = f["text"]
 		var at: Vector2 = f["p"]
 		var p := at + Vector2(0.0, -64.0 * track.unit * ease(t, 0.4))
+		# Near a side edge, slide the label inward so it is never cut off.
+		var half := _font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x * 0.5
+		var lo := view_rect.position.x + margin + half
+		var hi := view_rect.end.x - margin - half
+		p.x = clampf(p.x, lo, hi) if lo <= hi else view_rect.get_center().x
 		draw_string(
 			_font,
 			p - Vector2(220.0, 0.0),
-			f["text"],
+			text,
 			HORIZONTAL_ALIGNMENT_CENTER,
 			440.0,
 			size,
