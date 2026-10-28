@@ -25,6 +25,8 @@ const V_STEP := 2.6  ## speed gained per platform
 const PERFECT_FRAC := 0.16  ## perfect window: ±16% of platform width around the corner
 const MIN_LEN_FACTOR := 1.3  ## shortest platform = 1.3 × its width
 const LONG_CHANCE := 0.14  ## chance of a long platform (a breather)
+const REVIVE_SLOW := 0.4  ## speed factor right after a continue
+const REVIVE_RECOVER := 2.0  ## seconds to get back to full speed after a continue
 
 
 ## One straight platform. Its solid area extends w/2 past both ends, so two
@@ -69,6 +71,7 @@ var perfects := 0
 var speed := 0.0
 var started := false
 var alive := true
+var revived := false  ## a continue was used in this run (only one allowed)
 var reason := ""  ## "early" or "late" once the ball falls
 var corner := Vector2.ZERO  ## where the player should have turned
 var corner_dir := 0
@@ -76,6 +79,7 @@ var corner_dir := 0
 var _rng := RandomNumberGenerator.new()
 var _w0: float
 var _w_min: float
+var _slow := 1.0  ## speed factor, below 1 only for a moment after a continue
 
 
 func _init(p_width: float = 720.0, p_view_height: float = 1280.0, p_seed: int = 0) -> void:
@@ -134,10 +138,33 @@ func tap() -> Dictionary:
 	return {"perfect": perfect, "combo": combo}
 
 
+func can_revive() -> bool:
+	return started and not alive and not revived
+
+
+## Second chance (after a rewarded ad): the ball goes back to the start of the
+## platform it fell from, slowed down for a moment, with score and platform
+## count unchanged. Once per run. Returns false if not allowed.
+func revive() -> bool:
+	if not can_revive():
+		return false
+	revived = true
+	alive = true
+	reason = ""
+	combo = 0
+	var cur := segs[seg]
+	ball = cur.a
+	ball_dir = cur.dir
+	turns = seg
+	_slow = REVIVE_SLOW
+	return true
+
+
 func update(delta: float) -> void:
 	if not started or not alive:
 		return
-	speed = minf(V_MAX, V_START + seg * V_STEP) * unit
+	_slow = minf(1.0, _slow + delta * (1.0 - REVIVE_SLOW) / REVIVE_RECOVER)
+	speed = minf(V_MAX, V_START + seg * V_STEP) * unit * _slow
 	var dist := speed * delta
 	var steps := maxi(1, ceili(dist / (2.5 * unit)))
 	var step := dist / steps

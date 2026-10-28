@@ -3,3 +3,11 @@
 /export/
 *.apk
 *.aab
+*.ipa
+
+# Android build template: reinstall with Project → Install Android Build Template
+/android/
+
+# Signing keys never go in the repository
+*.keystore
+*.jks

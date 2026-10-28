@@ -16,6 +16,9 @@ func _init() -> void:
 	_test_double_tap_is_early()
 	_test_perfect_detection_and_score()
 	_test_difficulty_ramps()
+	_test_revive_after_late()
+	_test_revive_after_early()
+	_test_revive_slows_then_recovers()
 	print("all tests passed" if _fails == 0 else "%d failures" % _fails)
 	quit(1 if _fails > 0 else 0)
 
@@ -120,3 +123,62 @@ func _test_difficulty_ramps() -> void:
 	_run(t, _perfect_bot, 120.0)
 	_check(t.current().w < t.segs[1].w, "platforms should get narrower")
 	_check(t.speed > start_speed, "ball should get faster")
+
+
+## Perfect bot that stops tapping once it reaches platform `stop_at`.
+func _bot_until(stop_at: int) -> Callable:
+	return func(tt) -> void:
+		if tt.seg < stop_at:
+			_perfect_bot(tt)
+
+
+func _test_revive_after_late() -> void:
+	for sd in range(1, 11):
+		var t = TrackScript.new(720.0, 1280.0, sd)
+		_check(not t.can_revive(), "no revive before the run starts (seed %d)" % sd)
+		_run(t, _bot_until(15), 60.0)
+		_check(not t.alive and t.reason == "late", "seed %d: expected late death" % sd)
+		var seg_before: int = t.seg
+		var score_before: int = t.score
+		_check(t.revive(), "seed %d: first revive must be allowed" % sd)
+		_check(t.alive and t.reason == "", "seed %d: alive again after revive" % sd)
+		_check(
+			t.seg == seg_before and t.score == score_before,
+			"seed %d: revive must keep platform and score" % sd
+		)
+		_check(t.ball == t.current().a, "seed %d: revive restarts at the platform start" % sd)
+		_run(t, _perfect_bot, 60.0)
+		_check(t.alive, "seed %d: perfect bot fell after revive on platform %d" % [sd, t.seg])
+		_run(t, func(_t) -> void: pass, 10.0)
+		_check(not t.alive, "seed %d: should fall without taps" % sd)
+		_check(not t.can_revive() and not t.revive(), "seed %d: only one revive per run" % sd)
+
+
+func _test_revive_after_early() -> void:
+	var t = TrackScript.new(720.0, 1280.0, 11)
+	var done := [false]
+	var bot := func(tt) -> void:
+		var s = tt.current()
+		if not done[0] and tt.seg == 8 and tt.turns == tt.seg and s.along(tt.ball) >= s.length * 0.3:
+			tt.tap()  # far too early: falls off the side
+			done[0] = true
+		elif tt.seg < 8:
+			_perfect_bot(tt)
+	_run(t, bot, 60.0)
+	_check(not t.alive and t.reason == "early", "early: expected early death, got %s" % t.reason)
+	_check(t.revive(), "early: revive must be allowed")
+	_check(t.turns == t.seg and t.ball_dir == t.current().dir, "early: turn undone by revive")
+	_run(t, _perfect_bot, 60.0)
+	_check(t.alive, "early: perfect bot fell after revive on platform %d" % t.seg)
+
+
+func _test_revive_slows_then_recovers() -> void:
+	var t = TrackScript.new(720.0, 1280.0, 13)
+	_run(t, _bot_until(40), 120.0)
+	var full: float = minf(TrackScript.V_MAX, TrackScript.V_START + t.seg * TrackScript.V_STEP) * t.unit
+	t.revive()
+	t.update(DT)
+	_check(t.speed < full * 0.5, "revive: ball should start slow")
+	_run(t, _perfect_bot, TrackScript.REVIVE_RECOVER + 0.1)
+	full = minf(TrackScript.V_MAX, TrackScript.V_START + t.seg * TrackScript.V_STEP) * t.unit
+	_check(absf(t.speed - full) < 0.01, "revive: back to full speed after the recovery time")
