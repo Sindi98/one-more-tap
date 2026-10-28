@@ -1,8 +1,10 @@
 extends Node2D
 ## ONE MORE TAP — game flow: input, states, camera, feedback, saving.
-## Rules live in Track, drawing in WorldView, UI in Hud, sounds in Sfx.
+## Rules live in Track, drawing in WorldView, UI in Hud, sounds in Sfx, ads in Ads.
 
-enum State { READY, PLAYING, DYING, OVER, PAUSED }
+## AD: a full-screen ad is on top. REVIVE: back on the track after the
+## "continue" video, waiting for a tap.
+enum State { READY, PLAYING, DYING, OVER, PAUSED, AD, REVIVE }
 
 const PLAYFIELD_WIDTH := 720.0
 const BALL_SCREEN_Y := 0.66  ## the ball sits at 66% of the screen height
@@ -11,6 +13,8 @@ const THEME_HUES := [188.0, 318.0, 42.0, 268.0, 150.0, 8.0]
 const POINTS_PER_THEME := 12
 const DEATH_PAUSE := 0.6  ## seconds of slow fall before the game over panel
 const RESTART_LOCK := 0.35  ## ignore taps right after game over (no accidental restarts)
+const REVIVE_LOCK := 0.5  ## after the video: time for the camera to settle on the ball
+const CONTINUE_MIN_SCORE := 5  ## shorter runs are not worth a video
 const SAVE_PATH := "user://save.cfg"
 
 var track: Track
@@ -19,6 +23,7 @@ var best := 0
 var muted := false
 
 var _state_time := 0.0
+var _new_record := false  ## the run just lost set a new record
 var _shake := 0.0
 var _cam_y := 0.0
 var _hue: float = THEME_HUES[0]
@@ -27,6 +32,7 @@ var _hue: float = THEME_HUES[0]
 @onready var world: WorldView = $World
 @onready var sfx: Sfx = $Sfx
 @onready var hud: Hud = $HUD
+@onready var ads: Ads = $Ads
 
 
 func _ready() -> void:
@@ -37,6 +43,10 @@ func _ready() -> void:
 	hud.set_best(best)
 	hud.retry_pressed.connect(_on_retry_pressed)
 	hud.mute_pressed.connect(_on_mute_pressed)
+	hud.continue_pressed.connect(_on_continue_pressed)
+	hud.privacy_pressed.connect(ads.open_privacy_policy)
+	hud.consent_pressed.connect(ads.show_consent_options)
+	ads.changed.connect(_on_ads_changed)
 	_new_track()
 	hud.show_start(best)
 
@@ -60,6 +70,9 @@ func _process(delta: float) -> void:
 		# Glide to the missed corner, low on screen, below the game over text.
 		var target := track.corner.y - view.y * (MISS_SCREEN_Y - 0.5)
 		_cam_y = lerpf(_cam_y, target, minf(1.0, delta * 5.0))
+	elif state == State.REVIVE:
+		var target := track.ball.y - view.y * (BALL_SCREEN_Y - 0.5)
+		_cam_y = lerpf(_cam_y, target, minf(1.0, delta * 10.0))
 	camera.position = Vector2(PLAYFIELD_WIDTH * 0.5, _cam_y)
 
 	var shake_offset := Vector2.ZERO
@@ -108,6 +121,10 @@ func _press() -> void:
 		State.OVER:
 			if _state_time >= RESTART_LOCK:
 				_restart()
+		State.REVIVE:
+			if _state_time >= REVIVE_LOCK:
+				_set_state(State.PLAYING)
+				hud.show_playing()
 
 
 func _new_track() -> void:
@@ -129,21 +146,49 @@ func _start_run() -> void:
 
 
 func _restart() -> void:
+	ads.run_finished()
+	if ads.show_interstitial_if_due(_on_interstitial_closed):
+		_set_state(State.AD)
+		hud.show_ad()
+		return
 	_new_track()
 	_start_run()
 
 
+func _on_interstitial_closed() -> void:
+	# Back from an ad the player did not choose: let them start when ready.
+	_new_track()
+	_set_state(State.READY)
+	hud.show_start(best)
+
+
 func _show_over() -> void:
-	_set_state(State.OVER)
-	var new_record := track.score > best
-	if new_record:
+	_new_record = track.score > best
+	if _new_record:
 		best = track.score
 		_save()
 		sfx.record()
 	hud.set_best(best)
+	_show_over_panel()
+
+
+func _show_over_panel() -> void:
+	_set_state(State.OVER)
 	hud.show_over(
-		track.score, best, new_record, track.reason, track.seg, track.perfects, track.best_combo
+		track.score,
+		best,
+		_new_record,
+		track.reason,
+		track.seg,
+		track.perfects,
+		track.best_combo,
+		_can_continue()
 	)
+
+
+## One continue per run, for runs worth it, when a rewarded video is ready.
+func _can_continue() -> bool:
+	return track.can_revive() and track.score >= CONTINUE_MIN_SCORE and ads.rewarded_ready()
 
 
 func _set_state(s: State) -> void:
@@ -186,6 +231,30 @@ func _on_died(_reason: String) -> void:
 func _on_retry_pressed() -> void:
 	if state == State.OVER and _state_time >= RESTART_LOCK:
 		_restart()
+
+
+func _on_continue_pressed() -> void:
+	if state != State.OVER or not _can_continue():
+		return
+	_set_state(State.AD)
+	hud.show_ad()
+	ads.show_rewarded(_on_rewarded_closed)
+
+
+func _on_rewarded_closed(earned: bool) -> void:
+	if not earned or not track.revive():
+		_show_over_panel()  # closed early: no reward, back to the game over panel
+		return
+	world.revive()
+	_vibrate(20)
+	_set_state(State.REVIVE)
+	hud.show_revive()
+
+
+func _on_ads_changed() -> void:
+	hud.set_consent_available(ads.consent_options_required())
+	if state == State.OVER:
+		hud.set_continue_available(_can_continue())
 
 
 func _on_mute_pressed() -> void:

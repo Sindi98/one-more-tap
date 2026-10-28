@@ -56,6 +56,15 @@ func start_fall() -> void:
 	burst(_fall_pos, 28, HOT, 1.5)
 
 
+## Continue after the video: the ball is back on the track, alive.
+func revive() -> void:
+	_dying = false
+	_death_t = 0.0
+	_ball_offset = Vector2.ZERO
+	_trail.clear()
+	burst(track.ball, 18, Color.from_hsv(hue / 360.0, 0.78, 1.0), 1.2)
+
+
 func burst(at: Vector2, count: int, color: Color, power := 1.0) -> void:
 	var u := track.unit
 	for _i in count:

@@ -1,10 +1,10 @@
 # One More Tap
 
-Gioco arcade verticale a un dito, Godot 4.3+ / GDScript. MVP: modalità infinita, un solo controllo, piattaforme generate, game over, record locale, restart immediato, grafica neon.
+Gioco arcade verticale a un dito, Godot 4.7 / GDScript. Modalità infinita, un solo controllo, piattaforme generate, game over, record locale, restart immediato, grafica neon. Gratuito con annunci AdMob, pronto per Google Play e App Store: i passi per pubblicarlo sono in **[PUBBLICAZIONE.md](PUBBLICAZIONE.md)**.
 
 ## Aprire e giocare
 
-1. Installa **Godot 4.3 o successivo** (versione Standard, non .NET).
+1. Installa **Godot 4.7** (versione Standard, non .NET). Il plugin AdMob richiede almeno la 4.5.
 2. Project Manager → **Import** → seleziona `project.godot`.
 3. Al primo avvio Godot importa i font (qualche secondo). Poi **F5**.
 
@@ -17,6 +17,17 @@ Su desktop: clic sinistro, Spazio, Invio o Freccia su. Su telefono: tap ovunque.
 - Ogni piattaforma raggiunta vale 1 punto. Girare al centro esatto dell'angolo (±16% della larghezza) è un **PERFETTO**: +1 punto, la pallina si riallinea al centro e le combo salgono di nota.
 - Piattaforme sempre più strette e pallina sempre più veloce. Il colore cambia ogni 12 punti.
 - Quando cadi: anello rosso sull'angolo mancato + freccia nella direzione giusta. Riprova subito col pulsante o con un tap.
+- **CONTINUA**: una volta per partita, se hai almeno 5 punti, un breve video ti rimette sulla piattaforma dove sei caduto, con la pallina rallentata per un attimo.
+
+## Annunci
+
+Plugin [AdMob di Poing Studios](https://github.com/poingstudios/godot-admob-plugin) v5.1.0 in `addons/admob` (licenza MIT), già attivo.
+
+- **Video con premio**: il pulsante CONTINUA nel game over.
+- **Interstitial**: solo toccando RIPROVA, al massimo uno ogni 3 partite e ogni 90 secondi (`scripts/ad_pacing.gd`). Mai durante una partita, nessun banner.
+- **Consenso GDPR** con il modulo di Google (UMP) al primo avvio in UE. I pulsanti PRIVACY e CONSENSO stanno nei menu.
+- **ID**: finché `LIVE_IDS` in `scripts/ads.gd` è vuoto, e sempre nelle build di debug, il gioco usa gli annunci di prova di Google.
+- **Dove compaiono**: su telefono con il plugin nativo; dall'editor (F5) il plugin mostra annunci finti. Su desktop esportato e nei test headless gli annunci sono spenti e il gioco funziona come prima.
 
 ## Struttura
 
@@ -24,10 +35,18 @@ Su desktop: clic sinistro, Spazio, Invio o Freccia su. Su telefono: tap ovunque.
 |---|---|
 | `scripts/track.gd` | Regole pure (nessun nodo): generazione, tap, caduta con motivo, punteggio. **Tutte le costanti di difficoltà sono in cima.** |
 | `scripts/world_view.gd` | Disegno: griglia, percorso neon, pallina, scia, particelle, marker dell'errore |
-| `scripts/game.gd` | Flusso: stati, input, camera, shake, vibrazione, salvataggio |
-| `scripts/hud.gd` | UI costruita in codice: punteggio, combo, start, game over, pausa |
+| `scripts/game.gd` | Flusso: stati, input, camera, shake, vibrazione, salvataggio, continua e annunci tra le partite |
+| `scripts/hud.gd` | UI costruita in codice: punteggio, combo, start, game over, pausa, continua, privacy |
 | `scripts/sfx.gd` | Suoni sintetizzati all'avvio, nessun file audio |
-| `tests/test_track.gd` | Test headless delle regole |
+| `scripts/ads.gd` | Quello che il gioco sa degli annunci: ID, "c'è un video pronto?", interstitial quando è il momento |
+| `scripts/admob_backend.gd` | Unico file che usa il plugin AdMob: consenso, avvio SDK, caricamento e visualizzazione |
+| `scripts/ad_pacing.gd` | Regole pure su quando mostrare un interstitial |
+| `tests/test_track.gd` | Test headless delle regole, compreso il "continua" |
+| `tests/test_ad_pacing.gd` | Test headless della frequenza degli annunci |
+| `tools/make_icons.gd` | Rigenera le icone PNG da `assets/icons/*.svg` |
+| `export_presets.cfg` | Preset Android (AAB) e iOS |
+| `docs/` | Informativa privacy da pubblicare con GitHub Pages |
+| `store/` | Testi, screenshot e grafiche per le schede degli store |
 
 Renderer **Compatibility** (OpenGL): massima compatibilità con Android economici. Viewport 720×1280 verticale, si estende sui telefoni più lunghi.
 
@@ -35,24 +54,21 @@ Renderer **Compatibility** (OpenGL): massima compatibilità con Android economic
 
 ```
 godot --headless --path . --script res://tests/test_track.gd
+godot --headless --path . --script res://tests/test_ad_pacing.gd
 ```
 
-Controllano che un giocatore perfetto sopravviva su 60 percorsi diversi, che gli angoli restino sempre nello schermo, che "presto/tardi" sia corretto, il conteggio dei perfetti e la rampa di difficoltà. Durano qualche secondo.
+Controllano che un giocatore perfetto sopravviva su 60 percorsi diversi, che gli angoli restino sempre nello schermo, che "presto/tardi" sia corretto, il conteggio dei perfetti e la rampa di difficoltà. Controllano anche che "continua" valga una volta sola, mantenga il punteggio e riparta piano, e che gli interstitial rispettino le pause. Durano qualche secondo.
 
 ## Export su telefono
 
-**Android**
-1. Editor → *Manage Export Templates* → scarica i template.
-2. Installa JDK 17 e Android SDK, impostali in *Editor Settings → Export → Android*.
-3. *Project → Export → Add → Android*. Spunta il permesso **VIBRATE** (serve per la vibrazione).
-4. Con il telefono in debug USB, il pulsante Android in alto a destra installa e avvia il gioco.
+I preset Android (AAB firmato, build Gradle, permessi INTERNET e VIBRATE) e iOS (progetto Xcode, solo iPhone, iOS 15+) sono già in `export_presets.cfg`. Strumenti da installare, chiavi di firma e invio agli store: **[PUBBLICAZIONE.md](PUBBLICAZIONE.md)**.
 
-**iOS**: serve un Mac con Xcode. Per pubblicare serve l'Apple Developer Program.
+Prova veloce su Android: template di export, JDK 17 e Android SDK installati, *Project → Install Android Build Template*, telefono in debug USB, poi il pulsante Android in alto a destra nell'editor.
 
 ## Prossimi passi
 
-1. Playtest su telefono vero: tarare `W_START`, `W_STEP`, `V_START`, `V_STEP`, `PERFECT_FRAC` in `track.gd`.
-2. Continua con annuncio facoltativo (AdMob tramite plugin) solo dopo che il controllo convince.
-3. Sfida giornaliera: `Track.new(width, height, seed)` accetta già un seed, basta derivarlo dalla data.
+1. Playtest su telefono vero: tarare `W_START`, `W_STEP`, `V_START`, `V_STEP`, `PERFECT_FRAC` in `track.gd`, più `REVIVE_SLOW` e la frequenza degli annunci in `ad_pacing.gd`.
+2. Sfida giornaliera: `Track.new(width, height, seed)` accetta già un seed, basta derivarlo dalla data.
+3. "Rimuovi annunci" come acquisto in-app, traduzione inglese.
 
 Font: Bungee e Chakra Petch, licenza SIL Open Font License (file in `assets/fonts`).

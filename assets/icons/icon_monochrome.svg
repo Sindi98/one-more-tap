@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="432" height="432" viewBox="0 0 128 128">
+  <!-- Android 13+ themed icon: only the alpha counts, the system tints it. -->
+  <g transform="translate(64 64) scale(0.58) translate(-53 -63)">
+    <path d="M30 108 L64 74 L42 52 L76 18" fill="none" stroke="#ffffff" stroke-width="11" stroke-linecap="square" stroke-linejoin="miter"/>
+    <circle cx="64" cy="74" r="10" fill="#ffffff"/>
+  </g>
+</svg>
