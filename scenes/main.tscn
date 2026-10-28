@@ -1,0 +1,20 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/game.gd" id="1_game"]
+[ext_resource type="Script" path="res://scripts/world_view.gd" id="2_world"]
+[ext_resource type="Script" path="res://scripts/sfx.gd" id="3_sfx"]
+[ext_resource type="Script" path="res://scripts/hud.gd" id="4_hud"]
+
+[node name="Main" type="Node2D"]
+script = ExtResource("1_game")
+
+[node name="World" type="Node2D" parent="."]
+script = ExtResource("2_world")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+
+[node name="Sfx" type="Node" parent="."]
+script = ExtResource("3_sfx")
+
+[node name="HUD" type="CanvasLayer" parent="."]
+script = ExtResource("4_hud")

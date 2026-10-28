@@ -1,0 +1,92 @@
+class_name Sfx
+extends Node
+## Procedural sound effects, synthesised once at startup: no audio files needed.
+## Perfect turns climb a pentatonic scale, so a combo literally sounds better.
+
+const MIX_RATE := 22050
+const PENTATONIC := [0, 2, 4, 7, 9, 12, 14, 16, 19, 21, 24, 26, 28]
+const C5 := 523.25
+
+var muted := false
+
+var _players: Array[AudioStreamPlayer] = []
+var _next := 0
+var _tick: AudioStreamWAV
+var _die: AudioStreamWAV
+var _record: AudioStreamWAV
+var _perfect: Array[AudioStreamWAV] = []
+
+
+func _ready() -> void:
+	for _i in 6:
+		var p := AudioStreamPlayer.new()
+		add_child(p)
+		_players.append(p)
+	_tick = _make([[330.0, 0.045]], "square", 0.16)
+	_die = _make([[220.0, 0.4]], "saw", 0.28, 0.25)
+	_record = _make(
+		[[C5, 0.08], [C5 * 1.26, 0.08], [C5 * 1.5, 0.08], [C5 * 2.0, 0.22]], "triangle", 0.32
+	)
+	for n in PENTATONIC:
+		_perfect.append(_make([[C5 * pow(2.0, n / 12.0), 0.13]], "triangle", 0.34))
+
+
+func tick() -> void:
+	_play(_tick)
+
+
+func perfect(combo: int) -> void:
+	_play(_perfect[clampi(combo - 1, 0, _perfect.size() - 1)])
+
+
+func die() -> void:
+	_play(_die)
+
+
+func record() -> void:
+	_play(_record)
+
+
+func _play(stream: AudioStreamWAV) -> void:
+	if muted or stream == null:
+		return
+	var p := _players[_next]
+	_next = (_next + 1) % _players.size()
+	p.stream = stream
+	p.play()
+
+
+## notes: [[frequency, seconds], ...] played back to back.
+## slide: pitch multiplier reached at the end of each note (1.0 = flat).
+func _make(notes: Array, wave: String, volume: float, slide := 1.0) -> AudioStreamWAV:
+	var total := 0
+	for note in notes:
+		total += int(note[1] * MIX_RATE)
+	var data := PackedByteArray()
+	data.resize(total * 2)
+	var offset := 0
+	var attack := 0.004 * MIX_RATE
+	for note in notes:
+		var freq: float = note[0]
+		var n := int(note[1] * MIX_RATE)
+		var phase := 0.0
+		for i in n:
+			var t := float(i) / n
+			phase = fmod(phase + freq * pow(slide, t) / MIX_RATE, 1.0)
+			var s: float
+			match wave:
+				"square":
+					s = 1.0 if phase < 0.5 else -1.0
+				"saw":
+					s = phase * 2.0 - 1.0
+				_:
+					s = 1.0 - 4.0 * absf(phase - 0.5)
+			var env := minf(1.0, i / attack) * pow(1.0 - t, 2.0)
+			data.encode_s16((offset + i) * 2, int(clampf(s * env * volume, -1.0, 1.0) * 32767.0))
+		offset += n
+	var wav := AudioStreamWAV.new()
+	wav.format = AudioStreamWAV.FORMAT_16_BITS
+	wav.mix_rate = MIX_RATE
+	wav.stereo = false
+	wav.data = data
+	return wav
