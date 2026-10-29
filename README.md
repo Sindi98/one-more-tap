@@ -49,7 +49,7 @@ Si aprono da **STILI** nella schermata iniziale. La rarità indica il prezzo e q
 |---|---|---|
 | **Colori** (il neon di tutte le modalità) | Comune gratis · Raro 0,99 € · Epico 1,99 € · Leggendario 3,99 € | NEON di base; GHIACCIO con 25 punti in ZIGZAG, DESERTO con 500 in DINO; TRAMONTO e ACIDO rari, ORO epico (luccica), ARCOBALENO leggendario (i colori scorrono) |
 | **Pallina** (ZIGZAG e TORRE) | come sopra | CLASSICA di base; ANELLO con 25 punti in TORRE; DIAMANTE e PIXEL rari, COMETA epica (coda di luce), SUPERNOVA leggendaria (stella, scia di stelle, PERFETTO che esplodono con un suono in più) |
-| **Rimuovi annunci** | 2,99 € | Niente più annunci, e l'SDK di AdMob non parte più dall'avvio dopo. CONTINUA usa i gettoni: 10 in regalo con l'acquisto |
+| **Rimuovi annunci** | 2,99 € | Niente più annunci né banner, e l'SDK di AdMob non parte più dall'avvio dopo. Niente vite: si gioca senza limiti. CONTINUA usa i gettoni: 10 in regalo con l'acquisto |
 | **Gettoni** | 10 a 0,99 € · 30 a 1,99 € · 100 a 4,99 € | Un gettone = un CONTINUA senza video, per chiunque. Chi ha tolto gli annunci e li finisce, da CONTINUA arriva al negozio |
 | **Collezione completa** | 9,99 € | Tutti gli stili a pagamento, anche quelli futuri, più Rimuovi annunci |
 
@@ -64,9 +64,12 @@ Si aprono da **STILI** nella schermata iniziale. La rarità indica il prezzo e q
 
 Plugin [AdMob di Poing Studios](https://github.com/poingstudios/godot-admob-plugin) v5.1.0 in `addons/admob` (licenza MIT), già attivo.
 
-- **Video con premio**: il pulsante CONTINUA nel game over, quando non hai gettoni.
-- **Niente annunci** per chi ha comprato Rimuovi annunci o la Collezione completa.
-- **Interstitial**: solo toccando RIPROVA, al massimo uno ogni 3 partite e ogni 90 secondi (`scripts/ad_pacing.gd`). Mai durante una partita, nessun banner.
+- **Solo a gioco fermo**: mai durante una partita.
+- **Interstitial**: appena finisce una partita, prima del pannello col punteggio. Al massimo uno ogni 3 partite e ogni 90 secondi (`scripts/ad_pacing.gd`). RIPROVA fa sempre ripartire subito.
+- **Banner**: solo nella schermata iniziale (la scelta della modalità), in basso, con i pulsanti sollevati sopra di lui; sparisce appena parte la partita.
+- **Video con premio**: CONTINUA nel game over (quando non hai gettoni) e RICARICA quando le vite sono finite.
+- **Vite** (`scripts/lives.gd`): 5. Ogni partita ne usa una, CONTINUA no. Ne torna una ogni 15 minuti, oppure tutte con un video. Esistono solo dove ci sono gli annunci: su desktop, nei test e per chi ha tolto gli annunci si gioca senza limiti.
+- **Niente annunci** (né banner, né vite) per chi ha comprato Rimuovi annunci o la Collezione completa.
 - **Consenso GDPR** con il modulo di Google (UMP) al primo avvio in UE. I pulsanti PRIVACY e CONSENSO stanno nei menu.
 - **ID**: finché `LIVE_IDS` in `scripts/ads.gd` è vuoto, e sempre nelle build di debug, il gioco usa gli annunci di prova di Google.
 - **Dove compaiono**: su telefono con il plugin nativo; dall'editor (F5) il plugin mostra annunci finti. Su desktop esportato e nei test headless gli annunci sono spenti e il gioco funziona come prima.
@@ -90,9 +93,11 @@ Plugin [AdMob di Poing Studios](https://github.com/poingstudios/godot-admob-plug
 | `scripts/ui_kit.gd` | Mattoncini comuni della UI: colori, font, scritte, pulsanti, pannelli |
 | `scripts/ball_look.gd` | Disegno degli stili della pallina (scia e pallina), in ZIGZAG, TORRE e nel negozio |
 | `scripts/sfx.gd` | Suoni sintetizzati all'avvio, nessun file audio |
-| `scripts/ads.gd` | Quello che il gioco sa degli annunci: ID, "c'è un video pronto?", interstitial quando è il momento |
+| `scripts/ads.gd` | Quello che il gioco sa degli annunci: ID, "c'è un video pronto?", interstitial quando è il momento, banner del menu |
 | `scripts/admob_backend.gd` | Unico file che usa il plugin AdMob: consenso, avvio SDK, caricamento e visualizzazione |
 | `scripts/ad_pacing.gd` | Regole pure su quando mostrare un interstitial |
+| `scripts/lives.gd` | Regole pure delle vite: una a partita, ritorno col tempo, ricarica |
+| `scripts/lives_view.gd` | Cuori disegnati in codice, col tempo che manca alla prossima vita |
 | `scripts/catalog.gd` | Cosa c'è nel negozio: stili con rarità, colori di ogni palette, extra, ID dei prodotti, fasce di prezzo |
 | `scripts/inventory.gd` | Regole pure di cosa possiedi e indossi: stili, gettoni, niente annunci, salvataggio |
 | `scripts/streak.gd` | Regole pure dei giorni di fila che aprono DINO |
@@ -102,6 +107,7 @@ Plugin [AdMob di Poing Studios](https://github.com/poingstudios/godot-admob-plug
 | `tests/test_tower.gd` | Test headless delle regole di TORRE |
 | `tests/test_runner.gd` | Test headless delle regole di DINO |
 | `tests/test_ad_pacing.gd` | Test headless della frequenza degli annunci |
+| `tests/test_lives.gd` | Test headless delle vite |
 | `tests/test_shop.gd` | Test headless del negozio: catalogo, possesso, gettoni, salvataggio, giorni di fila |
 | `tests/test_iap_backend.gd` | Test headless del collegamento agli store, con un finto plugin (`tests/fake_iap.gd`, `tests/fake_iap_types.gd`) |
 | `tools/make_icons.gd` | Rigenera le icone PNG da `assets/icons/*.svg` |
@@ -118,11 +124,12 @@ godot --headless --path . --script res://tests/test_track.gd
 godot --headless --path . --script res://tests/test_tower.gd
 godot --headless --path . --script res://tests/test_runner.gd
 godot --headless --path . --script res://tests/test_ad_pacing.gd
+godot --headless --path . --script res://tests/test_lives.gd
 godot --headless --path . --script res://tests/test_shop.gd
 godot --headless --path . --script res://tests/test_iap_backend.gd
 ```
 
-Controllano che un giocatore perfetto sopravviva su 60 percorsi diversi per modalità (in DINO fino alla velocità massima), che gli angoli restino sempre nello schermo, che dopo ogni buco ci sia rampa per reagire, che ogni gruppo di cactus sia superabile con un margine, che "presto/tardi/non saltare" sia corretto, il conteggio dei perfetti e la rampa di difficoltà. Controllano anche che "continua" valga una volta sola, mantenga il punteggio e riparta piano, e che gli interstitial rispettino le pause. Per il negozio: che ogni prodotto abbia un ID valido e un prezzo, che gli stili si sblocchino coi record giusti, che i gettoni non si contino due volte e non vadano sotto zero, che i 10 gettoni in regalo arrivino una volta sola, che il salvataggio ignori dati strani, e che DINO si apra al terzo giorno di fila e non prima. Il collegamento agli store è provato contro un finto plugin: prezzi, acquisto, annullato, errore, pagamento approvato dopo, prodotto già posseduto, ripristino. Durano qualche secondo.
+Controllano che un giocatore perfetto sopravviva su 60 percorsi diversi per modalità (in DINO fino alla velocità massima), che gli angoli restino sempre nello schermo, che dopo ogni buco ci sia rampa per reagire, che ogni gruppo di cactus sia superabile con un margine, che "presto/tardi/non saltare" sia corretto, il conteggio dei perfetti e la rampa di difficoltà. Controllano anche che "continua" valga una volta sola, mantenga il punteggio e riparta piano, che gli interstitial rispettino le pause e che le vite si spendano, tornino col tempo senza superare il massimo e non si possano ottenere spostando l'orologio. Per il negozio: che ogni prodotto abbia un ID valido e un prezzo, che gli stili si sblocchino coi record giusti, che i gettoni non si contino due volte e non vadano sotto zero, che i 10 gettoni in regalo arrivino una volta sola, che il salvataggio ignori dati strani, e che DINO si apra al terzo giorno di fila e non prima. Il collegamento agli store è provato contro un finto plugin: prezzi, acquisto, annullato, errore, pagamento approvato dopo, prodotto già posseduto, ripristino. Durano qualche secondo.
 
 ## Export su telefono
 
@@ -132,7 +139,7 @@ Prova veloce su Android: template di export, JDK 17 e Android SDK installati, *P
 
 ## Prossimi passi
 
-1. Playtest su telefono vero: tarare `W_START`, `W_STEP`, `V_START`, `V_STEP`, `PERFECT_FRAC` in `track.gd`, le costanti in cima a `tower.gd` e `runner.gd`, più `REVIVE_SLOW` e la frequenza degli annunci in `ad_pacing.gd`.
+1. Playtest su telefono vero: tarare `W_START`, `W_STEP`, `V_START`, `V_STEP`, `PERFECT_FRAC` in `track.gd`, le costanti in cima a `tower.gd` e `runner.gd`, più `REVIVE_SLOW`, la frequenza degli annunci in `ad_pacing.gd` e le vite in `lives.gd` (`MAX`, `REFILL_SECONDS`).
 2. Sfida giornaliera: `Track.new(width, height, seed)` accetta già un seed, basta derivarlo dalla data.
 3. Creare i prodotti negli store e provarli con un account di test ([PUBBLICAZIONE.md](PUBBLICAZIONE.md#7-acquisti-in-app)).
 4. Traduzione inglese; skin del Dino nel negozio.

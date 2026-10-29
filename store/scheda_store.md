@@ -52,7 +52,7 @@ Altre due modalità, sempre con un tap: TORRE, dove sali una spirale intorno a u
 
 Gioco gratuito con pubblicità. Dopo una caduta puoi guardare un breve video per ripartire da dove eri, una volta per partita.
 
-Acquisti facoltativi: stili per colori e pallina, gettoni per continuare senza video, Rimuovi annunci e la Collezione completa con tutti gli stili. Compri sempre esattamente quello che vedi, niente casse a sorpresa, e nessun acquisto aiuta a vincere.
+Acquisti facoltativi: stili per colori e pallina, gettoni per continuare senza video, Rimuovi annunci (niente pubblicità e partite senza limiti) e la Collezione completa con tutti gli stili. Compri sempre esattamente quello che vedi, niente casse a sorpresa, e nessun acquisto aiuta a vincere.
 
 ---
 
@@ -93,7 +93,7 @@ Two more modes, still one tap: TOWER, where you climb a spiral round a spinning 
 
 Free to play with ads. After a fall you can watch a short video to carry on from where you were, once per run.
 
-Optional purchases: styles for the colours and the ball, tokens to continue without a video, Remove Ads and the Full Collection with every style. You always buy exactly what you see, no mystery boxes, and nothing you buy helps you win.
+Optional purchases: styles for the colours and the ball, tokens to continue without a video, Remove Ads (no ads and unlimited runs) and the Full Collection with every style. You always buy exactly what you see, no mystery boxes, and nothing you buy helps you win.
 
 Note: the game's interface is in Italian.
 
@@ -106,4 +106,4 @@ Note: the game's interface is in Italian.
 - **Acquisti in-app**: Sì, da 0,99 € a 9,99 € (prodotti e ID in `PUBBLICAZIONE.md`, passo 7)
 - **Sito web / email di supporto**: `https://sindi98.github.io/one-more-tap/` · [EMAIL DI CONTATTO]
 - **Informativa privacy**: `https://sindi98.github.io/one-more-tap/privacy.html`
-- **Note per la revisione Apple**: "Free arcade game with AdMob ads. Interstitials appear only between runs (at most every 3 runs and 90 seconds). An optional rewarded video lets the player continue a run once. No login required. In-app purchases are in STILI on the start screen: cosmetic styles (non-consumable), Remove Ads (non-consumable), Full Collection (non-consumable) and token packs (consumable, one token continues a run without a video). RIPRISTINA restores purchases. The third mode, DINO, opens after the game is opened on three days in a row; the other two modes are available at once."
+- **Note per la revisione Apple**: "Free arcade game with AdMob ads. Ads never appear during play. Interstitials appear only when a run has ended (at most every 3 runs and 90 seconds); a banner shows on the mode selection screen only. Each run costs one of 5 lives, which come back over time or all at once with an optional rewarded video; another optional rewarded video lets the player continue a run once. No login required. In-app purchases are in STILI on the start screen: cosmetic styles (non-consumable), Remove Ads (non-consumable: no ads, no banner and no lives limit from then on), Full Collection (non-consumable) and token packs (consumable, one token continues a run without a video). RIPRISTINA restores purchases. The third mode, DINO, opens after the game is opened on three days in a row; the other two modes are available at once."

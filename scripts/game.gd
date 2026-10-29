@@ -5,9 +5,9 @@ extends Node2D
 ## ads in Ads, purchases in Shop.
 
 ## AD: a full-screen ad is on top. REVIVE: back in the game after a continue,
-## waiting for a tap. SHOP: the shop is open, from the start screen or the
-## game over panel.
-enum State { READY, PLAYING, DYING, OVER, PAUSED, AD, REVIVE, SHOP }
+## waiting for a tap. NO_LIVES: a run was asked for, none left. SHOP: the shop
+## is open, from the start screen or the game over panel.
+enum State { READY, PLAYING, DYING, OVER, PAUSED, AD, REVIVE, NO_LIVES, SHOP }
 
 ## Per mode: points between colour changes, and the score that makes a run
 ## worth a "continue" video.
@@ -29,10 +29,13 @@ var run: RunRules
 var state := State.READY
 var best := {"zigzag": 0, "tower": 0, "runner": 0}
 var muted := false
+var lives := Lives.new()
+var lives_on := false  ## only where ads run: the lost lives come back with a video
 var streak := Streak.new()
 
 var _state_time := 0.0
 var _new_record := false  ## the run just lost set a new record
+var _unlocked_looks := PackedStringArray()  ## names of the looks that record unlocked
 var _shake := 0.0
 var _cam := Vector2.ZERO
 var _hue := 0.0
@@ -62,6 +65,7 @@ func _ready() -> void:
 	hud.continue_pressed.connect(_on_continue_pressed)
 	hud.mode_pressed.connect(_on_mode_pressed)
 	hud.menu_pressed.connect(_on_menu_pressed)
+	hud.refill_pressed.connect(_on_refill_pressed)
 	hud.privacy_pressed.connect(ads.open_privacy_policy)
 	hud.consent_pressed.connect(ads.show_consent_options)
 	hud.shop_pressed.connect(_on_shop_pressed)
@@ -76,6 +80,7 @@ func _ready() -> void:
 	shop.start()
 	if not shop.inventory.no_ads():
 		ads.start()
+	lives_on = ads.available()
 	_set_mode(mode)
 	_visit_today()
 
@@ -90,6 +95,13 @@ func _process(delta: float) -> void:
 		State.DYING:
 			if _state_time >= DEATH_PAUSE:
 				_show_over()
+		State.NO_LIVES:
+			lives.update(_now())
+			if lives.count > 0 or not lives_on:
+				_set_state(State.READY)  # one came back while waiting, or ads were removed
+				hud.show_start(best[mode])
+	if state in [State.READY, State.OVER, State.NO_LIVES]:
+		_show_lives()
 
 	var view: ModeView = views[mode]
 	var size := get_viewport_rect().size
@@ -211,31 +223,27 @@ func _new_run() -> void:
 
 
 func _start_run() -> void:
+	if lives_on:
+		if not lives.use(_now()):
+			_set_state(State.NO_LIVES)
+			hud.show_no_lives(ads.rewarded_ready())
+			return
+		_save()
 	run.start()
 	_set_state(State.PLAYING)
 	hud.show_playing()
 
 
 func _restart() -> void:
-	ads.run_finished()
-	if ads.show_interstitial_if_due(_on_interstitial_closed):
-		_set_state(State.AD)
-		hud.show_ad()
-		return
 	_new_run()
 	_start_run()
 
 
-func _on_interstitial_closed() -> void:
-	# Back from an ad the player did not choose: let them start when ready.
-	_new_run()
-	_set_state(State.READY)
-	hud.show_start(best[mode])
-
-
+## The run has ended and the game is still: the only moment an interstitial
+## may show (when one is due), before the results.
 func _show_over() -> void:
 	_new_record = run.score > best[mode]
-	var unlocked := PackedStringArray()
+	_unlocked_looks.clear()
 	if _new_record:
 		for id in Catalog.LOOKS:
 			var unlock: Array = Catalog.LOOKS[id].get("unlock", [])
@@ -245,13 +253,17 @@ func _show_over() -> void:
 				and best[mode] < unlock[1]
 				and run.score >= unlock[1]
 			):
-				unlocked.append(Catalog.LOOKS[id]["name"])
+				_unlocked_looks.append(Catalog.LOOKS[id]["name"])
 		best[mode] = run.score
 		_save()
 		sfx.record()
 	hud.set_best(best[mode])
+	ads.run_finished()
+	if ads.show_interstitial_if_due(_show_over_panel):
+		_set_state(State.AD)
+		hud.show_ad()
+		return
 	_show_over_panel()
-	hud.show_unlocked(unlocked)
 
 
 func _show_over_panel() -> void:
@@ -265,6 +277,7 @@ func _show_over_panel() -> void:
 		_continue_offer(),
 		shop.inventory.tokens
 	)
+	hud.show_unlocked(_unlocked_looks)
 
 
 ## One line about the run for the game over panel.
@@ -295,6 +308,16 @@ func _continue_offer() -> String:
 func _set_state(s: State) -> void:
 	state = s
 	_state_time = 0.0
+	# The banner is for the start screen (the mode menu) only.
+	ads.set_banner_visible(state == State.READY)
+	hud.set_banner_height(ads.banner_height())
+
+
+func _show_lives() -> void:
+	if lives_on:
+		hud.set_lives(lives.count, Lives.MAX, lives.seconds_to_next(_now()))
+	else:
+		hud.set_lives(0, 0, 0)
 
 
 # --- rules events ----------------------------------------------------------
@@ -377,10 +400,8 @@ func _on_mode_pressed(m: String) -> void:
 
 
 func _on_menu_pressed() -> void:
-	if state != State.OVER or _state_time < RESTART_LOCK:
-		return
-	ads.run_finished()  # it counts towards the next interstitial, on a later RIPROVA
-	_set_mode(mode)
+	if state == State.NO_LIVES or (state == State.OVER and _state_time >= RESTART_LOCK):
+		_set_mode(mode)
 
 
 func _on_continue_pressed() -> void:
@@ -413,10 +434,34 @@ func _revived() -> void:
 	hud.show_revive()
 
 
+## Out of lives: a rewarded video gives them all back.
+func _on_refill_pressed() -> void:
+	if state != State.NO_LIVES or not ads.rewarded_ready():
+		return
+	_set_state(State.AD)
+	hud.show_ad()
+	ads.show_rewarded(_on_refill_closed)
+
+
+func _on_refill_closed(earned: bool) -> void:
+	if not earned:
+		_set_state(State.NO_LIVES)  # closed early: no reward
+		hud.show_no_lives(ads.rewarded_ready())
+		return
+	lives.refill()
+	_save()
+	_vibrate(20)
+	_set_state(State.READY)  # the run behind the panel is fresh: start when ready
+	hud.show_start(best[mode])
+
+
 func _on_ads_changed() -> void:
 	hud.set_consent_available(ads.consent_options_required())
+	hud.set_banner_height(ads.banner_height())
 	if state == State.OVER:
 		hud.set_continue_offer(_continue_offer(), shop.inventory.tokens)
+	elif state == State.NO_LIVES:
+		hud.set_refill_available(ads.rewarded_ready())
 
 
 # --- shop ------------------------------------------------------------------
@@ -462,6 +507,7 @@ func _on_shop_changed() -> void:
 	_save()
 	if shop.inventory.no_ads():
 		ads.turn_off()
+		lives_on = false  # lives come back with videos: without ads, play is unlimited
 	match state:
 		State.SHOP:
 			hud.shop_panel.refresh()
@@ -534,7 +580,7 @@ func _look(kind: String) -> String:
 
 
 func _now() -> float:
-	return Time.get_ticks_msec() / 1000.0
+	return Time.get_unix_time_from_system()
 
 
 func _lerp_hue(from: float, to: float, t: float) -> float:
@@ -556,6 +602,10 @@ func _load_save() -> void:
 		var saved := str(cfg.get_value("settings", "mode", mode))
 		if MODES.has(saved):
 			mode = saved
+		lives = Lives.new(
+			int(cfg.get_value("lives", "count", Lives.MAX)),
+			float(cfg.get_value("lives", "since", 0.0))
+		)
 		streak.load_from(cfg)
 		shop.inventory.load_from(cfg, best)
 	# Played DINO before it had to be opened: it stays open.
@@ -569,6 +619,8 @@ func _save() -> void:
 		cfg.set_value("score", _best_key(m), best[m])
 	cfg.set_value("settings", "muted", muted)
 	cfg.set_value("settings", "mode", mode)
+	cfg.set_value("lives", "count", lives.count)
+	cfg.set_value("lives", "since", lives.since)
 	streak.save_to(cfg)
 	shop.inventory.save_to(cfg)
 	cfg.save(SAVE_PATH)
