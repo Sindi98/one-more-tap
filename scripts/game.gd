@@ -3,11 +3,13 @@ extends Node2D
 ## Each mode has its rules (Track, Tower, Runner) and its drawing (WorldView,
 ## TowerView, RunnerView); sparks and labels in Fx, UI in Hud, sounds in Sfx
 ## and Music, ads in Ads, purchases in Shop, sharing and store reviews in Social.
+## AIR HOCKEY, played in teams on the local network, runs in HockeyGame.
 
 ## AD: a full-screen ad is on top. REVIVE: back in the game after a continue,
 ## waiting for a tap. NO_LIVES: a run was asked for, none left. SHOP: the shop
-## is open, from the start screen or the game over panel.
-enum State { READY, PLAYING, DYING, OVER, PAUSED, AD, REVIVE, NO_LIVES, SHOP }
+## is open, from the start screen or the game over panel. HOCKEY: AIR HOCKEY
+## is open, its lobbies or a match: HockeyGame has the screen and the input.
+enum State { READY, PLAYING, DYING, OVER, PAUSED, AD, REVIVE, NO_LIVES, SHOP, HOCKEY }
 
 ## Per mode: points between colour changes, the score that makes a run worth
 ## a "continue" video, and the playlist (see Music).
@@ -54,10 +56,14 @@ var _sharing := false  ## the picture of the run is being drawn
 @onready var ads: Ads = $Ads
 @onready var shop: Shop = $Shop
 @onready var social: Social = $Social
+@onready var rink: HockeyView = $Rink
+@onready var net: Net = $Net
+@onready var hockey: HockeyGame = $Hockey
 
 
 func _ready() -> void:
 	camera.make_current()
+	hockey.setup(net, rink, hud.lobby_panel, sfx, music)
 	_load_save()
 	sfx.muted = muted
 	music.muted = muted
@@ -66,6 +72,7 @@ func _ready() -> void:
 	_hue = Catalog.theme_hue(_look("colors"), 0, 1, _now())
 	for m in views:
 		views[m].fx = fx
+	rink.fx = fx
 	hud.retry_pressed.connect(_on_retry_pressed)
 	hud.mute_pressed.connect(_on_mute_pressed)
 	hud.continue_pressed.connect(_on_continue_pressed)
@@ -77,6 +84,9 @@ func _ready() -> void:
 	hud.share_pressed.connect(_on_share_pressed)
 	hud.app_pressed.connect(social.open_site)
 	hud.shop_pressed.connect(_on_shop_pressed)
+	hud.hockey_pressed.connect(_on_hockey_pressed)
+	hockey.closed.connect(_on_hockey_closed)
+	hockey.changed.connect(_save)
 	hud.shop_panel.closed.connect(_on_shop_closed)
 	hud.shop_panel.look_previewed.connect(_on_look_previewed)
 	hud.shop_panel.wear_pressed.connect(_on_wear_pressed)
@@ -96,6 +106,9 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	delta = minf(delta, 1.0 / 30.0)  # a hitch must never teleport the ball off the track
 	_state_time += delta
+	if state == State.HOCKEY:
+		_process_hockey(delta)
+		return
 
 	match state:
 		State.PLAYING:
@@ -154,6 +167,9 @@ func _process(delta: float) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if state == State.HOCKEY:
+		hockey.handle_input(event)
+		return
 	if _is_tap(event):
 		get_viewport().set_input_as_handled()
 		_press()
@@ -272,7 +288,7 @@ func _show_over() -> void:
 	ads.run_finished()
 	if ads.show_interstitial_if_due(_show_over_panel):
 		_set_state(State.AD)
-		hud.show_ad()
+		hud.show_overlay(null)
 		return
 	_show_over_panel()
 	# A record that beats an earlier one is a good moment to ask for a review,
@@ -446,7 +462,7 @@ func _on_continue_pressed() -> void:
 				_revived()
 		"video":
 			_set_state(State.AD)
-			hud.show_ad()
+			hud.show_overlay(null)
 			ads.show_rewarded(_on_rewarded_closed)
 		"shop":
 			_open_shop("extra", "tokens_10")
@@ -471,7 +487,7 @@ func _on_refill_pressed() -> void:
 	if state != State.NO_LIVES or not ads.rewarded_ready():
 		return
 	_set_state(State.AD)
-	hud.show_ad()
+	hud.show_overlay(null)
 	ads.show_rewarded(_on_refill_closed)
 
 
@@ -508,7 +524,8 @@ func _open_shop(tab: String, pick := "") -> void:
 	_shop_from = state
 	_set_state(State.SHOP)
 	shop.refresh()
-	hud.show_shop(tab, pick)
+	hud.show_overlay(hud.shop_panel)
+	hud.shop_panel.open(tab, pick)
 
 
 func _on_shop_closed() -> void:
@@ -555,6 +572,39 @@ func _on_shop_finished(id: String, outcome: String) -> void:
 			_save()
 	if state == State.SHOP:
 		hud.shop_panel.show_result(id, outcome)
+
+
+# --- air hockey ------------------------------------------------------------
+
+
+func _on_hockey_pressed() -> void:
+	if state != State.READY:
+		return
+	if not hockey.available():
+		hud.show_start(best[mode], tr("HOCKEY_WEB"))
+		return
+	_set_state(State.HOCKEY)
+	for k in views:
+		views[k].visible = false
+	rink.visible = true
+	hud.show_overlay(hud.lobby_panel)
+	hockey.open()
+
+
+func _on_hockey_closed() -> void:
+	rink.visible = false
+	_set_mode(mode)  # the start screen, with a fresh run behind it
+
+
+## HockeyGame plays; the camera frames the table, which fits every screen.
+func _process_hockey(delta: float) -> void:
+	var size := get_viewport_rect().size
+	camera.position = rink.camera_target()
+	camera.offset = Vector2.ZERO
+	rink.view_rect = Rect2(camera.position - size * 0.5, size)
+	fx.view_rect = rink.view_rect
+	hockey.tick(delta)
+	fx.tick(delta)
 
 
 # --- days in a row ---------------------------------------------------------
@@ -664,6 +714,9 @@ func _load_save() -> void:
 		)
 		streak.load_from(cfg)
 		shop.inventory.load_from(cfg, best)
+		var player_name := str(cfg.get_value("hockey", "name", ""))
+		if not player_name.is_empty():
+			hockey.player_name = Lobby.clean_name(player_name)
 	# Played DINO before it had to be opened: it stays open.
 	if best[LOCKED_MODE] > 0:
 		streak.unlocked = true
@@ -682,4 +735,5 @@ func _save() -> void:
 	cfg.set_value("review", "last_ask", reviews.last_ask)
 	streak.save_to(cfg)
 	shop.inventory.save_to(cfg)
+	cfg.set_value("hockey", "name", hockey.player_name)
 	cfg.save(SAVE_PATH)

@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene load_steps=15 format=3]
 
 [ext_resource type="Script" path="res://scripts/game.gd" id="1_game"]
 [ext_resource type="Script" path="res://scripts/world_view.gd" id="2_world"]
@@ -11,6 +11,9 @@
 [ext_resource type="Script" path="res://scripts/social.gd" id="9_social"]
 [ext_resource type="Script" path="res://scripts/shop.gd" id="10_shop"]
 [ext_resource type="Script" path="res://scripts/music.gd" id="11_music"]
+[ext_resource type="Script" path="res://scripts/hockey_view.gd" id="12_rink"]
+[ext_resource type="Script" path="res://scripts/net.gd" id="13_net"]
+[ext_resource type="Script" path="res://scripts/hockey_game.gd" id="14_hockey"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_game")
@@ -25,6 +28,10 @@ script = ExtResource("6_tower")
 [node name="Runner" type="Node2D" parent="."]
 visible = false
 script = ExtResource("7_runner")
+
+[node name="Rink" type="Node2D" parent="."]
+visible = false
+script = ExtResource("12_rink")
 
 [node name="Fx" type="Node2D" parent="."]
 script = ExtResource("8_fx")
@@ -48,3 +55,9 @@ script = ExtResource("9_social")
 
 [node name="Shop" type="Node" parent="."]
 script = ExtResource("10_shop")
+
+[node name="Net" type="Node" parent="."]
+script = ExtResource("13_net")
+
+[node name="Hockey" type="Node" parent="."]
+script = ExtResource("14_hockey")

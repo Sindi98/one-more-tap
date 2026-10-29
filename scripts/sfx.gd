@@ -18,6 +18,8 @@ var _jump: AudioStreamWAV
 var _milestone: AudioStreamWAV
 var _sparkle: AudioStreamWAV
 var _buy: AudioStreamWAV
+var _hit: AudioStreamWAV
+var _goal: AudioStreamWAV
 var _perfect: Array[AudioStreamWAV] = []
 
 
@@ -35,6 +37,8 @@ func _ready() -> void:
 	_milestone = _make([[C5 * 1.5, 0.07], [C5 * 2.0, 0.13]], "square", 0.14)
 	_sparkle = _make([[C5 * 4.0, 0.04], [C5 * 3.0, 0.04], [C5 * 4.0, 0.09]], "triangle", 0.16)
 	_buy = _make([[C5 * 2.0, 0.06], [C5 * 3.0, 0.16]], "triangle", 0.26)
+	_hit = _make([[620.0, 0.03]], "square", 0.15, 0.7)
+	_goal = _make([[C5, 0.07], [C5 * 1.5, 0.07], [C5 * 2.0, 0.2]], "square", 0.18)
 	for n in PENTATONIC:
 		_perfect.append(_make([[C5 * pow(2.0, n / 12.0), 0.13]], "triangle", 0.34))
 
@@ -64,6 +68,16 @@ func sparkle() -> void:
 ## Something new in the shop: bought, put on, unlocked.
 func buy() -> void:
 	_play(_buy)
+
+
+## AIR HOCKEY: a mallet strikes the puck.
+func hit() -> void:
+	_play(_hit)
+
+
+## AIR HOCKEY: your team scored.
+func goal() -> void:
+	_play(_goal)
 
 
 func die() -> void:

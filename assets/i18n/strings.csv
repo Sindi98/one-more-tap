@@ -135,3 +135,48 @@ NOTHING_TO_RESTORE,Nothing to restore,Nessun acquisto da ripristinare
 RESTORE_FAILED,"Restore failed, try again later","Ripristino non riuscito, riprova più tardi"
 PURCHASE_FAILED,"Purchase failed, try again later","Acquisto non riuscito, riprova più tardi"
 STORE_IN_APP,In the app on Google Play and the App Store,Nell'app su Google Play e App Store
+MODE_HOCKEY,AIR HOCKEY,AIR HOCKEY
+HOCKEY_WEB,"AIR HOCKEY is in the app,
+on Google Play and the App Store","AIR HOCKEY è nell'app,
+su Google Play e App Store"
+HOCKEY_SUB,Play in teams on the same Wi-Fi,Gioca in squadra sulla stessa Wi-Fi
+YOUR_NAME,NAME,NOME
+PLAYER_NAME,PLAYER %d,GIOCATORE %d
+NEARBY_LOBBIES,LOBBIES NEARBY,LOBBY VICINE
+NO_LOBBIES,"No lobbies on this Wi-Fi yet: create one, or type a friend's code","Ancora nessuna lobby su questa Wi-Fi: creane una, o scrivi il codice di un amico"
+LOBBY_OF,%s'S LOBBY,LOBBY DI %s
+CODE,CODE,CODICE
+JOIN,JOIN,ENTRA
+CREATE_LOBBY,CREATE LOBBY,CREA LOBBY
+LOBBY,LOBBY,LOBBY
+ROOM_HINT,"Friends on the same Wi-Fi find it in LOBBIES NEARBY, or type the code","Gli amici sulla stessa Wi-Fi la trovano tra le LOBBY VICINE, o scrivono il codice"
+TEAM_BLUE,BLUE,BLU
+TEAM_RED,RED,ROSSI
+YOU,(YOU),(TU)
+CPU,CPU,CPU
+SWITCH_TEAM,SWITCH TEAM,CAMBIA SQUADRA
+TEAM_SIZE,%d VS %d,%d VS %d
+FIRST_TO,FIRST TO %d,A %d GOL
+START,START,INIZIA
+WAITING_HOST,Waiting for %s to start,In attesa che %s inizi
+HOCKEY_RULES,Drag your mallet and score in the goal at the top. Keep the puck in your half for 7 seconds and it goes to the others.,"Trascina la racchetta e segna nella porta in alto. Se tieni il disco nella tua metà per 7 secondi, passa agli avversari."
+LEAVE,LEAVE,ESCI
+LEAVE_SURE,SURE?,SICURO?
+GOAL,GOAL!,GOL!
+HOLD_TIME,7 SECONDS!,7 SECONDI!
+VICTORY,YOU WIN!,VITTORIA!
+DEFEAT,YOU LOSE,SCONFITTA
+TEAM_WINS,%s WIN,VINCONO I %s
+REMATCH,REMATCH,RIVINCITA
+REMATCH_HINT,Whoever created the lobby can start a rematch,Chi ha creato la lobby può avviare la rivincita
+TO_LOBBY,LOBBY,LOBBY
+CONNECTING,Connecting…,Connessione…
+BAD_CODE,That code isn't right: check it,Codice sbagliato: controllalo
+HOST_FAILED,Can't create the lobby: is Wi-Fi on?,Non riesco a creare la lobby: la Wi-Fi è accesa?
+TOO_MANY,Too many players for 1 vs 1,Troppi giocatori per l'1 contro 1
+LEFT_CLOSED,The lobby was closed,La lobby è stata chiusa
+LEFT_FULL,That lobby is full,Quella lobby è piena
+LEFT_PLAYING,A match is on there: try again when it ends,Lì c'è una partita in corso: riprova quando finisce
+LEFT_VERSION,Another version of the game: update the app on every phone,Versione del gioco diversa: aggiorna l'app su tutti i telefoni
+LEFT_FAILED,Can't reach the lobby: are you on the same Wi-Fi?,Lobby non raggiungibile: siete sulla stessa Wi-Fi?
+PLAYER_LEFT,A player left: the CPU takes over,Un giocatore è uscito: gioca la CPU
