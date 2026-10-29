@@ -1,14 +1,16 @@
 class_name Hud
 extends CanvasLayer
 ## On-screen UI, built in code: score, combo, start / game over / pause / continue
-## panels, the sound toggle and the privacy links. Panels never block taps; only
-## the buttons do.
+## panels, the mode picker, the sound toggle and the privacy links. Panels never
+## block taps; only the buttons do.
 
 signal retry_pressed
 signal continue_pressed
 signal mute_pressed
 signal privacy_pressed
 signal consent_pressed
+signal mode_pressed(mode: String)
+signal menu_pressed  ## back to the start screen, to pick another mode
 
 const INK := Color("eef2ff")
 const MUTED := Color("8a90b8")
@@ -16,10 +18,47 @@ const HOT := Color("ff4d6d")
 const SHADE := Color("06060c")
 const BUTTON_W := 380.0
 const BUTTON_PAIR_W := 310.0  ## CONTINUA and RIPROVA side by side
+const MODE_BUTTON_W := 206.0
 
+## Game modes, in the order of the picker.
+const MODE_NAMES := {"zigzag": "ZIGZAG", "tower": "TORRE", "runner": "DINO"}
+const RULES := {
+	"zigzag":
+	[
+		"Tocca: la pallina cambia direzione.",
+		"Gira sugli angoli, mai prima, mai dopo.",
+		"Al centro esatto: PERFETTO, +1.",
+	],
+	"tower":
+	[
+		"Tocca: la pallina salta.",
+		"Salta i buchi della torre.",
+		"Sul bordo del buco: PERFETTO, +1.",
+	],
+	"runner":
+	[
+		"Tocca: il dino salta.",
+		"Salta cactus e uccelli bassi.",
+		"Quelli alti passano sopra: resta giù.",
+	],
+}
 const REASONS := {
-	"early": ["TROPPO PRESTO", "Hai girato prima dell'angolo"],
-	"late": ["TROPPO TARDI", "Non hai girato all'angolo"],
+	"zigzag":
+	{
+		"early": ["TROPPO PRESTO", "Hai girato prima dell'angolo"],
+		"late": ["TROPPO TARDI", "Non hai girato all'angolo"],
+	},
+	"tower":
+	{
+		"early": ["TROPPO PRESTO", "Sei atterrato nel buco"],
+		"late": ["TROPPO TARDI", "Non hai saltato il buco"],
+	},
+	"runner":
+	{
+		"early": ["TROPPO PRESTO", "Sei ricaduto sull'ostacolo"],
+		"late": ["TROPPO TARDI", "Salta prima dell'ostacolo"],
+		"high": ["NON SALTARE", "Quelli alti passano sopra"],
+	},
 }
 
 var _display: Font
@@ -28,6 +67,8 @@ var _body_bold: Font
 var _neon := Color.from_hsv(188.0 / 360.0, 0.78, 1.0)
 var _last_hue := -1000.0
 var _neon_labels: Array[Label] = []  ## labels whose colour follows the theme
+var _mode := "zigzag"
+var _digits := 0  ## scores are padded with zeros to this many digits
 
 var _root: Control
 var _top: VBoxContainer
@@ -38,7 +79,10 @@ var _mute: Button
 var _start: Control
 var _start_box: VBoxContainer
 var _start_best: Label
+var _start_rules: Label
 var _prompt: Label
+var _modes: HBoxContainer
+var _mode_buttons := {}  ## mode -> Button
 var _over: Control
 var _over_box: VBoxContainer
 var _reason: Label
@@ -50,6 +94,8 @@ var _continue: Button
 var _continue_hint: Label
 var _retry: Button
 var _tap_hint: Label
+var _menu_row: HBoxContainer
+var _menu: Button
 var _pause: Control
 var _pause_box: VBoxContainer
 var _revive: Control
@@ -112,25 +158,18 @@ func show_ad() -> void:
 	_top.visible = false
 
 
+## stats: one line about the run, already worded for the mode.
 func show_over(
-	score: int,
-	best: int,
-	new_record: bool,
-	reason: String,
-	platforms: int,
-	perfects: int,
-	best_combo: int,
-	can_continue: bool
+	score: int, best: int, new_record: bool, reason: String, stats: String, can_continue: bool
 ) -> void:
-	var r: Array = REASONS.get(reason, REASONS["late"])
+	var reasons: Dictionary = REASONS[_mode]
+	var r: Array = reasons.get(reason, reasons["late"])
 	_reason.text = r[0]
 	_reason_sub.text = r[1]
-	_final.text = str(score)
+	_final.text = _format(score)
 	_record.text = "NUOVO RECORD" if new_record else "RECORD  %d" % best
 	_record.label_settings.font_color = _neon if new_record else MUTED
-	_stats.text = (
-		"%d piattaforme  ·  %d perfetti  ·  combo max %d" % [platforms, perfects, best_combo]
-	)
+	_stats.text = stats
 	set_continue_available(can_continue)
 	_set_panel(_over)
 	_top.visible = false
@@ -138,8 +177,19 @@ func show_over(
 	create_tween().tween_property(_over_box, "modulate:a", 1.0, 0.18)
 
 
+## Rules on the start screen, reasons on the game over panel, score digits and
+## the highlighted button of the picker all follow the mode.
+func set_mode(mode: String) -> void:
+	_mode = mode
+	_start_rules.text = "\n".join(PackedStringArray(RULES[mode]))
+	_digits = 5 if mode == "runner" else 0  # like the offline game's counter
+	_score.label_settings.font_size = 84 if _digits > 0 else 120
+	_final.label_settings.font_size = 128 if _digits > 0 else 168
+	_style_mode_buttons()
+
+
 func set_score(score: int, pop := false) -> void:
-	_score.text = str(score)
+	_score.text = _format(score)
 	if pop:
 		_score.pivot_offset = _score.size * 0.5
 		if _score_tween:
@@ -201,6 +251,7 @@ func set_hue(hue: float) -> void:
 	_score.label_settings.shadow_color = Color(_neon, 0.4)
 	_style_button(_retry, 40, _neon)
 	_style_button(_continue, 40, _neon)
+	_style_mode_buttons()
 
 
 # --- building --------------------------------------------------------------
@@ -233,16 +284,8 @@ func _build_start() -> void:
 	_start_box.add_child(tap)
 	_start_box.add_child(_spacer(28))
 
-	var rules_lines := PackedStringArray(
-		[
-			"Tocca: la pallina cambia direzione.",
-			"Gira sugli angoli, mai prima, mai dopo.",
-			"Al centro esatto: PERFETTO, +1.",
-		]
-	)
-	var rules_text := "\n".join(rules_lines)
-	var rules := _label(rules_text, _body, 30, MUTED)
-	_start_box.add_child(rules)
+	_start_rules = _label("", _body, 30, MUTED)
+	_start_box.add_child(_start_rules)
 	_start_box.add_child(_spacer(36))
 
 	_prompt = _label("TOCCA PER INIZIARE", _display, 38, _neon, true)
@@ -255,6 +298,20 @@ func _build_start() -> void:
 	_start_box.add_child(_spacer(16))
 	_start_best = _label("", _body_bold, 28, INK)
 	_start_box.add_child(_start_best)
+
+	# Mode picker, low on the screen where the thumb is. Switching does not
+	# hide anything, so it can act on press.
+	_modes = _bottom_row(_start)
+	for mode in MODE_NAMES:
+		var b := Button.new()
+		b.text = MODE_NAMES[mode]
+		b.custom_minimum_size = Vector2(MODE_BUTTON_W, 84)
+		b.focus_mode = Control.FOCUS_NONE
+		b.action_mode = BaseButton.ACTION_MODE_BUTTON_PRESS
+		b.pressed.connect(func() -> void: mode_pressed.emit(mode))
+		_modes.add_child(b)
+		_mode_buttons[mode] = b
+	_style_mode_buttons()
 
 
 func _build_over() -> void:
@@ -308,6 +365,16 @@ func _build_over() -> void:
 	_tap_hint = _label("oppure tocca lo schermo", _body, 24, MUTED)
 	_over_box.add_child(_tap_hint)
 
+	_menu_row = _bottom_row(_over)
+	_menu = Button.new()
+	_menu.text = "MODALITÀ"
+	_menu.custom_minimum_size = Vector2(MODE_BUTTON_W * 1.3, 72)
+	_menu.focus_mode = Control.FOCUS_NONE
+	_menu.action_mode = BaseButton.ACTION_MODE_BUTTON_RELEASE  # same reason as RIPROVA
+	_menu.pressed.connect(func() -> void: menu_pressed.emit())
+	_style_button(_menu, 26, MUTED)
+	_menu_row.add_child(_menu)
+
 
 func _build_pause() -> void:
 	_pause = _panel()
@@ -357,6 +424,8 @@ func _apply_safe_area() -> void:
 	_place_top(_over_box, 120.0 + inset.y)
 	_place_top(_pause_box, 320.0 + inset.y)
 	_place_top(_revive_box, 320.0 + inset.y)
+	_place_bottom(_modes, 44.0 + inset.w)
+	_place_bottom(_menu_row, 44.0 + inset.w)
 	var w := 190.0
 	var h := 60.0
 	_mute.offset_right = -20.0 - inset.x
@@ -377,20 +446,28 @@ func _place_top(box: Control, y: float) -> void:
 	box.offset_bottom = y
 
 
-## Safe-area insets (notch, rounded corners) in viewport units:
-## x = right, y = top, z = left.
-func _safe_insets() -> Vector3:
+## Rows anchored to the bottom edge grow upward to fit their content.
+func _place_bottom(box: Control, y: float) -> void:
+	box.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	box.offset_top = -y
+	box.offset_bottom = -y
+
+
+## Safe-area insets (notch, rounded corners, home bar) in viewport units:
+## x = right, y = top, z = left, w = bottom.
+func _safe_insets() -> Vector4:
 	if not OS.has_feature("mobile"):
-		return Vector3.ZERO
+		return Vector4.ZERO
 	var win := Vector2(DisplayServer.window_get_size())
 	var safe := Rect2(DisplayServer.get_display_safe_area())
 	if win.y <= 0.0 or safe.size.y <= 0.0:
-		return Vector3.ZERO
+		return Vector4.ZERO
 	var k := get_viewport().get_visible_rect().size.y / win.y
-	return Vector3(
+	return Vector4(
 		maxf(0.0, win.x - safe.end.x) * k,
 		maxf(0.0, safe.position.y) * k,
-		maxf(0.0, safe.position.x) * k
+		maxf(0.0, safe.position.x) * k,
+		maxf(0.0, win.y - safe.end.y) * k
 	)
 
 
@@ -438,6 +515,39 @@ func _small_button(text: String, on_press: Callable) -> Button:
 	_root.add_child(b)
 	b.set_anchors_preset(Control.PRESET_TOP_LEFT)
 	return b
+
+
+## A centred row of buttons along the bottom of a panel.
+func _bottom_row(panel: Control) -> HBoxContainer:
+	var row := HBoxContainer.new()
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.add_theme_constant_override("separation", 14)
+	panel.add_child(row)
+	row.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+	return row
+
+
+## The chosen mode is a filled button, the others are outlined.
+func _style_mode_buttons() -> void:
+	for mode in _mode_buttons:
+		var b: Button = _mode_buttons[mode]
+		if mode == _mode:
+			_style_button(b, 30, _neon)
+			var on := b.get_theme_stylebox("normal").duplicate() as StyleBoxFlat
+			on.bg_color = _neon
+			for state in ["normal", "hover", "focus", "pressed", "disabled"]:
+				b.add_theme_stylebox_override(state, on)
+			for state in [
+				"font_color", "font_hover_color", "font_focus_color", "font_pressed_color"
+			]:
+				b.add_theme_color_override(state, SHADE)
+		else:
+			_style_button(b, 30, MUTED)
+
+
+func _format(score: int) -> String:
+	return str(score).pad_zeros(_digits)
 
 
 func _vbox(separation: int) -> VBoxContainer:

@@ -1,16 +1,30 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://scripts/game.gd" id="1_game"]
 [ext_resource type="Script" path="res://scripts/world_view.gd" id="2_world"]
 [ext_resource type="Script" path="res://scripts/sfx.gd" id="3_sfx"]
 [ext_resource type="Script" path="res://scripts/hud.gd" id="4_hud"]
 [ext_resource type="Script" path="res://scripts/ads.gd" id="5_ads"]
+[ext_resource type="Script" path="res://scripts/tower_view.gd" id="6_tower"]
+[ext_resource type="Script" path="res://scripts/runner_view.gd" id="7_runner"]
+[ext_resource type="Script" path="res://scripts/fx.gd" id="8_fx"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_game")
 
 [node name="World" type="Node2D" parent="."]
 script = ExtResource("2_world")
+
+[node name="Tower" type="Node2D" parent="."]
+visible = false
+script = ExtResource("6_tower")
+
+[node name="Runner" type="Node2D" parent="."]
+visible = false
+script = ExtResource("7_runner")
+
+[node name="Fx" type="Node2D" parent="."]
+script = ExtResource("8_fx")
 
 [node name="Camera2D" type="Camera2D" parent="."]
 

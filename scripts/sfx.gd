@@ -14,6 +14,8 @@ var _next := 0
 var _tick: AudioStreamWAV
 var _die: AudioStreamWAV
 var _record: AudioStreamWAV
+var _jump: AudioStreamWAV
+var _milestone: AudioStreamWAV
 var _perfect: Array[AudioStreamWAV] = []
 
 
@@ -27,6 +29,8 @@ func _ready() -> void:
 	_record = _make(
 		[[C5, 0.08], [C5 * 1.26, 0.08], [C5 * 1.5, 0.08], [C5 * 2.0, 0.22]], "triangle", 0.32
 	)
+	_jump = _make([[392.0, 0.07]], "square", 0.13, 1.7)
+	_milestone = _make([[C5 * 1.5, 0.07], [C5 * 2.0, 0.13]], "square", 0.14)
 	for n in PENTATONIC:
 		_perfect.append(_make([[C5 * pow(2.0, n / 12.0), 0.13]], "triangle", 0.34))
 
@@ -37,6 +41,15 @@ func tick() -> void:
 
 func perfect(combo: int) -> void:
 	_play(_perfect[clampi(combo - 1, 0, _perfect.size() - 1)])
+
+
+func jump() -> void:
+	_play(_jump)
+
+
+## Every 100 points in DINO.
+func milestone() -> void:
+	_play(_milestone)
 
 
 func die() -> void:

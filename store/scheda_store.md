@@ -40,6 +40,9 @@ Gira dentro l'angolo: troppo presto cadi di lato, troppo tardi voli fuori dalla 
 
 Le piattaforme si stringono, la pallina accelera, i colori cambiano. Quando sbagli vedi subito dove e perché, e riparti con un tap.
 
+Altre due modalità, sempre con un tap: TORRE, dove sali una spirale intorno a una torre che gira e salti i buchi della rampa, e DINO, dove corri e salti cactus e uccelli come nel gioco del browser senza internet.
+
+• Tre modalità di gioco, ognuna col suo record
 • Un dito, zero tutorial: si impara in tre secondi
 • Partite da pochi secondi, perfette per una pausa
 • PERFETTO e combo musicali per chi cerca la precisione
@@ -75,6 +78,9 @@ Turn inside the corner: too early and you fall off the side, too late and you fl
 
 Platforms get narrower, the ball gets faster, colours shift. When you miss, you see exactly where and why, and you're back with one tap.
 
+Two more modes, still one tap: TOWER, where you climb a spiral round a spinning tower and jump the holes in the ramp, and DINO, where you run and jump cacti and birds like in the browser's offline game.
+
+• Three game modes, each with its own best score
 • One finger, no tutorial: learn it in three seconds
 • Runs last seconds, perfect for a short break
 • PERFECT turns and musical combos for precision players

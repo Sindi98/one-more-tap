@@ -1,14 +1,12 @@
 class_name Track
-extends RefCounted
-## Pure game logic for ONE MORE TAP. No nodes, no drawing: testable headless.
+extends RunRules
+## Pure game logic for ZIGZAG, the first mode. No nodes, no drawing: testable headless.
 ##
 ## The ball moves on its own along 45° diagonals and a tap flips its direction.
 ## Platforms alternate up-left / up-right and meet in square corners: tap inside
 ## the corner to turn, anywhere else and the ball falls off the track.
 
-signal scored(score: int)
 signal turned(perfect: bool, combo: int, snap: Vector2)
-signal died(reason: String)
 
 const S := 0.7071067811865476
 ## 0 = up-left, 1 = up-right (y grows downward, like the screen).
@@ -54,7 +52,6 @@ class Seg:
 
 
 var width: float
-var unit: float
 var view_height: float
 var margin: float
 
@@ -64,15 +61,10 @@ var ball_dir := 0
 var turns := 0  ## taps made so far
 var seg := 0  ## index of the platform the ball is on
 var bonus := 0  ## points earned with perfect turns
-var score := 0
 var combo := 0
 var best_combo := 0
 var perfects := 0
 var speed := 0.0
-var started := false
-var alive := true
-var revived := false  ## a continue was used in this run (only one allowed)
-var reason := ""  ## "early" or "late" once the ball falls
 var corner := Vector2.ZERO  ## where the player should have turned
 var corner_dir := 0
 
@@ -98,10 +90,6 @@ func _init(p_width: float = 720.0, p_view_height: float = 1280.0, p_seed: int = 
 	ball = Vector2(width * 0.5, 0.0)
 	ball_dir = segs[0].dir
 	_ensure_ahead()
-
-
-func start() -> void:
-	started = true
 
 
 func current() -> Seg:
@@ -136,10 +124,6 @@ func tap() -> Dictionary:
 	score = seg + bonus
 	turned.emit(perfect, combo, snap)
 	return {"perfect": perfect, "combo": combo}
-
-
-func can_revive() -> bool:
-	return started and not alive and not revived
 
 
 ## Second chance (after a rewarded ad): the ball goes back to the start of the
