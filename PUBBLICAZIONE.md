@@ -7,7 +7,7 @@ Il codice è pronto. Quello che resta sono account, chiavi e moduli che solo tu 
 | Cosa | Dove |
 |---|---|
 | Plugin AdMob (Poing Studios v5.1.0), già attivo | `addons/admob/` |
-| Annunci: consenso GDPR, interstitial tra le partite, video "Continua" | `scripts/ads.gd`, `scripts/admob_backend.gd`, `scripts/ad_pacing.gd` |
+| Annunci: consenso GDPR, interstitial a fine partita, banner nel menu, video "Continua" e "Ricarica", vite | `scripts/ads.gd`, `scripts/admob_backend.gd`, `scripts/ad_pacing.gd` |
 | Preset di export Android (AAB firmato) e iOS (progetto Xcode) | `export_presets.cfg` |
 | Icone (iOS 1024, Android adattiva e monocromatica) | `assets/icons/` (le rigeneri con `tools/make_icons.gd`) |
 | Informativa privacy (IT + EN), da pubblicare online | `docs/privacy.html` |
@@ -18,8 +18,10 @@ Finché non inserisci i tuoi ID, il gioco mostra **annunci di prova di Google**.
 ## Come funzionano gli annunci nel gioco
 
 - **Video "Continua"**: dopo una caduta compare il pulsante CONTINUA, se un video è pronto e la partita valeva almeno 5 punti. Se guardi il video fino in fondo, la pallina torna all'inizio della piattaforma dove sei caduto e riparte rallentata. Vale una volta per partita.
-- **Interstitial**: compare solo quando tocchi RIPROVA. Al massimo uno ogni 3 partite e ogni 90 secondi, e mai subito dopo un video. Le soglie sono in cima a `scripts/ad_pacing.gd`.
-- **Mai durante una partita**, niente banner: in un gioco a un dito un banner prende tocchi per sbaglio, e le regole di AdMob li vietano.
+- **Interstitial**: compare appena finisce una partita, a gioco fermo, prima del pannello col punteggio. Al massimo uno ogni 3 partite e ogni 90 secondi, e mai subito dopo un video. Le soglie sono in cima a `scripts/ad_pacing.gd`.
+- **Vite**: 5, una per partita; ne torna una ogni 15 minuti. Quando finiscono, il pulsante RICARICA mostra un video con premio che le ridà tutte.
+- **Banner**: solo nella schermata iniziale, dove si sceglie la modalità. Sta lungo il bordo in basso, con uno spazio tra lui e i pulsanti: in un gioco a un dito un banner vicino ai controlli prende tocchi per sbaglio, e le regole di AdMob li vietano. Durante la partita e negli altri pannelli è nascosto.
+- **Mai durante una partita.**
 - **Consenso**: al primo avvio, in UE, Regno Unito e Svizzera, compare il modulo di Google. Il pulsante CONSENSO nei menu lo riapre (è obbligatorio). PRIVACY apre l'informativa.
 - **Dal editor (F5)** vedi annunci finti disegnati dal plugin, così puoi provare tutto il giro senza telefono.
 
@@ -45,9 +47,10 @@ Entrambi gli store la chiedono, e il gioco la apre dal pulsante PRIVACY.
 
 1. Crea l'account su [admob.google.com](https://admob.google.com) e inserisci i dati di pagamento.
 2. *App → Aggiungi app*, due volte: una per **Android** e una per **iOS**. Alla domanda "è già su uno store?" rispondi no; collegherai lo store dopo la pubblicazione.
-3. In ogni app crea due **unità pubblicitarie**:
-   - **Interstitial**, nome "Tra le partite"
-   - **Con premio** (Rewarded), nome "Continua", premio `1` `continue`
+3. In ogni app crea tre **unità pubblicitarie**:
+   - **Interstitial**, nome "Fine partita"
+   - **Con premio** (Rewarded), nome "Continua e vite", premio `1` `continue` (la stessa unità serve sia per CONTINUA sia per RICARICA)
+   - **Banner** (adattivo), nome "Menu"
 4. Copia gli ID:
    - **ID app** (contiene `~`): *Project → Project Settings → General → Admob → General*, nei campi Android e iOS **App Id**.
    - **ID unità** (contengono `/`): `scripts/ads.gd`, costante `LIVE_IDS`.
@@ -138,7 +141,7 @@ In *Project → Export → Android → Keystore → Release* inserisci file, ali
 - [ ] ID app AdMob nelle Project Settings, ID unità in `LIVE_IDS`
 - [ ] Messaggio GDPR pubblicato in AdMob
 - [ ] Informativa online con i tuoi dati, `PRIVACY_URL` corretto
-- [ ] Build di **release** provata su telefono: compare il consenso, il video "Continua" fa ripartire, l'interstitial compare tra le partite, PRIVACY e CONSENSO si aprono
+- [ ] Build di **release** provata su telefono: compare il consenso, il video "Continua" fa ripartire, l'interstitial compare a fine partita, il banner c'è solo nel menu, RICARICA ridà le vite, PRIVACY e CONSENSO si aprono
 - [ ] Keystore Android salvato in un posto sicuro
 - [ ] Versione aumentata
 
