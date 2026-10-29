@@ -6,6 +6,11 @@ extends RunRules
 ## jump. The ramp has holes: jump before the edge and land past the hole.
 ## Everything is measured along the ramp, in pixels: TowerView wraps that line
 ## around the tower.
+##
+## It never stops getting harder: with every hole the ball speeds up, the time
+## to take off shrinks and the ramp between holes gets shorter, more and more
+## slowly, towards limits that stay playable. Further up come chains: two or
+## three holes in a row, to clear in rhythm.
 
 signal jumped(perfect: bool, combo: int)
 
@@ -13,18 +18,36 @@ signal jumped(perfect: bool, combo: int)
 const BASE_WIDTH := 390.0
 const JUMP_LEN := 118.0  ## ramp covered by a jump, whatever the speed
 const JUMP_H := 44.0  ## height of the jump at its top
-const HOLE_START := 0.4  ## first holes: 40% of a jump long
-const HOLE_MAX := 0.72  ## longest holes: 72% of a jump
-const HOLE_STEP := 0.008  ## added per hole
-const V_START := 150.0  ## starting speed, px/s
-const V_MAX := 330.0
-const V_STEP := 3.2  ## speed gained per hole
+## Each value below goes from its start to its end (never reached) as holes go
+## by: about two thirds of the way after the given number of holes, see _toward().
+const V_START := 150.0  ## speed, px/s
+const V_END := 430.0
+const V_HOLES := 50.0
+## Window to take off and clear a hole, in seconds: the hole is a jump minus
+## this much run-up at the speed it is reached.
+const WINDOW_START := 0.47
+const WINDOW_END := 0.065
+const WINDOW_HOLES := 22.0
+const HOLE_MIN := 0.4  ## a hole is never shorter than 40% of a jump
+## Seconds of ramp, at least, after the farthest landing, to see the next hole.
+const REACT_START := 0.45
+const REACT_END := 0.26
+const GROUND_EXTRA_START := 0.8  ## up to this many seconds of ramp added at random
+const GROUND_EXTRA_END := 0.3
+const LONG_START := 0.14  ## chance of a long stretch (a breather)
+const LONG_END := 0.04
+const GROUND_HOLES := 60.0
+## Chains: from this hole on, the next hole may come right after a landing, to
+## clear in rhythm, up to three holes in a row.
+const CHAIN_FROM := 12
+const CHAIN_CHANCE_END := 0.45
+const CHAIN_HOLES := 40.0
+const CHAIN_REACT_START := 0.32  ## seconds of ramp after the farthest landing in a chain
+const CHAIN_REACT_END := 0.2
+const CHAIN_MAX := 3
 ## Perfect: taking off in the last 30% of the useful run-up, next to the edge.
 const PERFECT_FRAC := 0.3
 const FIRST_HOLE := 2.4  ## seconds of ramp before the first hole
-const REACT := 0.45  ## seconds of ramp, at least, after the farthest landing
-const GROUND_EXTRA := 0.8  ## up to this many seconds of ramp added at random
-const LONG_CHANCE := 0.14  ## chance of a long stretch (a breather)
 const AHEAD := 5000.0  ## ramp prepared ahead of the ball: it shows several turns up
 const REVIVE_SLOW := 0.4  ## speed factor right after a continue
 const REVIVE_RECOVER := 2.0  ## seconds to get back to full speed after a continue
@@ -35,6 +58,7 @@ class Hole:
 	var start: float
 	var end: float
 	var index: int
+	var chained := false  ## comes right after the previous one: part of a chain
 
 	func length() -> float:
 		return end - start
@@ -59,6 +83,7 @@ var miss := -1  ## index of the hole the ball fell into
 
 var _rng := RandomNumberGenerator.new()
 var _slow := 1.0  ## speed factor, below 1 only for a moment after a continue
+var _chain := 1  ## holes in the chain the last hole belongs to
 
 
 func _init(p_width: float = 720.0, p_seed: int = 0) -> void:
@@ -105,7 +130,7 @@ func update(delta: float) -> void:
 	if not started or not alive:
 		return
 	_slow = minf(1.0, _slow + delta * (1.0 - REVIVE_SLOW) / REVIVE_RECOVER)
-	speed = _speed_for(cleared) * _slow
+	speed = speed_for(cleared) * _slow
 	pos += speed * delta
 	if jumping:
 		var t := (pos - jump_from) / jump_len
@@ -152,17 +177,25 @@ func _land() -> void:
 		scored.emit(score)
 
 
-func _speed_for(holes_cleared: int) -> float:
-	return minf(V_MAX, V_START + holes_cleared * V_STEP) * unit
+## Full speed (px/s) with `holes_cleared` holes behind.
+func speed_for(holes_cleared: int) -> float:
+	return _toward(V_START, V_END, holes_cleared, V_HOLES) * unit
 
 
-func _hole_length(k: int) -> float:
-	return jump_len * minf(HOLE_MAX, HOLE_START + k * HOLE_STEP)
+## Seconds in which a take-off clears hole `k`, at full speed.
+func window_for(k: int) -> float:
+	return _toward(WINDOW_START, WINDOW_END, k, WINDOW_HOLES)
+
+
+## From `start` towards `end` as holes go by: two thirds of the way after
+## `holes` holes, then ever more slowly. It always moves on, never arrives.
+static func _toward(start: float, end: float, k: float, holes: float) -> float:
+	return end + (start - end) * exp(-maxf(0.0, k) / holes)
 
 
 func _add_hole() -> void:
 	var k := holes.size()
-	var v := _speed_for(k)
+	var v := speed_for(k)
 	var h := Hole.new()
 	h.index = k
 	if k == 0:
@@ -172,11 +205,24 @@ func _add_hole() -> void:
 		# A jump from the very edge lands this far past the hole: from there,
 		# leave time to see the next one coming.
 		var overshoot := jump_len - prev.length()
-		var extra := _rng.randf() * GROUND_EXTRA
-		if _rng.randf() < LONG_CHANCE:
-			extra += 1.0 + _rng.randf() * 1.5
-		h.start = prev.end + overshoot + v * (REACT + extra)
-	h.end = h.start + _hole_length(k)
+		var chain_chance := _toward(0.0, CHAIN_CHANCE_END, k - CHAIN_FROM, CHAIN_HOLES)
+		if k >= CHAIN_FROM and _chain < CHAIN_MAX and _rng.randf() < chain_chance:
+			# In rhythm: just enough ramp after landing to tap again.
+			h.chained = true
+			_chain += 1
+			var react := _toward(CHAIN_REACT_START, CHAIN_REACT_END, k, GROUND_HOLES)
+			h.start = prev.end + overshoot + v * react
+		else:
+			_chain = 1
+			var extra := (
+				_rng.randf() * _toward(GROUND_EXTRA_START, GROUND_EXTRA_END, k, GROUND_HOLES)
+			)
+			if _rng.randf() < _toward(LONG_START, LONG_END, k, GROUND_HOLES):
+				extra += 1.0 + _rng.randf() * 1.5
+			var react := _toward(REACT_START, REACT_END, k, GROUND_HOLES)
+			h.start = prev.end + overshoot + v * (react + extra)
+	var length := jump_len - window_for(k) * v
+	h.end = h.start + maxf(length, jump_len * HOLE_MIN)
 	holes.append(h)
 
 
