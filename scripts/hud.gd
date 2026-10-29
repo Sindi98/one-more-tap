@@ -1,8 +1,9 @@
 class_name Hud
 extends CanvasLayer
 ## On-screen UI, built in code: score, combo, start / game over / pause / continue
-## / no lives panels, the mode picker, the lives, the sound toggle and the
-## privacy links. Panels never block taps; only the buttons do.
+## / no lives panels, the mode picker, the lives, the sound toggle, the share
+## button, the privacy links and, on the web version, the link to the app.
+## Panels never block taps; only the buttons do.
 
 signal retry_pressed
 signal continue_pressed
@@ -12,54 +13,43 @@ signal consent_pressed
 signal mode_pressed(mode: String)
 signal menu_pressed  ## back to the start screen, to pick another mode
 signal refill_pressed  ## out of lives: watch a video to get them all back
+signal share_pressed  ## game over: send a picture of the run to a friend
+signal app_pressed  ## web version: go to the page with the store links
 
 const INK := Color("eef2ff")
 const MUTED := Color("8a90b8")
 const HOT := Color("ff4d6d")
 const SHADE := Color("06060c")
 const BUTTON_W := 380.0
-const BUTTON_PAIR_W := 310.0  ## CONTINUA and RIPROVA side by side
+const BUTTON_PAIR_W := 310.0  ## CONTINUE and RETRY side by side
 const MODE_BUTTON_W := 206.0
 const BANNER_GAP := 24.0  ## between the banner and the buttons above it: no accidental taps
 
-## Game modes, in the order of the picker.
-const MODE_NAMES := {"zigzag": "ZIGZAG", "tower": "TORRE", "runner": "DINO"}
+## Game modes, in the order of the picker, with their translation keys. Every
+## text on screen is a key of assets/i18n/strings.csv, shown in the device's
+## language (Italian or English).
+const MODE_NAMES := {"zigzag": "MODE_ZIGZAG", "tower": "MODE_TOWER", "runner": "MODE_RUNNER"}
 const RULES := {
-	"zigzag":
-	[
-		"Tocca: la pallina cambia direzione.",
-		"Gira sugli angoli, mai prima, mai dopo.",
-		"Al centro esatto: PERFETTO, +1.",
-	],
-	"tower":
-	[
-		"Tocca: la pallina salta.",
-		"Salta i buchi della torre.",
-		"Sul bordo del buco: PERFETTO, +1.",
-	],
-	"runner":
-	[
-		"Tocca: il dino salta.",
-		"Salta cactus e uccelli bassi.",
-		"Quelli alti passano sopra: resta giù.",
-	],
+	"zigzag": ["RULES_ZIGZAG_1", "RULES_ZIGZAG_2", "RULES_ZIGZAG_3"],
+	"tower": ["RULES_TOWER_1", "RULES_TOWER_2", "RULES_TOWER_3"],
+	"runner": ["RULES_RUNNER_1", "RULES_RUNNER_2", "RULES_RUNNER_3"],
 }
 const REASONS := {
 	"zigzag":
 	{
-		"early": ["TROPPO PRESTO", "Hai girato prima dell'angolo"],
-		"late": ["TROPPO TARDI", "Non hai girato all'angolo"],
+		"early": ["REASON_EARLY", "REASON_ZIGZAG_EARLY"],
+		"late": ["REASON_LATE", "REASON_ZIGZAG_LATE"],
 	},
 	"tower":
 	{
-		"early": ["TROPPO PRESTO", "Sei atterrato nel buco"],
-		"late": ["TROPPO TARDI", "Non hai saltato il buco"],
+		"early": ["REASON_EARLY", "REASON_TOWER_EARLY"],
+		"late": ["REASON_LATE", "REASON_TOWER_LATE"],
 	},
 	"runner":
 	{
-		"early": ["TROPPO PRESTO", "Sei ricaduto sull'ostacolo"],
-		"late": ["TROPPO TARDI", "Salta prima dell'ostacolo"],
-		"high": ["NON SALTARE", "Quelli alti passano sopra"],
+		"early": ["REASON_EARLY", "REASON_RUNNER_EARLY"],
+		"late": ["REASON_LATE", "REASON_RUNNER_LATE"],
+		"high": ["REASON_HIGH", "REASON_RUNNER_HIGH"],
 	},
 }
 
@@ -72,6 +62,7 @@ var _neon_labels: Array[Label] = []  ## labels whose colour follows the theme
 var _mode := "zigzag"
 var _digits := 0  ## scores are padded with zeros to this many digits
 var _banner_h := 0.0  ## height of the ad banner along the bottom edge, 0 if none
+var _new_record := false  ## the game over panel on screen shows a new record
 
 var _root: Control
 var _top: VBoxContainer
@@ -100,6 +91,7 @@ var _retry: Button
 var _tap_hint: Label
 var _menu_row: HBoxContainer
 var _menu: Button
+var _share: Button
 var _pause: Control
 var _pause_box: VBoxContainer
 var _revive: Control
@@ -112,6 +104,8 @@ var _no_lives_menu_row: HBoxContainer
 var _privacy: Button
 var _consent: Button
 var _consent_available := false
+var _app: Button
+var _card: ShareCard
 var _combo_tween: Tween
 var _score_tween: Tween
 
@@ -134,6 +128,8 @@ func _ready() -> void:
 	_build_no_lives()
 	_build_mute()
 	_build_privacy()
+	_card = ShareCard.new(_display, _body, _body_bold)
+	add_child(_card)
 	_apply_safe_area()
 	get_viewport().size_changed.connect(_apply_safe_area)
 
@@ -142,7 +138,7 @@ func _ready() -> void:
 
 
 func show_start(best: int) -> void:
-	_start_best.text = "RECORD  %d" % best if best > 0 else "Il primo record è tuo"
+	_start_best.text = "%s  %d" % [tr("BEST"), best] if best > 0 else tr("FIRST_RECORD")
 	_set_panel(_start)
 	_top.visible = false
 
@@ -171,9 +167,7 @@ func show_no_lives(video_ready: bool) -> void:
 
 func set_refill_available(available: bool) -> void:
 	_refill.visible = available
-	_refill_hint.text = (
-		"Guarda un video: tornano tutte" if available else "Video non disponibile, riprova tra poco"
-	)
+	_refill_hint.text = tr("REFILL_HINT") if available else tr("NO_VIDEO")
 
 
 ## Hearts on the menus. total = 0 hides them (no ads, no lives: unlimited play).
@@ -197,18 +191,27 @@ func show_ad() -> void:
 	_top.visible = false
 
 
-## stats: one line about the run, already worded for the mode.
+## stats: one line about the run, already worded for the mode. can_share: the
+## device can share a picture (see Social).
 func show_over(
-	score: int, best: int, new_record: bool, reason: String, stats: String, can_continue: bool
+	score: int,
+	best: int,
+	new_record: bool,
+	reason: String,
+	stats: String,
+	can_continue: bool,
+	can_share: bool
 ) -> void:
 	var reasons: Dictionary = REASONS[_mode]
 	var r: Array = reasons.get(reason, reasons["late"])
-	_reason.text = r[0]
-	_reason_sub.text = r[1]
+	_reason.text = tr(r[0])
+	_reason_sub.text = tr(r[1])
 	_final.text = _format(score)
-	_record.text = "NUOVO RECORD" if new_record else "RECORD  %d" % best
+	_record.text = tr("NEW_RECORD") if new_record else "%s  %d" % [tr("BEST"), best]
 	_record.label_settings.font_color = _neon if new_record else MUTED
+	_new_record = new_record
 	_stats.text = stats
+	_share.visible = can_share
 	set_continue_available(can_continue)
 	_set_panel(_over)
 	_top.visible = false
@@ -220,7 +223,10 @@ func show_over(
 ## the highlighted button of the picker all follow the mode.
 func set_mode(mode: String) -> void:
 	_mode = mode
-	_start_rules.text = "\n".join(PackedStringArray(RULES[mode]))
+	var rules := PackedStringArray()
+	for key in RULES[mode]:
+		rules.append(tr(key))
+	_start_rules.text = "\n".join(rules)
 	_digits = 5 if mode == "runner" else 0  # like the offline game's counter
 	_score.label_settings.font_size = 84 if _digits > 0 else 120
 	_final.label_settings.font_size = 128 if _digits > 0 else 168
@@ -242,11 +248,11 @@ func set_score(score: int, pop := false) -> void:
 
 
 func set_best(best: int) -> void:
-	_best.text = "RECORD %d" % best if best > 0 else ""
+	_best.text = "%s %d" % [tr("BEST"), best] if best > 0 else ""
 
 
 func show_combo(combo: int) -> void:
-	_combo.text = "PERFETTO  ×%d" % combo if combo >= 2 else "PERFETTO"
+	_combo.text = "%s  ×%d" % [tr("PERFECT"), combo] if combo >= 2 else tr("PERFECT")
 	if _combo_tween:
 		_combo_tween.kill()
 	_combo.modulate.a = 1.0
@@ -266,7 +272,7 @@ func set_continue_available(available: bool) -> void:
 	_continue.visible = available
 	_continue_hint.visible = available
 	_retry.custom_minimum_size.x = BUTTON_PAIR_W if available else BUTTON_W
-	_tap_hint.text = "tocca lo schermo per riprovare" if available else "oppure tocca lo schermo"
+	_tap_hint.text = tr("TAP_TO_RETRY") if available else tr("OR_TAP")
 
 
 func set_consent_available(available: bool) -> void:
@@ -274,8 +280,18 @@ func set_consent_available(available: bool) -> void:
 	_consent.visible = available and _privacy.visible
 
 
+## A picture of the run on the game over panel: the world around `center`
+## with the mode, the score and the record on top (see ShareCard).
+func share_image(world: World2D, center: Vector2) -> Image:
+	var view := get_viewport().get_visible_rect().size
+	var mode_name := tr(MODE_NAMES[_mode])
+	return await _card.render(
+		world, center, view, _neon, mode_name, _final.text, _record.text, _new_record
+	)
+
+
 func set_muted(muted: bool) -> void:
-	_mute.text = "SUONO OFF" if muted else "SUONO ON"
+	_mute.text = tr("SOUND_OFF") if muted else tr("SOUND_ON")
 
 
 ## Theme colour follows the track (it shifts every few points).
@@ -331,7 +347,7 @@ func _build_start() -> void:
 	_start_box.add_child(_start_rules)
 	_start_box.add_child(_spacer(36))
 
-	_prompt = _label("TOCCA PER INIZIARE", _display, 38, _neon, true)
+	_prompt = _label(tr("TAP_TO_START"), _display, 38, _neon, true)
 	_neon_labels.append(_prompt)
 	_start_box.add_child(_prompt)
 	var blink := create_tween().set_loops()
@@ -349,7 +365,7 @@ func _build_start() -> void:
 	_modes = _bottom_row(_start)
 	for mode in MODE_NAMES:
 		var b := Button.new()
-		b.text = MODE_NAMES[mode]
+		b.text = tr(MODE_NAMES[mode])
 		b.custom_minimum_size = Vector2(MODE_BUTTON_W, 84)
 		b.focus_mode = Control.FOCUS_NONE
 		b.action_mode = BaseButton.ACTION_MODE_BUTTON_PRESS
@@ -388,16 +404,16 @@ func _build_over() -> void:
 	_over_box.add_child(row)
 
 	_continue = Button.new()
-	_continue.text = "CONTINUA"
+	_continue.text = tr("CONTINUE")
 	_continue.custom_minimum_size = Vector2(BUTTON_PAIR_W, 104)
 	_continue.focus_mode = Control.FOCUS_NONE
-	_continue.action_mode = BaseButton.ACTION_MODE_BUTTON_RELEASE  # same reason as RIPROVA
+	_continue.action_mode = BaseButton.ACTION_MODE_BUTTON_RELEASE  # same reason as RETRY
 	_continue.pressed.connect(func() -> void: continue_pressed.emit())
 	_style_button(_continue, 40, _neon)
 	row.add_child(_continue)
 
 	_retry = Button.new()
-	_retry.text = "RIPROVA"
+	_retry.text = tr("RETRY")
 	_retry.custom_minimum_size = Vector2(BUTTON_W, 104)
 	_retry.focus_mode = Control.FOCUS_NONE
 	# Fires on release on purpose: on press it would hide itself before the
@@ -407,20 +423,29 @@ func _build_over() -> void:
 	_style_button(_retry, 40, _neon)
 	row.add_child(_retry)
 	_over_box.add_child(_spacer(6))
-	_continue_hint = _label("CONTINUA: guarda un breve video e riparti da qui", _body, 24, INK)
+	_continue_hint = _label(tr("CONTINUE_HINT"), _body, 24, INK)
 	_over_box.add_child(_continue_hint)
-	_tap_hint = _label("oppure tocca lo schermo", _body, 24, MUTED)
+	_tap_hint = _label(tr("OR_TAP"), _body, 24, MUTED)
 	_over_box.add_child(_tap_hint)
 
 	_menu_row = _bottom_row(_over)
 	_menu = Button.new()
-	_menu.text = "MODALITÀ"
+	_menu.text = tr("MODES")
 	_menu.custom_minimum_size = Vector2(MODE_BUTTON_W * 1.3, 72)
 	_menu.focus_mode = Control.FOCUS_NONE
-	_menu.action_mode = BaseButton.ACTION_MODE_BUTTON_RELEASE  # same reason as RIPROVA
+	_menu.action_mode = BaseButton.ACTION_MODE_BUTTON_RELEASE  # same reason as RETRY
 	_menu.pressed.connect(func() -> void: menu_pressed.emit())
 	_style_button(_menu, 26, MUTED)
 	_menu_row.add_child(_menu)
+
+	_share = Button.new()
+	_share.text = tr("SHARE")
+	_share.custom_minimum_size = Vector2(MODE_BUTTON_W * 1.3, 72)
+	_share.focus_mode = Control.FOCUS_NONE
+	_share.action_mode = BaseButton.ACTION_MODE_BUTTON_RELEASE  # the share sheet goes on top
+	_share.pressed.connect(func() -> void: share_pressed.emit())
+	_style_button(_share, 26, MUTED)
+	_menu_row.add_child(_share)
 
 
 func _build_pause() -> void:
@@ -428,8 +453,8 @@ func _build_pause() -> void:
 	_pause_box = _vbox(10)
 	_pause.add_child(_pause_box)
 	_pause_box.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
-	_pause_box.add_child(_label("PAUSA", _display, 88, INK, true))
-	_pause_box.add_child(_label("Tocca per riprendere", _body, 30, MUTED))
+	_pause_box.add_child(_label(tr("PAUSED"), _display, 88, INK, true))
+	_pause_box.add_child(_label(tr("TAP_TO_RESUME"), _body, 30, MUTED))
 
 
 func _build_revive() -> void:
@@ -437,11 +462,11 @@ func _build_revive() -> void:
 	_revive_box = _vbox(10)
 	_revive.add_child(_revive_box)
 	_revive_box.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
-	var title := _label("ANCORA UNA", _display, 72, _neon, true)
+	var title := _label(tr("ONE_MORE"), _display, 72, _neon, true)
 	_neon_labels.append(title)
 	_revive_box.add_child(title)
-	_revive_box.add_child(_label("Tocca quando sei pronto", _body, 30, INK))
-	_revive_box.add_child(_label("la pallina riparte piano", _body, 26, MUTED))
+	_revive_box.add_child(_label(tr("TAP_WHEN_READY"), _body, 30, INK))
+	_revive_box.add_child(_label(tr("STARTS_SLOW"), _body, 26, MUTED))
 
 
 func _build_no_lives() -> void:
@@ -449,14 +474,14 @@ func _build_no_lives() -> void:
 	_no_lives_box = _vbox(10)
 	_no_lives.add_child(_no_lives_box)
 	_no_lives_box.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
-	var title := _label("VITE FINITE", _display, 72, HOT, true)
+	var title := _label(tr("NO_LIVES"), _display, 72, HOT, true)
 	title.label_settings.shadow_color = Color(HOT, 0.3)
 	_no_lives_box.add_child(title)
 	_no_lives_box.add_child(_spacer(8))
 	_no_lives_box.add_child(_lives_view())
 	_no_lives_box.add_child(_spacer(36))
 	_refill = Button.new()
-	_refill.text = "RICARICA"
+	_refill.text = tr("REFILL")
 	_refill.custom_minimum_size = Vector2(BUTTON_W, 104)
 	_refill.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	_refill.focus_mode = Control.FOCUS_NONE
@@ -467,10 +492,10 @@ func _build_no_lives() -> void:
 	_no_lives_box.add_child(_spacer(6))
 	_refill_hint = _label("", _body, 26, INK)
 	_no_lives_box.add_child(_refill_hint)
-	_no_lives_box.add_child(_label("oppure aspetta che tornino da sole", _body, 24, MUTED))
+	_no_lives_box.add_child(_label(tr("WAIT_FOR_LIVES"), _body, 24, MUTED))
 	_no_lives_menu_row = _bottom_row(_no_lives)
 	var menu := Button.new()
-	menu.text = "MODALITÀ"
+	menu.text = tr("MODES")
 	menu.custom_minimum_size = Vector2(MODE_BUTTON_W * 1.3, 72)
 	menu.focus_mode = Control.FOCUS_NONE
 	menu.action_mode = BaseButton.ACTION_MODE_BUTTON_RELEASE
@@ -481,7 +506,7 @@ func _build_no_lives() -> void:
 
 func _build_mute() -> void:
 	_mute = Button.new()
-	_mute.text = "SUONO ON"
+	_mute.text = tr("SOUND_ON")
 	_mute.focus_mode = Control.FOCUS_NONE
 	_mute.action_mode = BaseButton.ACTION_MODE_BUTTON_PRESS
 	_mute.pressed.connect(func() -> void: mute_pressed.emit())
@@ -490,12 +515,15 @@ func _build_mute() -> void:
 	_mute.set_anchors_preset(Control.PRESET_TOP_RIGHT)
 
 
-## Privacy policy link (required by both stores) and, for players in the EEA/UK,
-## the ad consent form. Shown on the menus only, never during a run.
+## Privacy policy link (required by both stores), for players in the EEA/UK the
+## ad consent form and, on the web version, the way to the app. Shown on the
+## menus only, never during a run.
 func _build_privacy() -> void:
-	_privacy = _small_button("PRIVACY", func() -> void: privacy_pressed.emit())
-	_consent = _small_button("CONSENSO", func() -> void: consent_pressed.emit())
+	_privacy = _small_button(tr("PRIVACY"), func() -> void: privacy_pressed.emit())
+	_consent = _small_button(tr("CONSENT"), func() -> void: consent_pressed.emit())
 	_consent.visible = false
+	_app = _small_button(tr("GET_APP"), func() -> void: app_pressed.emit())
+	_app.visible = false
 
 
 func _apply_safe_area() -> void:
@@ -517,9 +545,10 @@ func _apply_safe_area() -> void:
 	_mute.offset_left = _mute.offset_right - w
 	_mute.offset_top = 20.0 + inset.y
 	_mute.offset_bottom = _mute.offset_top + h
-	for i in 2:
-		var b: Button = [_privacy, _consent][i]
-		b.offset_left = 20.0 + inset.z + i * (w + 12.0)
+	# The consent form (ads) and the app link (web version) never show together.
+	for slot in [[_privacy, 0], [_consent, 1], [_app, 1]]:
+		var b: Button = slot[0]
+		b.offset_left = 20.0 + inset.z + slot[1] * (w + 12.0)
 		b.offset_right = b.offset_left + w
 		b.offset_top = 20.0 + inset.y
 		b.offset_bottom = b.offset_top + h
@@ -561,6 +590,7 @@ func _set_panel(panel: Control) -> void:
 		p.visible = p == panel
 	_privacy.visible = panel == _start or panel == _over or panel == _pause
 	_consent.visible = _consent_available and _privacy.visible
+	_app.visible = OS.has_feature("web") and _privacy.visible  # the web version leads to the app
 
 
 # --- helpers ---------------------------------------------------------------

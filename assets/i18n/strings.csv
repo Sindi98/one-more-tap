@@ -1,0 +1,57 @@
+keys,en,it
+MODE_ZIGZAG,ZIGZAG,ZIGZAG
+MODE_TOWER,TOWER,TORRE
+MODE_RUNNER,DINO,DINO
+RULES_ZIGZAG_1,Tap: the ball changes direction.,Tocca: la pallina cambia direzione.
+RULES_ZIGZAG_2,"Turn on the corners: not early, not late.","Gira sugli angoli, mai prima, mai dopo."
+RULES_ZIGZAG_3,"Dead centre: PERFECT, +1.","Al centro esatto: PERFETTO, +1."
+RULES_TOWER_1,Tap: the ball jumps.,Tocca: la pallina salta.
+RULES_TOWER_2,Jump the holes in the tower.,Salta i buchi della torre.
+RULES_TOWER_3,"At the edge of the hole: PERFECT, +1.","Sul bordo del buco: PERFETTO, +1."
+RULES_RUNNER_1,Tap: the dino jumps.,Tocca: il dino salta.
+RULES_RUNNER_2,Jump the cacti and the low birds.,Salta cactus e uccelli bassi.
+RULES_RUNNER_3,High ones fly over: stay down.,Quelli alti passano sopra: resta giù.
+REASON_EARLY,TOO EARLY,TROPPO PRESTO
+REASON_LATE,TOO LATE,TROPPO TARDI
+REASON_HIGH,DON'T JUMP,NON SALTARE
+REASON_ZIGZAG_EARLY,You turned before the corner,Hai girato prima dell'angolo
+REASON_ZIGZAG_LATE,You didn't turn at the corner,Non hai girato all'angolo
+REASON_TOWER_EARLY,You landed in the hole,Sei atterrato nel buco
+REASON_TOWER_LATE,You didn't jump the hole,Non hai saltato il buco
+REASON_RUNNER_EARLY,You came down on the obstacle,Sei ricaduto sull'ostacolo
+REASON_RUNNER_LATE,Jump before the obstacle,Salta prima dell'ostacolo
+REASON_RUNNER_HIGH,High ones fly over you,Quelli alti passano sopra
+BEST,BEST,RECORD
+FIRST_RECORD,Set your first best score,Il primo record è tuo
+NEW_RECORD,NEW RECORD,NUOVO RECORD
+PERFECT,PERFECT,PERFETTO
+TAP_TO_START,TAP TO START,TOCCA PER INIZIARE
+CONTINUE,CONTINUE,CONTINUA
+RETRY,RETRY,RIPROVA
+MODES,MODES,MODALITÀ
+SHARE,SHARE,CONDIVIDI
+CONTINUE_HINT,CONTINUE: watch a short video and carry on from here,CONTINUA: guarda un breve video e riparti da qui
+TAP_TO_RETRY,tap the screen to retry,tocca lo schermo per riprovare
+OR_TAP,or tap the screen,oppure tocca lo schermo
+PAUSED,PAUSED,PAUSA
+TAP_TO_RESUME,Tap to resume,Tocca per riprendere
+ONE_MORE,ONE MORE,ANCORA UNA
+TAP_WHEN_READY,Tap when you're ready,Tocca quando sei pronto
+STARTS_SLOW,the ball starts off slow,la pallina riparte piano
+NO_LIVES,NO LIVES,VITE FINITE
+REFILL,REFILL,RICARICA
+REFILL_HINT,Watch a video: they all come back,"Guarda un video: tornano tutte"
+NO_VIDEO,"No video available, try again soon","Video non disponibile, riprova tra poco"
+WAIT_FOR_LIVES,or wait for them to come back,oppure aspetta che tornino da sole
+NEXT_LIFE,+1 in %d:%02d,+1 tra %d:%02d
+SOUND_ON,SOUND ON,SUONO ON
+SOUND_OFF,SOUND OFF,SUONO OFF
+PRIVACY,PRIVACY,PRIVACY
+CONSENT,CONSENT,CONSENSO
+GET_APP,GET APP,SCARICA
+STATS_ZIGZAG,%d platforms  ·  %d perfect  ·  best combo %d,%d piattaforme  ·  %d perfetti  ·  combo max %d
+STATS_TOWER,%d holes  ·  %d perfect  ·  best combo %d,%d buchi  ·  %d perfetti  ·  combo max %d
+STATS_RUNNER,%d obstacles  ·  %d jumps,%d ostacoli  ·  %d salti
+CARD_CHALLENGE,CAN YOU BEAT ME?,RIESCI A BATTERMI?
+CARD_FREE,Free on Google Play and the App Store,Gratis su Google Play e App Store
+SHARE_TEXT,I scored %d in %s on One More Tap. Can you beat me? %s,Ho fatto %d a %s su One More Tap. Riesci a battermi? %s
