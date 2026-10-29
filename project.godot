@@ -30,6 +30,10 @@ boot_splash/bg_color=Color(0.0235, 0.0235, 0.047, 1)
 boot_splash/show_image=false
 config/icon="res://icon.svg"
 
+[autoload]
+
+GodotIapPlugin="*res://addons/godot-iap/godot_iap.gd"
+
 [display]
 
 window/size/viewport_width=720
@@ -42,7 +46,7 @@ window/handheld/orientation=1
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/admob/plugin.cfg")
+enabled=PackedStringArray("res://addons/admob/plugin.cfg", "res://addons/godot-iap/plugin.cfg")
 
 [rendering]
 

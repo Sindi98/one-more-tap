@@ -56,7 +56,7 @@ Si aprono da **STILI** nella schermata iniziale. La rarità indica il prezzo e q
 - Nel negozio toccare una scheda la prova subito sul gioco dietro, anche se non è tua; il pulsante grande dice cosa fare: USA, ACQUISTA con il prezzo dello store, BLOCCATO con il record che manca.
 - I prezzi mostrati sono quelli dello store, nella valuta del giocatore. Quelli in `scripts/catalog.gd` servono solo come fasce da impostare negli store e per gli acquisti finti in editor.
 - **RIPRISTINA** recupera gli acquisti fatti su un altro telefono o prima di reinstallare (Apple lo richiede). Gli oggetti comprati una volta tornano anche da soli all'avvio; i gettoni, come in tutti i giochi senza account, restano sul telefono.
-- **Plugin**: [godot-iap](https://github.com/hyodotdev/openiap/tree/main/libraries/godot-iap) (OpenIAP, licenza MIT) per Google Play Billing e StoreKit 2. **Non è ancora nel progetto**: come installarlo è in [PUBBLICAZIONE.md](PUBBLICAZIONE.md#7-acquisti-in-app). Finché manca, su telefono il negozio mostra gli stili ma niente è in vendita.
+- **Plugin**: [godot-iap](https://github.com/hyodotdev/openiap/tree/main/libraries/godot-iap) 4.2.0 (OpenIAP, licenza MIT) in `addons/godot-iap`, già attivo: Google Play Billing su Android, StoreKit 2 su iOS. Richiede iOS 17. Nell'editor l'Output mostra all'avvio tre righe rosse "No GDExtension library found…": sono normali, il plugin ha codice nativo solo per i telefoni. I prodotti da creare negli store sono in [PUBBLICAZIONE.md](PUBBLICAZIONE.md#7-acquisti-in-app).
 - **Dall'editor (F5)** gli acquisti sono finti e vanno sempre a buon fine: si prova tutto il giro senza telefono. Nei test headless e su desktop esportato non c'è niente in vendita.
 - Nessun server: un acquisto che lo store dà per pagato viene dato sul telefono. Per oggetti estetici e un salvataggio locale una verifica su server proteggerebbe poco.
 
@@ -126,7 +126,7 @@ Controllano che un giocatore perfetto sopravviva su 60 percorsi diversi per moda
 
 ## Export su telefono
 
-I preset Android (AAB firmato, build Gradle, permessi INTERNET e VIBRATE) e iOS (progetto Xcode, solo iPhone, iOS 15+) sono già in `export_presets.cfg`. Strumenti da installare, chiavi di firma e invio agli store: **[PUBBLICAZIONE.md](PUBBLICAZIONE.md)**.
+I preset Android (AAB firmato, build Gradle, permessi INTERNET e VIBRATE) e iOS (progetto Xcode, solo iPhone, iOS 17+) sono già in `export_presets.cfg`. Strumenti da installare, chiavi di firma e invio agli store: **[PUBBLICAZIONE.md](PUBBLICAZIONE.md)**.
 
 Prova veloce su Android: template di export, JDK 17 e Android SDK installati, *Project → Install Android Build Template*, telefono in debug USB, poi il pulsante Android in alto a destra nell'editor.
 
@@ -134,7 +134,7 @@ Prova veloce su Android: template di export, JDK 17 e Android SDK installati, *P
 
 1. Playtest su telefono vero: tarare `W_START`, `W_STEP`, `V_START`, `V_STEP`, `PERFECT_FRAC` in `track.gd`, le costanti in cima a `tower.gd` e `runner.gd`, più `REVIVE_SLOW` e la frequenza degli annunci in `ad_pacing.gd`.
 2. Sfida giornaliera: `Track.new(width, height, seed)` accetta già un seed, basta derivarlo dalla data.
-3. Installare il plugin godot-iap e creare i prodotti negli store ([PUBBLICAZIONE.md](PUBBLICAZIONE.md#7-acquisti-in-app)).
+3. Creare i prodotti negli store e provarli con un account di test ([PUBBLICAZIONE.md](PUBBLICAZIONE.md#7-acquisti-in-app)).
 4. Traduzione inglese; skin del Dino nel negozio.
 
 Font: Bungee e Chakra Petch, licenza SIL Open Font License (file in `assets/fonts`).

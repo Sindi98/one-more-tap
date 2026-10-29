@@ -1,0 +1,209 @@
+@tool
+extends EditorPlugin
+
+const AUTOLOAD_NAME = "GodotIapPlugin"
+
+var _owned_autoload: String = ""
+var _export_plugin: GodotIapExportPlugin
+
+func _enter_tree() -> void:
+	if not ProjectSettings.has_setting("autoload/" + AUTOLOAD_NAME):
+		add_autoload_singleton(AUTOLOAD_NAME, "res://addons/godot-iap/godot_iap.gd")
+		_owned_autoload = ProjectSettings.get_setting("autoload/" + AUTOLOAD_NAME, "")
+
+	_export_plugin = GodotIapExportPlugin.new()
+	add_export_plugin(_export_plugin)
+
+	print("[GodotIap] Plugin enabled")
+
+func _exit_tree() -> void:
+	if not _owned_autoload.is_empty() and ProjectSettings.get_setting("autoload/" + AUTOLOAD_NAME, "") == _owned_autoload:
+		remove_autoload_singleton(AUTOLOAD_NAME)
+	_owned_autoload = ""
+
+	if _export_plugin:
+		remove_export_plugin(_export_plugin)
+		_export_plugin = null
+
+	print("[GodotIap] Plugin disabled")
+
+
+class GodotIapExportPlugin extends EditorExportPlugin:
+	const PLUGIN_NAME = "GodotIap"
+	const ANDROID_GDAP_PATH = "res://addons/godot-iap/android/GodotIap.gdap"
+	const AndroidStore = preload("res://addons/godot-iap/android_store.gd")
+	const AndroidExport = preload("res://addons/godot-iap/android_export.gd")
+	const ANDROID_STORE_OPTION = "openiap/android_store"
+	const ANDROID_PROVIDER_OPTION = "openiap/android_provider"
+	const HORIZON_APP_ID_OPTION = "openiap/horizon_app_id"
+	const IOS_FRAMEWORKS: Array[String] = [
+		"res://addons/godot-iap/bin/ios/GodotIap.framework",
+		"res://addons/godot-iap/bin/ios/SwiftGodotRuntime.framework",
+	]
+
+	func _get_name() -> String:
+		return PLUGIN_NAME
+
+	func _supports_platform(platform: EditorExportPlatform) -> bool:
+		if platform is EditorExportPlatformAndroid:
+			return true
+		if platform is EditorExportPlatformIOS:
+			return true
+		return false
+
+	func _export_begin(features: PackedStringArray, _is_debug: bool, _path: String, _flags: int) -> void:
+		if features.has("android") or features.has("Android"):
+			if _preset_option("gradle_build/use_gradle_build"):
+				var directory := AndroidExport.resolve_build_directory(_preset_option("gradle_build/gradle_build_directory"))
+				var result := AndroidExport.prepare(directory)
+				if result.has("error"):
+					push_error("[GodotIap] %s" % result.error)
+				elif result.changed:
+					print("[GodotIap] Android export template prepared for AGP %s+ and compile SDK %d+" % [AndroidExport.MIN_AGP, AndroidExport.MIN_COMPILE_SDK])
+			return
+		if not _is_ios_export(features):
+			return
+
+		for framework_path in IOS_FRAMEWORKS:
+			if not DirAccess.dir_exists_absolute(framework_path):
+				push_warning("[GodotIap] Missing iOS framework: %s" % framework_path)
+				continue
+			_add_ios_embedded_framework(framework_path)
+
+	func _preset_option(name: StringName) -> Variant:
+		return get_option(name)
+
+	func _is_ios_export(features: PackedStringArray) -> bool:
+		var platform = call("get_export_platform") if has_method("get_export_platform") else null
+		return (
+			platform is EditorExportPlatformIOS
+			or features.has("ios")
+			or features.has("iOS")
+		)
+
+	func _add_ios_embedded_framework(path: String) -> void:
+		if has_method("add_apple_embedded_platform_embedded_framework"):
+			call("add_apple_embedded_platform_embedded_framework", path)
+			return
+		if has_method("add_apple_embedded_framework"):
+			call("add_apple_embedded_framework", path)
+			return
+
+		# Godot 4.3/4.4 still expose the iOS-specific export API.
+		add_ios_embedded_framework(path)
+
+	func _get_android_libraries(platform: EditorExportPlatform, debug: bool) -> PackedStringArray:
+		# Path is relative to the project root (res://)
+		if debug:
+			return PackedStringArray(["res://addons/godot-iap/android/GodotIap.debug.aar"])
+		else:
+			return PackedStringArray(["res://addons/godot-iap/android/GodotIap.release.aar"])
+
+	func _get_export_options(platform: EditorExportPlatform) -> Array[Dictionary]:
+		if not (platform is EditorExportPlatformAndroid):
+			return []
+		return [{
+			"option": {
+				"name": ANDROID_STORE_OPTION,
+				"type": TYPE_STRING,
+				"hint": PROPERTY_HINT_ENUM_SUGGESTION,
+				"hint_string": ",".join(AndroidStore.STORES),
+			},
+			"default_value": "auto",
+		}, {
+			"option": {
+				"name": ANDROID_PROVIDER_OPTION,
+				"type": TYPE_STRING,
+			},
+			"default_value": "",
+		}, {
+			"option": {
+				"name": HORIZON_APP_ID_OPTION,
+				"type": TYPE_STRING,
+			},
+			"default_value": "",
+		}]
+
+	func _get_android_manifest_application_element_contents(_platform: EditorExportPlatform, _debug: bool) -> String:
+		var value = _preset_option(HORIZON_APP_ID_OPTION)
+		var app_id := "" if value == null else str(value).strip_edges()
+		if app_id.is_empty():
+			return ""
+		var meta_data := AndroidStore.horizon_app_id_meta_data(app_id)
+		if meta_data.is_empty():
+			push_error("[GodotIap] %s must be the numeric app id from Meta Horizon Developer Hub" % HORIZON_APP_ID_OPTION)
+		return meta_data
+
+	# One answer per export: the dependencies and the feature tag must agree, and
+	# the device is probed once.
+	var _android_stores := {}
+
+	func _export_end() -> void:
+		_android_stores.clear()
+
+	## The store this Android export links, or "" when the option names none.
+	func _android_store(debug: bool) -> String:
+		var option = _preset_option(ANDROID_STORE_OPTION)
+		var provider := str(_preset_option(ANDROID_PROVIDER_OPTION)).strip_edges()
+		var key := "%s|%s|%s" % [debug, option, provider]
+		if _android_stores.has(key):
+			return _android_stores[key]
+		var store := AndroidStore.normalize(option, provider)
+		if store == "auto":
+			var resolution := AndroidStore.resolve_auto(debug, _adb_path() if debug else "")
+			store = resolution.store
+			print("[GodotIap] openiap: store=%s (source=%s; %s)" % [resolution.store, resolution.source, resolution.reason])
+		elif not store.is_empty():
+			print("[GodotIap] openiap: store=%s (source=explicit; %s)" % [store, ANDROID_STORE_OPTION])
+		_android_stores[key] = store
+		return store
+
+	func _get_export_features(platform: EditorExportPlatform, debug: bool) -> PackedStringArray:
+		if not (platform is EditorExportPlatformAndroid):
+			return PackedStringArray()
+		var feature := AndroidStore.store_feature(_android_store(debug))
+		return PackedStringArray([feature]) if not feature.is_empty() else PackedStringArray()
+
+	func _get_android_dependencies(platform: EditorExportPlatform, debug: bool) -> PackedStringArray:
+		var store := _android_store(debug)
+		var provider := str(_preset_option(ANDROID_PROVIDER_OPTION)).strip_edges()
+		if store.is_empty():
+			push_error("[GodotIap] Select a valid official store, or a community id with fixed group:artifact:version provider coordinates")
+		return AndroidStore.dependencies(_read_android_remote_dependencies(), store, provider)
+
+	# The editor's SDK setting first, then the Gradle resolver's fallbacks.
+	func _adb_path() -> String:
+		var roots := PackedStringArray()
+		var settings := EditorInterface.get_editor_settings()
+		if settings.has_setting("export/android/android_sdk_path"):
+			roots.append(str(settings.get_setting("export/android/android_sdk_path")))
+		roots.append(OS.get_environment("ANDROID_HOME"))
+		roots.append(OS.get_environment("ANDROID_SDK_ROOT"))
+		for root in roots:
+			if root.strip_edges().is_empty():
+				continue
+			for name in ["adb", "adb.exe"]:
+				var candidate := root.path_join("platform-tools").path_join(name)
+				if FileAccess.file_exists(candidate):
+					return candidate
+		return "adb"
+
+	func _read_android_remote_dependencies() -> PackedStringArray:
+		if not FileAccess.file_exists(ANDROID_GDAP_PATH):
+			push_warning("[GodotIap] Missing Android dependency manifest: %s" % ANDROID_GDAP_PATH)
+			return PackedStringArray()
+
+		var gdap_content := FileAccess.get_file_as_string(ANDROID_GDAP_PATH)
+		var dependency_regex := RegEx.new()
+		var compile_error := dependency_regex.compile("\"([A-Za-z0-9_.-]+:[A-Za-z0-9_.-]+:[^\"]+)\"")
+		if compile_error != OK:
+			push_warning("[GodotIap] Failed to compile Android dependency parser")
+			return PackedStringArray()
+
+		var dependencies := PackedStringArray()
+		for match_result in dependency_regex.search_all(gdap_content):
+			dependencies.append(match_result.get_string(1))
+
+		if dependencies.is_empty():
+			push_warning("[GodotIap] No remote Android dependencies found in %s" % ANDROID_GDAP_PATH)
+		return dependencies

@@ -9,6 +9,7 @@ Il codice è pronto. Quello che resta sono account, chiavi e moduli che solo tu 
 | Plugin AdMob (Poing Studios v5.1.0), già attivo | `addons/admob/` |
 | Annunci: consenso GDPR, interstitial tra le partite, video "Continua" | `scripts/ads.gd`, `scripts/admob_backend.gd`, `scripts/ad_pacing.gd` |
 | Negozio: stili con rarità, gettoni, Rimuovi annunci, Collezione completa, ripristino | `scripts/catalog.gd`, `scripts/shop.gd`, `scripts/iap_backend.gd`, `scripts/shop_panel.gd` |
+| Plugin acquisti in-app godot-iap 4.2.0, già attivo | `addons/godot-iap/` |
 | Preset di export Android (AAB firmato) e iOS (progetto Xcode) | `export_presets.cfg` |
 | Icone (iOS 1024, Android adattiva e monocromatica) | `assets/icons/` (le rigeneri con `tools/make_icons.gd`) |
 | Informativa privacy (IT + EN), da pubblicare online | `docs/privacy.html` |
@@ -137,18 +138,16 @@ In *Project → Export → Android → Keystore → Release* inserisci file, ali
 
 ## 7. Acquisti in-app
 
-Il negozio nel gioco è pronto (regole e prezzi nel [README](README.md#acquisti-in-app)). Mancano tre cose: il plugin, i prodotti negli store e una prova con un account di test.
+Il negozio nel gioco è pronto (regole e prezzi nel [README](README.md#acquisti-in-app)) e il plugin è già nel progetto. Mancano i prodotti negli store e una prova con un account di test.
 
-### Installare il plugin (una volta)
+### Il plugin (già installato)
 
-Il gioco usa [godot-iap](https://github.com/hyodotdev/openiap/tree/main/libraries/godot-iap) (OpenIAP, licenza MIT): Google Play Billing su Android, StoreKit 2 su iOS, una sola API. Finché non c'è, il negozio mostra gli stili ma niente è in vendita.
+[godot-iap](https://github.com/hyodotdev/openiap/tree/main/libraries/godot-iap) 4.2.0 (OpenIAP, licenza MIT) in `addons/godot-iap`, dallo zip ufficiale della release: Google Play Billing su Android, StoreKit 2 su iOS, una sola API. È già attivo, con l'autoload `GodotIapPlugin` che il gioco cerca all'avvio. Nei preset sono già impostati iOS minimo **17.0** (i framework del plugin lo richiedono: iPhone XS/XR e successivi) e, per Android, lo store `play` ed esclusi i file iOS del plugin.
 
-1. Scarica `godot-iap-4.2.0.zip` dalla [pagina della release](https://github.com/hyodotdev/openiap/releases/tag/godot-iap-4.2.0) ed estrai la cartella `addons/godot-iap/` dentro la cartella `addons/` del progetto (accanto ad `admob`). Copia tutta la cartella, binari compresi.
-2. *Project → Project Settings → Plugins*: attiva **GodotIap**. Aggiunge da solo l'autoload `GodotIapPlugin`, che il gioco cerca all'avvio.
-3. *Project → Export → iOS → Application → Min iOS Version*: **17.0**. I framework del plugin richiedono iOS 17 (iPhone XS/XR e successivi): con un valore più basso l'app si chiude all'avvio.
-4. *Project → Export → Android*, sezione **Openiap**: *Android Store* = `play`.
-5. Android: il plugin vuole AGP 8.9.1+, Gradle 8.11.1+, Android SDK 36 e JDK 17. Durante l'export aggiorna il template da solo; se si ferma, il messaggio dice quale versione di Gradle serve.
-6. iOS: se dopo l'export Xcode dice `Library not loaded: @rpath/GodotIap.framework`, dalla cartella del progetto lancia `IOS_EXPORT_DIR=~/Build/OneMoreTap ./addons/godot-iap/scripts/fix_ios_embed.sh` (o la cartella dove hai esportato).
+- **Nell'editor e su desktop** l'Output mostra all'avvio tre righe rosse "No GDExtension library found… godot_iap.gdextension": è normale, il plugin ha codice nativo solo per iOS e Android. Il gioco funziona, con gli acquisti finti.
+- **Android**: il plugin vuole AGP 8.9.1+, Gradle 8.11.1+, Android SDK 36 e JDK 17. Durante l'export aggiorna il template da solo; se si ferma, il messaggio dice quale versione di Gradle serve.
+- **iOS**: se Xcode all'avvio dice `Library not loaded: @rpath/GodotIap.framework`, dalla cartella del progetto lancia `IOS_EXPORT_DIR=~/Build/OneMoreTap ./addons/godot-iap/scripts/fix_ios_embed.sh` (o la cartella dove hai esportato).
+- **Aggiornarlo**: scarica lo zip di una release più nuova da [GitHub](https://github.com/hyodotdev/openiap/releases?q=godot-iap), sostituisci la cartella `addons/godot-iap` e lancia i test (`tests/test_iap_backend.gd` controlla il collegamento).
 
 ### I prodotti
 
@@ -202,7 +201,7 @@ Con un tester di Play o l'account sandbox di Apple, su una build di release:
 - [ ] Build di **release** provata su telefono: compare il consenso, il video "Continua" fa ripartire, l'interstitial compare tra le partite, PRIVACY e CONSENSO si aprono
 - [ ] Keystore Android salvato in un posto sicuro
 - [ ] Versione aumentata
-- [ ] Plugin godot-iap attivo, iOS minimo 17.0, prodotti creati e attivi su entrambi gli store con gli stessi ID
+- [ ] Prodotti creati e attivi su entrambi gli store, con gli stessi ID della tabella del passo 7
 - [ ] Acquisto, ripristino e Rimuovi annunci provati con un account di test
 
 ## Più avanti (facoltativo)
