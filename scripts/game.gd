@@ -1,8 +1,8 @@
 extends Node2D
 ## ONE MORE TAP — game flow: modes, input, states, camera, feedback, saving.
 ## Each mode has its rules (Track, Tower, Runner) and its drawing (WorldView,
-## TowerView, RunnerView); sparks and labels in Fx, UI in Hud, sounds in Sfx,
-## ads in Ads, purchases in Shop, sharing and store reviews in Social.
+## TowerView, RunnerView); sparks and labels in Fx, UI in Hud, sounds in Sfx
+## and Music, ads in Ads, purchases in Shop, sharing and store reviews in Social.
 
 ## AD: a full-screen ad is on top. REVIVE: back in the game after a continue,
 ## waiting for a tap. NO_LIVES: a run was asked for, none left. SHOP: the shop
@@ -49,6 +49,7 @@ var _sharing := false  ## the picture of the run is being drawn
 @onready var views := {"zigzag": $World, "tower": $Tower, "runner": $Runner}
 @onready var fx: Fx = $Fx
 @onready var sfx: Sfx = $Sfx
+@onready var music: Music = $Music
 @onready var hud: Hud = $HUD
 @onready var ads: Ads = $Ads
 @onready var shop: Shop = $Shop
@@ -59,6 +60,7 @@ func _ready() -> void:
 	camera.make_current()
 	_load_save()
 	sfx.muted = muted
+	music.muted = muted
 	hud.set_muted(muted)
 	hud.shop_panel.setup(shop, best)
 	_hue = Catalog.theme_hue(_look("colors"), 0, 1, _now())
@@ -332,6 +334,14 @@ func _set_state(s: State) -> void:
 	# The banner is for the start screen (the mode menu) only.
 	ads.set_banner_visible(state == State.READY)
 	hud.set_banner_height(ads.banner_height())
+	# Full music while a run is on, softer around it, none over an ad.
+	match state:
+		State.PLAYING, State.REVIVE:
+			music.set_mood(Music.Mood.RUN)
+		State.AD:
+			music.set_mood(Music.Mood.AD)
+		_:
+			music.set_mood(Music.Mood.MENU)
 
 
 func _show_lives() -> void:
@@ -585,6 +595,7 @@ func _on_share_pressed() -> void:
 func _on_mute_pressed() -> void:
 	muted = not muted
 	sfx.muted = muted
+	music.muted = muted
 	hud.set_muted(muted)
 	_save()
 

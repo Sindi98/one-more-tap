@@ -82,6 +82,14 @@ Tutti i testi del gioco stanno in `assets/i18n/strings.csv`: una riga per testo,
 - **Aggiungere una lingua**: aggiungi una colonna col codice della lingua (per esempio `es`), poi in *Project → Project Settings → Localization → Translations* aggiungi il file `strings.es.translation` che Godot crea accanto al CSV.
 - **Provare l'altra lingua dall'editor**: *Project Settings → Internationalization → Locale → Test*, scrivi `en` o `it`. Vale solo quando avvii il gioco dall'editor.
 
+## Musica
+
+Un brano in loop, `assets/music/music.mp3`, da [Pixabay Music](https://pixabay.com/music/). Volume pieno durante la partita, più basso nella schermata iniziale e nei pannelli, in pausa durante gli annunci e quando il gioco va in background. Il pulsante SUONO spegne anche la musica. Senza il file il gioco funziona lo stesso, senza musica.
+
+- **Licenza**: [Pixabay Content License](https://pixabay.com/service/license-summary/): gratis anche per uso commerciale e dentro un gioco, senza dover citare l'autore. Non si può rivendere o distribuire il brano da solo.
+- **Cambiarlo**: scarica l'MP3 da Pixabay, chiamalo `music.mp3` e mettilo in `assets/music` al posto del vecchio. Il loop lo imposta il codice; i volumi sono `RUN_DB` e `MENU_DB` in cima a `scripts/music.gd`.
+- **Video promozionali**: alcuni brani di Pixabay sono registrati su Content ID, quindi un trailer su YouTube con la musica del gioco può ricevere una segnalazione di copyright. Si contesta mostrando la licenza Pixabay; nel gioco non succede niente.
+
 ## Condivisione, recensioni, versione web
 
 - **CONDIVIDI** (nel game over): crea un'immagine 1080 px della partita (il percorso, il punto dell'errore, la modalità, il punteggio, il record e "Riesci a battermi?") e apre il menu di condivisione del telefono, con un testo e il link alla pagina del gioco (`SITE_URL` in `scripts/social.gd`, cioè `docs/index.html` pubblicata con GitHub Pages). Su telefono usa il plugin [Share](https://github.com/godot-mobile-plugins/godot-share) v6.0 (`addons/SharePlugin`, iOS 16 o successivo), sul web il menu di condivisione del browser. Dove non si può condividere, il pulsante non compare.
@@ -109,6 +117,7 @@ I due plugin (licenza MIT) sono già nel progetto, con i file nativi per Android
 | `scripts/ui_kit.gd` | Mattoncini comuni della UI: colori, font, scritte, pulsanti, pannelli |
 | `scripts/ball_look.gd` | Disegno degli stili della pallina (scia e pallina), in ZIGZAG, TORRE e nel negozio |
 | `scripts/sfx.gd` | Suoni sintetizzati all'avvio, nessun file audio |
+| `scripts/music.gd` | Musica di sottofondo in loop: piena in partita, più bassa nei menu, in pausa durante gli annunci |
 | `scripts/ads.gd` | Quello che il gioco sa degli annunci: ID, "c'è un video pronto?", interstitial quando è il momento, banner del menu |
 | `scripts/admob_backend.gd` | Unico file che usa il plugin AdMob: consenso, avvio SDK, caricamento e visualizzazione |
 | `scripts/ad_pacing.gd` | Regole pure su quando mostrare un interstitial |
