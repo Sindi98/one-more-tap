@@ -1,44 +1,44 @@
 class_name WorldView
-extends Node2D
-## Draws the playfield in world space: background grid, neon track, ball, trail,
-## particles, floating labels and the "you should have turned here" marker.
+extends ModeView
+## ZIGZAG: draws the playfield in world space: background grid, neon track,
+## ball, trail and the "you should have turned here" marker.
 ## Pure presentation: it reads the Track, never changes it.
 
 const TRAIL_LEN := 20
 const BALL_RADIUS := 7.5  ## px at 390 wide, scaled by track.unit
-const HOT := Color(1.0, 0.3, 0.42)
-const FLOAT_TIME := 0.8
+const BALL_SCREEN_Y := 0.66  ## the ball sits at 66% of the screen height
+const MISS_SCREEN_Y := 0.74  ## after a fall, the missed corner is shown here
 
 var track: Track
-var hue := 188.0
-var view_rect := Rect2()  ## visible world area, set by Main every frame
 
-var _font: Font
 var _ball_offset := Vector2.ZERO  ## visual only: smooths the perfect-turn snap
 var _trail := PackedVector2Array()
-var _particles: Array[Dictionary] = []
-var _floaters: Array[Dictionary] = []
 var _dying := false
 var _death_t := 0.0
 var _fall_pos := Vector2.ZERO
 var _fall_vel := Vector2.ZERO
 
 
-func _ready() -> void:
-	_font = load("res://assets/fonts/Bungee-Regular.ttf")
-	if _font == null:
-		_font = ThemeDB.fallback_font
-
-
-func reset(t: Track) -> void:
-	track = t
+func reset(rules: RunRules) -> void:
+	track = rules as Track
 	_ball_offset = Vector2.ZERO
 	_trail.clear()
-	_particles.clear()
-	_floaters.clear()
 	_dying = false
 	_death_t = 0.0
 	queue_redraw()
+
+
+func camera_target(view: Vector2, after_fall: bool) -> Vector2:
+	# Vertical speed is constant, so following the ball is perfectly smooth.
+	# After a fall: the missed corner, low on screen, below the game over text.
+	var y := track.ball.y - view.y * (BALL_SCREEN_Y - 0.5)
+	if after_fall:
+		y = track.corner.y - view.y * (MISS_SCREEN_Y - 0.5)
+	return Vector2(track.width * 0.5, y)
+
+
+func ball_position() -> Vector2:
+	return track.ball
 
 
 ## The logic snapped the ball onto the centre line: keep the visual where it was
@@ -53,37 +53,15 @@ func start_fall() -> void:
 	_fall_pos = track.ball + _ball_offset
 	var d: Vector2 = Track.DIRS[track.ball_dir]
 	_fall_vel = d * track.speed * 0.35
-	burst(_fall_pos, 28, HOT, 1.5)
+	fx.burst(_fall_pos, 28, HOT, 1.5)
 
 
-## Continue after the video: the ball is back on the track, alive.
 func revive() -> void:
 	_dying = false
 	_death_t = 0.0
 	_ball_offset = Vector2.ZERO
 	_trail.clear()
-	burst(track.ball, 18, Color.from_hsv(hue / 360.0, 0.78, 1.0), 1.2)
-
-
-func burst(at: Vector2, count: int, color: Color, power := 1.0) -> void:
-	var u := track.unit
-	for _i in count:
-		var ang := randf() * TAU
-		var spd := randf_range(40.0, 170.0) * power * u
-		var life := randf_range(0.35, 0.7)
-		var particle := {
-			"p": at,
-			"v": Vector2.from_angle(ang) * spd,
-			"life": life,
-			"max": life,
-			"size": randf_range(1.5, 3.2) * u,
-			"color": color,
-		}
-		_particles.append(particle)
-
-
-func float_text(text: String, at: Vector2, color: Color) -> void:
-	_floaters.append({"text": text, "p": at, "t": 0.0, "color": color})
+	fx.burst(track.ball, 18, Color.from_hsv(hue / 360.0, 0.78, 1.0), 1.2)
 
 
 func tick(delta: float) -> void:
@@ -98,23 +76,6 @@ func tick(delta: float) -> void:
 		_death_t += delta
 		_fall_pos += _fall_vel * delta
 		_fall_vel *= pow(0.1, delta)
-
-	var drag := pow(0.08, delta)
-	for i in range(_particles.size() - 1, -1, -1):
-		var q: Dictionary = _particles[i]
-		q["life"] -= delta
-		if q["life"] <= 0.0:
-			_particles.remove_at(i)
-			continue
-		q["p"] += q["v"] * delta
-		q["v"] *= drag
-
-	for i in range(_floaters.size() - 1, -1, -1):
-		var f: Dictionary = _floaters[i]
-		f["t"] += delta
-		if f["t"] >= FLOAT_TIME:
-			_floaters.remove_at(i)
-
 	queue_redraw()
 
 
@@ -130,8 +91,6 @@ func _draw() -> void:
 	if _dying:
 		_draw_miss_marker()
 	_draw_ball(neon)
-	_draw_particles()
-	_draw_floaters()
 
 
 func _draw_background(bg: Color, neon: Color) -> void:
@@ -266,36 +225,3 @@ func _draw_miss_marker() -> void:
 		]
 	)
 	draw_polyline(head, HOT, 3.0 * u, true)
-
-
-func _draw_particles() -> void:
-	for q in _particles:
-		var k: float = q["life"] / q["max"]
-		var col: Color = q["color"]
-		var size: float = q["size"]
-		draw_circle(q["p"], size * (0.4 + 0.6 * k), Color(col, k))
-
-
-func _draw_floaters() -> void:
-	var size := int(17.0 * track.unit)
-	var margin := 12.0 * track.unit
-	for f in _floaters:
-		var t: float = f["t"] / FLOAT_TIME
-		var col: Color = f["color"]
-		var text: String = f["text"]
-		var at: Vector2 = f["p"]
-		var p := at + Vector2(0.0, -64.0 * track.unit * ease(t, 0.4))
-		# Near a side edge, slide the label inward so it is never cut off.
-		var half := _font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x * 0.5
-		var lo := view_rect.position.x + margin + half
-		var hi := view_rect.end.x - margin - half
-		p.x = clampf(p.x, lo, hi) if lo <= hi else view_rect.get_center().x
-		draw_string(
-			_font,
-			p - Vector2(220.0, 0.0),
-			text,
-			HORIZONTAL_ALIGNMENT_CENTER,
-			440.0,
-			size,
-			Color(col, 1.0 - t)
-		)
