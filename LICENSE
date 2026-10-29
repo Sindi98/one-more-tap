@@ -1,0 +1,29 @@
+One More Tap
+Copyright (c) 2026 [NOME E COGNOME DELLO SVILUPPATORE]. Tutti i diritti riservati.
+All rights reserved.
+
+Il codice, la grafica, i suoni, i testi e le immagini di One More Tap sono
+dell'autore. Non è concessa alcuna licenza di copiarli, modificarli,
+distribuirli o pubblicarli, in tutto o in parte, senza il suo permesso scritto.
+Il gioco si usa secondo i termini d'uso: docs/terms.html.
+
+The code, graphics, sounds, texts and images of One More Tap belong to the
+author. No licence is granted to copy, modify, distribute or publish them, in
+whole or in part, without the author's written permission. The game is used
+under its terms of use: docs/terms.html.
+
+Componenti di terzi / Third-party components
+
+Restano soggetti alle loro licenze / They remain under their own licences:
+
+- Godot Engine: MIT (Expat), https://godotengine.org/license
+- addons/admob: MIT, Poing Studios (addons/admob/LICENSE)
+- addons/godot-iap: MIT, hyo.dev (addons/godot-iap/LICENSE,
+  addons/godot-iap/THIRD_PARTY_NOTICES.md)
+- addons/SharePlugin, addons/InappReviewPlugin, addons/GMPShared, ios/plugins:
+  MIT, Godot Mobile Plugins (LICENSE in each folder)
+- assets/fonts: SIL Open Font License 1.1 (assets/fonts/OFL-*.txt)
+- assets/music: Pixabay Content License (see README.md, "Musica")
+- server: the ws package from npm, MIT
+
+Inside the game, INFO lists them all with their notices and licence texts.

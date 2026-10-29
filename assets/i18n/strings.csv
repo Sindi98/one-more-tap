@@ -49,6 +49,18 @@ SOUND_OFF,SOUND OFF,SUONO OFF
 PRIVACY,PRIVACY,PRIVACY
 CONSENT,CONSENT,CONSENSO
 GET_APP,GET APP,SCARICA
+INFO,INFO,INFO
+TERMS,TERMS,TERMINI
+CONTACT,Contact: %s,Contatti: %s
+CREDITS,CREDITS,CREDITI
+CREDITS_ENGINE,Made with Godot Engine.,Realizzato con Godot Engine.
+CREDITS_FONTS,"Fonts: Bungee and Chakra Petch, under the SIL Open Font License.","Font: Bungee e Chakra Petch, con licenza SIL Open Font License."
+CREDITS_MUSIC,"Music from Pixabay, under the Pixabay Content License: %s.","Musica da Pixabay, con licenza Pixabay Content License: %s."
+LICENSES,LICENSES,LICENZE
+LICENSES_INTRO,"The game is built with software and fonts made by others, who share them under these licenses.","Il gioco è fatto anche con software e font di altri autori, che li condividono con queste licenze."
+LICENSE_OF,License: %s,Licenza: %s
+ENGINE_PARTS,INSIDE GODOT,DENTRO GODOT
+LICENSE_TEXTS,LICENSE TEXTS,TESTI DELLE LICENZE
 STATS_ZIGZAG,%d platforms  ·  %d perfect  ·  best combo %d,%d piattaforme  ·  %d perfetti  ·  combo max %d
 STATS_TOWER,%d holes  ·  %d perfect  ·  best combo %d,%d buchi  ·  %d perfetti  ·  combo max %d
 STATS_RUNNER,%d obstacles  ·  %d jumps,%d ostacoli  ·  %d salti
@@ -111,7 +123,7 @@ TAG_ALL_STYLES,EVERY STYLE,TUTTI GLI STILI
 TAG_FOR_CONTINUE,FOR CONTINUE,PER CONTINUA
 EXTRA_NO_ADS_ABOUT,No ads. CONTINUE uses tokens: the first 10 are free,Niente annunci. CONTINUA usa i gettoni: i primi 10 sono in regalo
 EXTRA_COLLECTION_ABOUT,"Every style, those still to come too, and no ads","Tutti gli stili, anche quelli che verranno, e niente annunci"
-TOKENS_ABOUT,One token is one CONTINUE without a video. You have %d,Un gettone è un CONTINUA senza video. Ne hai %d
+TOKENS_ABOUT,"One token is one CONTINUE without a video, kept on this phone only. You have %d","Un gettone è un CONTINUA senza video, salvato solo su questo telefono. Ne hai %d"
 UNLOCK_AT,%d IN %s,%d IN %s
 UNLOCK_HOW,Score %d in %s to unlock it. Your best: %d,Fai %d punti in %s per sbloccarlo. Il tuo record: %d
 WEARING,IN USE,IN USO

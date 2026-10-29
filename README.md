@@ -1,6 +1,6 @@
 # One More Tap
 
-Gioco arcade verticale a un dito, Godot 4.7 / GDScript. Tre modalità infinite (ZIGZAG, TORRE, DINO), un solo controllo, percorsi generati, game over, record locale per modalità, restart immediato, grafica neon. In più **AIR HOCKEY**, a squadre, con gli amici sulla stessa Wi-Fi o via Internet, in lobby create da uno di loro. In italiano e in inglese. Gratuito con annunci AdMob e acquisti in-app facoltativi (stili, gettoni, niente annunci), pronto per Google Play e App Store, con una versione web senza annunci per itch.io: i passi per pubblicarlo sono in **[PUBBLICAZIONE.md](PUBBLICAZIONE.md)**.
+Gioco arcade verticale a un dito, Godot 4.7 / GDScript. Tre modalità infinite (ZIGZAG, TORRE, DINO), un solo controllo, percorsi generati, game over, record locale per modalità, restart immediato, grafica neon. In più **AIR HOCKEY**, a squadre, con gli amici sulla stessa Wi-Fi o via Internet, in lobby create da uno di loro. In italiano e in inglese. Gratuito con annunci AdMob e acquisti in-app facoltativi (stili, gettoni, niente annunci), pronto per Google Play e App Store, con una versione web senza annunci per itch.io: i passi per pubblicarlo sono in **[PUBBLICAZIONE.md](PUBBLICAZIONE.md)**, gli aspetti legali e burocratici (privacy, termini, licenze, operatore commerciale, tasse) in **[LEGALE.md](LEGALE.md)**.
 
 ## Aprire e giocare
 
@@ -87,7 +87,7 @@ Plugin [AdMob di Poing Studios](https://github.com/poingstudios/godot-admob-plug
 - **Video con premio**: CONTINUA nel game over (quando non hai gettoni) e RICARICA quando le vite sono finite.
 - **Vite** (`scripts/lives.gd`): 5. Ogni partita ne usa una, CONTINUA no. Ne torna una ogni 15 minuti, oppure tutte con un video. Esistono solo dove ci sono gli annunci: su desktop, nei test e per chi ha tolto gli annunci si gioca senza limiti.
 - **Niente annunci** (né banner, né vite) per chi ha comprato Rimuovi annunci o la Collezione completa.
-- **Consenso GDPR** con il modulo di Google (UMP) al primo avvio in UE. I pulsanti PRIVACY e CONSENSO stanno nei menu.
+- **Consenso GDPR** con il modulo di Google (UMP) al primo avvio in UE. I pulsanti INFO (informativa, termini, crediti e licenze) e CONSENSO stanno nei menu.
 - **ID**: finché `LIVE_IDS` in `scripts/ads.gd` è vuoto, e sempre nelle build di debug, il gioco usa gli annunci di prova di Google.
 - **Dove compaiono**: su telefono con il plugin nativo; dall'editor (F5) il plugin mostra annunci finti. Su desktop esportato e nei test headless gli annunci sono spenti e il gioco funziona come prima.
 
@@ -151,7 +151,8 @@ I due plugin (licenza MIT) sono già nel progetto, con i file nativi per Android
 | `scripts/runner_view.gd` | Disegno di DINO: sprite in pixel art (disegnati per questo gioco), terreno, nuvole |
 | `scripts/fx.gd` | Particelle e scritte che volano, per tutte le modalità |
 | `scripts/game.gd` | Flusso: modalità, stati, input, camera, shake, vibrazione, salvataggio, continua, negozio, annunci tra le partite, DINO dopo 3 giorni |
-| `scripts/hud.gd` | UI costruita in codice: punteggio, combo, start con scelta della modalità, game over, pausa, continua, privacy |
+| `scripts/hud.gd` | UI costruita in codice: punteggio, combo, start con scelta della modalità, game over, pausa, continua, INFO e consenso |
+| `scripts/info_panel.gd` | Schermata INFO: versione, titolare e contatti, link a privacy e termini, crediti, licenze di Godot (prese dal motore), dei plugin e dei font |
 | `scripts/shop_panel.gd` | UI del negozio: schede con rarità e prezzo, prova, acquisto, ripristino |
 | `scripts/ui_kit.gd` | Mattoncini comuni della UI: colori, font, scritte, pulsanti, pannelli |
 | `scripts/ball_look.gd` | Disegno degli stili della pallina (scia e pallina), in ZIGZAG, TORRE e nel negozio |
@@ -183,10 +184,12 @@ I due plugin (licenza MIT) sono già nel progetto, con i file nativi per Android
 | `tests/test_review_pacing.gd` | Test headless di quando chiedere una recensione |
 | `tests/test_shop.gd` | Test headless del negozio: catalogo, possesso, gettoni, salvataggio, giorni di fila |
 | `tests/test_iap_backend.gd` | Test headless del collegamento agli store, con un finto plugin (`tests/fake_iap.gd`, `tests/fake_iap_types.gd`) |
+| `tests/test_info.gd` | Test headless di INFO: ogni licenza citata ha il suo testo nel motore, e il motore elenca FreeType, ENet e Mbed TLS |
 | `tools/make_icons.gd` | Rigenera le icone PNG da `assets/icons/*.svg` |
 | `export_presets.cfg` | Preset Android (AAB), iOS e Web |
 | `addons/SharePlugin`, `addons/InappReviewPlugin`, `addons/GMPShared`, `ios/plugins` | Plugin di condivisione e recensione (Android e iOS) |
-| `docs/` | Pagina del gioco e informativa privacy, da pubblicare con GitHub Pages |
+| `docs/` | Pagina del gioco, informativa privacy e termini d'uso, da pubblicare con GitHub Pages |
+| `LICENSE` | Copyright del gioco (tutti i diritti riservati) e componenti di terzi con le loro licenze |
 | `store/` | Testi, screenshot (italiano e inglese) e grafiche per le schede degli store |
 
 Renderer **Compatibility** (OpenGL): massima compatibilità con Android economici. Viewport 720×1280 verticale, si estende sui telefoni più lunghi.
@@ -205,9 +208,10 @@ godot --headless --path . --script res://tests/test_lives.gd
 godot --headless --path . --script res://tests/test_review_pacing.gd
 godot --headless --path . --script res://tests/test_shop.gd
 godot --headless --path . --script res://tests/test_iap_backend.gd
+godot --headless --path . --script res://tests/test_info.gd
 ```
 
-Controllano che un giocatore perfetto sopravviva su 60 percorsi diversi per modalità (in DINO fino alla velocità massima), che gli angoli restino sempre nello schermo, che dopo ogni buco ci sia rampa per reagire (anche nelle catene), che in TORRE e in DINO velocità, tempo per reagire e margine per saltare peggiorino sempre senza mai superare i limiti e senza essere mai più facili di prima, che un giocatore perfetto regga 400 secondi in entrambe, che ogni gruppo di cactus sia superabile con un margine, che "presto/tardi/non saltare" sia corretto, il conteggio dei perfetti e la rampa di difficoltà. Controllano anche che "continua" valga una volta sola, mantenga il punteggio e riparta piano, che gli interstitial rispettino le pause, che le vite si spendano, tornino col tempo senza superare il massimo e non si possano ottenere spostando l'orologio, e che la recensione si chieda solo dopo un record, non nelle prime partite e di rado. Per il negozio: che ogni prodotto abbia un ID valido e un prezzo, che gli stili si sblocchino coi record giusti, che i gettoni non si contino due volte e non vadano sotto zero, che i 10 gettoni in regalo arrivino una volta sola, che il salvataggio ignori dati strani, e che DINO si apra al terzo giorno di fila e non prima. Il collegamento agli store è provato contro un finto plugin: prezzi, acquisto, annullato, errore, pagamento approvato dopo, prodotto già posseduto, ripristino. Per AIR HOCKEY: che le racchette non escano dalla propria metà e non vadano più veloci del limite, che un disco a velocità massima non attraversi mai una racchetta, gol, pali e sponde, il servizio a chi ha subito il gol, la regola dei 7 secondi, che i telefoni ospiti lascino gol e servizi all'host, che gli snapshot arrivino interi e quelli rotti siano ignorati, che il bot pari la maggior parte dei tiri forti ma non tutti, e che due bot finiscano sempre una partita senza far uscire il disco dal tavolo. Per le lobby: squadre bilanciate, posti, cambio squadra, CPU nei posti vuoti, dati strani dalla rete scartati, nomi, indirizzo locale, codici (andata e ritorno, errori di battitura) e annunci in rete. Per il collegamento al relay: intestazione dei pacchetti, messaggi del relay, che l'host ascolti solo i suoi ospiti e gli ospiti solo l'host; con il relay avviato (`npm start` in `server/`) anche una prova vera: lobby, ingresso, pacchetti nei due sensi, codice sbagliato, host che esce. Durano qualche secondo (AIR HOCKEY un po' di più: gioca venti partite tra bot).
+Controllano che un giocatore perfetto sopravviva su 60 percorsi diversi per modalità (in DINO fino alla velocità massima), che gli angoli restino sempre nello schermo, che dopo ogni buco ci sia rampa per reagire (anche nelle catene), che in TORRE e in DINO velocità, tempo per reagire e margine per saltare peggiorino sempre senza mai superare i limiti e senza essere mai più facili di prima, che un giocatore perfetto regga 400 secondi in entrambe, che ogni gruppo di cactus sia superabile con un margine, che "presto/tardi/non saltare" sia corretto, il conteggio dei perfetti e la rampa di difficoltà. Controllano anche che "continua" valga una volta sola, mantenga il punteggio e riparta piano, che gli interstitial rispettino le pause, che le vite si spendano, tornino col tempo senza superare il massimo e non si possano ottenere spostando l'orologio, e che la recensione si chieda solo dopo un record, non nelle prime partite e di rado. Per il negozio: che ogni prodotto abbia un ID valido e un prezzo, che gli stili si sblocchino coi record giusti, che i gettoni non si contino due volte e non vadano sotto zero, che i 10 gettoni in regalo arrivino una volta sola, che il salvataggio ignori dati strani, e che DINO si apra al terzo giorno di fila e non prima. Il collegamento agli store è provato contro un finto plugin: prezzi, acquisto, annullato, errore, pagamento approvato dopo, prodotto già posseduto, ripristino. Per AIR HOCKEY: che le racchette non escano dalla propria metà e non vadano più veloci del limite, che un disco a velocità massima non attraversi mai una racchetta, gol, pali e sponde, il servizio a chi ha subito il gol, la regola dei 7 secondi, che i telefoni ospiti lascino gol e servizi all'host, che gli snapshot arrivino interi e quelli rotti siano ignorati, che il bot pari la maggior parte dei tiri forti ma non tutti, e che due bot finiscano sempre una partita senza far uscire il disco dal tavolo. Per le lobby: squadre bilanciate, posti, cambio squadra, CPU nei posti vuoti, dati strani dalla rete scartati, nomi, indirizzo locale, codici (andata e ritorno, errori di battitura) e annunci in rete. Per INFO: che il testo di ogni licenza citata sia nel motore e che il motore elenchi FreeType, ENet e Mbed TLS, i cui avvisi vanno mostrati. Per il collegamento al relay: intestazione dei pacchetti, messaggi del relay, che l'host ascolti solo i suoi ospiti e gli ospiti solo l'host; con il relay avviato (`npm start` in `server/`) anche una prova vera: lobby, ingresso, pacchetti nei due sensi, codice sbagliato, host che esce. Durano qualche secondo (AIR HOCKEY un po' di più: gioca venti partite tra bot).
 
 Il relay ha i suoi test, in Node.js: `npm test` in `server/` (stanze, codici, inoltro, rifiuti, limiti).
 
@@ -226,4 +230,4 @@ Prova veloce su Android: template di export, JDK 17 e Android SDK installati, *P
 5. AIR HOCKEY con due o più telefoni veri, in Wi-Fi e online: tarare in cima a `hockey.gd` dimensioni, attrito e bot (`BOT_SPEED`, `BOT_STRIKE`, `BOT_THINK`, `BOT_EYES`).
 6. Mettere online il relay e scriverne l'indirizzo in `RELAY_URL` ([server/README.md](server/README.md)).
 
-Font: Bungee e Chakra Petch, licenza SIL Open Font License (file in `assets/fonts`). Musica: brani di Pixabay, licenza Pixabay Content License (elenco in [Musica](#musica)).
+Font: Bungee e Chakra Petch, licenza SIL Open Font License (file in `assets/fonts`). Musica: brani di Pixabay, licenza Pixabay Content License (elenco in [Musica](#musica)). Nel gioco, INFO mostra crediti e licenze di tutto (motore, plugin, font): aggiungendo qualcosa di terzi, aggiungilo in `NOTICES` in `scripts/info_panel.gd`.

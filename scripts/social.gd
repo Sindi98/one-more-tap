@@ -9,6 +9,8 @@ extends Node
 
 ## Where a shared score leads: the page with the store links and the web version.
 const SITE_URL := "https://sindi98.github.io/one-more-tap/"
+## The terms of use, next to it (INFO links them; the privacy policy is in Ads).
+const TERMS_URL := SITE_URL + "terms.html"
 const SHARE_FILE := "share.png"  ## in the app's data folder, which the share plugin may read
 
 var _share: Object  ## SharePlugin singleton, phone builds only
@@ -68,6 +70,10 @@ func share(image: Image, text: String) -> void:
 ## The page with the store links (the web version's way to the app).
 func open_site() -> void:
 	OS.shell_open(SITE_URL)
+
+
+func open_terms() -> void:
+	OS.shell_open(TERMS_URL)
 
 
 func can_review() -> bool:

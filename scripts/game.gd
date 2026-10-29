@@ -9,7 +9,9 @@ extends Node2D
 ## waiting for a tap. NO_LIVES: a run was asked for, none left. SHOP: the shop
 ## is open, from the start screen or the game over panel. HOCKEY: AIR HOCKEY
 ## is open, its lobbies or a match: HockeyGame has the screen and the input.
-enum State { READY, PLAYING, DYING, OVER, PAUSED, AD, REVIVE, NO_LIVES, SHOP, HOCKEY }
+## INFO: privacy, terms, credits and licenses, from the start, game over or
+## pause panel.
+enum State { READY, PLAYING, DYING, OVER, PAUSED, AD, REVIVE, NO_LIVES, SHOP, HOCKEY, INFO }
 
 ## Per mode: points between colour changes, the score that makes a run worth
 ## a "continue" video, and the playlist (see Music).
@@ -45,6 +47,7 @@ var _cam := Vector2.ZERO
 var _hue := 0.0
 var _preview := {}  ## kind -> look picked in the shop, shown until it closes
 var _shop_from := State.READY  ## where the shop was opened, to go back there
+var _info_from := State.READY  ## the same for INFO
 var _sharing := false  ## the picture of the run is being drawn
 
 @onready var camera: Camera2D = $Camera2D
@@ -79,7 +82,10 @@ func _ready() -> void:
 	hud.mode_pressed.connect(_on_mode_pressed)
 	hud.menu_pressed.connect(_on_menu_pressed)
 	hud.refill_pressed.connect(_on_refill_pressed)
-	hud.privacy_pressed.connect(ads.open_privacy_policy)
+	hud.info_pressed.connect(_on_info_pressed)
+	hud.info_panel.closed.connect(_on_info_closed)
+	hud.info_panel.privacy_pressed.connect(ads.open_privacy_policy)
+	hud.info_panel.terms_pressed.connect(social.open_terms)
 	hud.consent_pressed.connect(ads.show_consent_options)
 	hud.share_pressed.connect(_on_share_pressed)
 	hud.app_pressed.connect(social.open_site)
@@ -572,6 +578,31 @@ func _on_shop_finished(id: String, outcome: String) -> void:
 			_save()
 	if state == State.SHOP:
 		hud.shop_panel.show_result(id, outcome)
+
+
+# --- info ------------------------------------------------------------------
+
+
+func _on_info_pressed() -> void:
+	if state not in [State.READY, State.OVER, State.PAUSED]:
+		return
+	_info_from = state
+	_set_state(State.INFO)
+	hud.show_overlay(hud.info_panel)
+
+
+func _on_info_closed() -> void:
+	if state != State.INFO:
+		return
+	match _info_from:
+		State.OVER:
+			_show_over_panel()
+		State.PAUSED:
+			_set_state(State.PAUSED)
+			hud.show_pause()
+		_:
+			_set_state(State.READY)
+			hud.show_start(best[mode])
 
 
 # --- air hockey ------------------------------------------------------------

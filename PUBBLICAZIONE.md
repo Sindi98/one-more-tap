@@ -1,6 +1,6 @@
 # Pubblicare One More Tap su Google Play, App Store e itch.io
 
-Il codice è pronto. Quello che resta sono account, chiavi e moduli che solo tu puoi compilare. Segui i passi in ordine: ognuno dice dove cliccare e cosa scrivere.
+Il codice è pronto. Quello che resta sono account, chiavi e moduli che solo tu puoi compilare. Segui i passi in ordine: ognuno dice dove cliccare e cosa scrivere. Gli aspetti legali e burocratici (i tuoi dati nei documenti, operatore commerciale, tasse, marchio) sono in **[LEGALE.md](LEGALE.md)**: leggilo prima del passo 2.
 
 ## Cosa c'è già nel progetto
 
@@ -15,7 +15,9 @@ Il codice è pronto. Quello che resta sono account, chiavi e moduli che solo tu 
 | AIR HOCKEY via Internet: il relay da mettere online (passo 10) | `server/`, `scripts/relay_peer.gd` |
 | Preset di export Android (AAB firmato), iOS (progetto Xcode) e Web (itch.io) | `export_presets.cfg` |
 | Icone (iOS 1024, Android adattiva e monocromatica) | `assets/icons/` (le rigeneri con `tools/make_icons.gd`) |
-| Pagina del gioco (dove porta il link condiviso) e informativa privacy (IT + EN), da pubblicare online | `docs/index.html`, `docs/privacy.html` |
+| Pagina del gioco (dove porta il link condiviso), informativa privacy e termini d'uso (IT + EN), da pubblicare online | `docs/index.html`, `docs/privacy.html`, `docs/terms.html` |
+| Schermata INFO nel gioco: privacy, termini, contatti, crediti e licenze di terzi | `scripts/info_panel.gd` |
+| Aspetti legali e burocrazia, con il registro dei trattamenti | `LEGALE.md` |
 | Testi, screenshot, icona 512 e grafica 1024×500 per gli store, in italiano e inglese | `store/` |
 
 Finché non inserisci i tuoi ID, il gioco mostra **annunci di prova di Google**. Nelle build di debug li mostra sempre, anche dopo. È voluto: toccare i tuoi annunci veri può far sospendere l'account AdMob.
@@ -27,7 +29,7 @@ Finché non inserisci i tuoi ID, il gioco mostra **annunci di prova di Google**.
 - **Vite**: 5, una per partita; ne torna una ogni 15 minuti. Quando finiscono, il pulsante RICARICA mostra un video con premio che le ridà tutte.
 - **Banner**: solo nella schermata iniziale, dove si sceglie la modalità. Sta lungo il bordo in basso, con uno spazio tra lui e i pulsanti: in un gioco a un dito un banner vicino ai controlli prende tocchi per sbaglio, e le regole di AdMob li vietano. Durante la partita e negli altri pannelli è nascosto.
 - **Mai durante una partita.**
-- **Consenso**: al primo avvio, in UE, Regno Unito e Svizzera, compare il modulo di Google. Il pulsante CONSENSO nei menu lo riapre (è obbligatorio). PRIVACY apre l'informativa.
+- **Consenso**: al primo avvio, in UE, Regno Unito e Svizzera, compare il modulo di Google. Il pulsante CONSENSO nei menu lo riapre (è obbligatorio). INFO, accanto, porta all'informativa e ai termini.
 - **Dal editor (F5)** vedi annunci finti disegnati dal plugin, così puoi provare tutto il giro senza telefono.
 - **Rimuovi annunci** (o la Collezione completa): niente più annunci né banner, e dall'avvio dopo l'SDK di Google non parte nemmeno. Niente vite, si gioca senza limiti. CONTINUA usa i gettoni.
 
@@ -42,14 +44,14 @@ Nei preset è impostato `com.sindi98.onemoretap`. Dopo la prima pubblicazione **
 - Android → *Package → Unique Name*
 - iOS → *Application → Bundle Identifier*
 
-## 2. Informativa privacy e pagina del gioco online
+## 2. Informativa privacy, termini e pagina del gioco online
 
-Entrambi gli store chiedono l'informativa, e il gioco la apre dal pulsante PRIVACY. La pagina `index.html` è quella del gioco: ci arriva chi riceve un punteggio condiviso, e ci porta il pulsante SCARICA della versione web.
+Entrambi gli store chiedono l'informativa, e il gioco la apre da INFO → PRIVACY, accanto ai termini d'uso (INFO → TERMINI). La pagina `index.html` è quella del gioco: ci arriva chi riceve un punteggio condiviso, ci porta il pulsante SCARICA della versione web, e fa da URL di supporto per gli store.
 
-1. Apri `docs/privacy.html` e `docs/index.html` e sostituisci `[NOME E COGNOME DELLO SVILUPPATORE]`, `[DEVELOPER FULL NAME]`, `[EMAIL DI CONTATTO]` e `[CONTACT EMAIL]`. Ti consiglio un indirizzo dedicato al gioco. È un modello: se hai dubbi legali, fallo controllare.
-2. Su GitHub: *Settings → Pages → Build and deployment → Deploy from a branch → `master` / `/docs`*. Dopo un minuto le pagine sono su `https://sindi98.github.io/one-more-tap/` e `https://sindi98.github.io/one-more-tap/privacy.html`.
-   - Con un repository privato, GitHub Pages richiede un piano a pagamento. In alternativa carica i due file su un altro hosting.
-3. Se l'indirizzo è diverso, aggiorna `PRIVACY_URL` in `scripts/ads.gd` e `SITE_URL` in `scripts/social.gd`.
+1. Inserisci i tuoi dati (nome, indirizzo, email, partita IVA se ce l'hai, fornitore del relay) in `docs/privacy.html`, `docs/terms.html`, `docs/index.html`, `scripts/info_panel.gd` e `LICENSE`: l'elenco dei segnaposto e il comando per trovare quelli rimasti sono in [LEGALE.md](LEGALE.md#1-i-dati-da-inserire). Ti consiglio un indirizzo email dedicato al gioco. Sono modelli: se hai dubbi legali, falli controllare.
+2. Su GitHub: *Settings → Pages → Build and deployment → Deploy from a branch → `master` / `/docs`*. Dopo un minuto le pagine sono su `https://sindi98.github.io/one-more-tap/`, `https://sindi98.github.io/one-more-tap/privacy.html` e `https://sindi98.github.io/one-more-tap/terms.html`.
+   - Con un repository privato, GitHub Pages richiede un piano a pagamento. In alternativa carica i file su un altro hosting.
+3. Se l'indirizzo è diverso, aggiorna `PRIVACY_URL` in `scripts/ads.gd` e `SITE_URL` in `scripts/social.gd` (i termini sono `terms.html` accanto a `SITE_URL`).
 4. Finché l'app non è sugli store, la pagina del gioco dice "In arrivo su Google Play e App Store". I link li aggiungi dopo la pubblicazione (passo 9).
 
 ## 3. AdMob
@@ -102,6 +104,7 @@ In *Project → Export → Android → Keystore → Release* inserisci file, ali
    - **ID pubblicità**: Sì, lo usa (AdMob), per Pubblicità, Analisi e Prevenzione frodi. Il permesso `AD_ID` lo aggiunge già l'SDK.
    - **Classificazione dei contenuti**: questionario IARC, categoria Gioco. Nessuna violenza. Interazione tra utenti: **sì**, solo in AIR HOCKEY, tra telefoni sulla stessa Wi-Fi o, online, tra chi ha il codice della lobby: si vedono i nomi scelti dai giocatori, non c'è chat né scambio di contenuti, e non si incontrano sconosciuti (le lobby online non sono elencate). Acquisti digitali: **sì**; oggetti casuali a pagamento (loot box): **no**.
    - **Pubblico di destinazione**: scegli solo fasce **13 anni e oltre**. Se includi i minori di 13 anni si applicano le norme Famiglie, con regole molto più rigide sugli annunci.
+   - **Stato di operatore commerciale** (Digital Services Act), nelle impostazioni dell'account sviluppatore: vedi [LEGALE.md](LEGALE.md#5-digital-services-act-sei-un-operatore-commerciale).
    - **Sicurezza dei dati**: dichiara quello che raccoglie l'SDK di Google, come indicato in [questa pagina di Google](https://developers.google.com/admob/android/privacy/play-data-disclosure). In pratica: dati raccolti e condivisi, cifrati in transito. Tipi: *Posizione approssimativa* (dall'IP), *ID dispositivo o altri ID*, *Attività nell'app* (interazioni), *Informazioni e prestazioni dell'app* (arresti anomali, diagnostica). Finalità: pubblicità o marketing, analisi, prevenzione delle frodi. Il gioco non ha account, quindi non c'è un meccanismo di cancellazione dati. Il nome scelto in AIR HOCKEY passa solo agli altri telefoni della lobby: in Wi-Fi direttamente; online attraverso il tuo relay (passo 10), che lo inoltra senza salvarlo, come l'indirizzo IP del telefono. Se pubblichi il relay, dichiara il nome come *Informazioni personali → Nome* (o *Altri dati*, se lo consideri un soprannome), facoltativo, usato per la funzionalità dell'app, **trattato in modo temporaneo** e non condiviso con terze parti; cifrato in transito (`wss://`). Senza relay, in Wi-Fi soltanto, di solito non va dichiarato.
 5. *Scheda dello store principale*: testi in `store/scheda_store.md`, icona `store/icon_512.png`, grafica `store/feature_graphic_1024x500.png`, screenshot `store/screenshots/android/`.
    - Poi *Gestisci traduzioni → Aggiungi traduzioni → Inglese (Stati Uniti)* (e, se vuoi, Inglese (Regno Unito)): testi inglesi dalla stessa scheda, grafica `store/feature_graphic_1024x500_en.png`, screenshot `store/screenshots/android_en/`.
@@ -132,9 +135,11 @@ In *Project → Export → Android → Keystore → Release* inserisci file, ali
 ### App Store Connect
 
 - **Privacy dell'app** ("etichette nutrizionali"): dichiara i dati dell'SDK di Google, come da [questa pagina](https://developers.google.com/admob/ios/privacy/data-disclosure): *Posizione approssimativa*, *ID dispositivo*, *Dati pubblicitari*, *Interazione con il prodotto*, *Dati sugli arresti anomali*, *Dati sulle prestazioni*, *Altri dati diagnostici*. Finalità: pubblicità di terze parti e analisi; non collegati all'identità. Questa versione **non** mostra la richiesta di tracciamento di Apple (ATT), quindi l'SDK non accede all'IDFA. Se marchi dei dati come "usati per il tracciamento", Apple pretende il popup ATT (vedi "Più avanti").
-- Il nome di AIR HOCKEY va solo agli altri telefoni della lobby (online passando dal tuo relay, senza essere salvato): vale quanto detto per Google Play. Con il relay pubblicato, dichiaralo come dato *non collegato all'identità*, usato per la *Funzionalità dell'app*, non per il tracciamento.
+- Il nome di AIR HOCKEY va solo agli altri telefoni della lobby (online passando dal tuo relay, senza essere salvato): vale quanto detto per Google Play. Con il relay pubblicato, dichiaralo come *Contenuti di gioco*, *non collegato all'identità*, usato per la *Funzionalità dell'app*, non per il tracciamento.
+- **Digital Services Act**: nella sezione *Business* dichiara se sei un operatore commerciale; senza questa dichiarazione l'app non viene distribuita in UE. Indirizzo, telefono ed email diventano pubblici: vedi [LEGALE.md](LEGALE.md#5-digital-services-act-sei-un-operatore-commerciale).
+- **Contratto di licenza**: lascia quello standard di Apple; i termini d'uso del gioco si aggiungono a quello.
 - **URL informativa privacy** e **URL di supporto** (la pagina `index.html`).
-- **Classificazione per età**: compila il questionario. Il gioco non ha contenuti sensibili, ma gli annunci di terzi possono alzare la fascia: rispondi in modo coerente. Nel codice gli annunci sono limitati a contenuti per tutti con supervisione (`MAX_AD_CONTENT_RATING_PG`).
+- **Classificazione per età**: compila il questionario (dal 2025 con le fasce 4+, 9+, 13+, 16+, 18+ e domande nuove: le risposte sono in [LEGALE.md](LEGALE.md#7-i-moduli-legali-degli-store-in-breve)). Il gioco non ha contenuti sensibili, ma gli annunci di terzi possono alzare la fascia: rispondi in modo coerente. Nel codice gli annunci sono limitati a contenuti per tutti con supervisione (`MAX_AD_CONTENT_RATING_PG`).
 - **Crittografia**: già dichiarata nel preset (`ITSAppUsesNonExemptEncryption = NO`), Xcode non chiede nulla.
 - **Screenshot**: `store/screenshots/iphone/` (6,9", 1320×2868). L'app è solo per iPhone, quindi non servono quelli per iPad.
 - **Inglese**: in alto a destra nella pagina della versione, *Italiano → Aggiungi lingua → Inglese (USA)*, poi i testi inglesi della scheda e gli screenshot `store/screenshots/iphone_en/`.
@@ -190,7 +195,7 @@ Gli ID non si possono più riusare dopo averli creati, nemmeno cancellando il pr
 
 ### App Store
 
-1. *Accordi, imposte e banche*: firma l'accordo **App a pagamento**, inserisci conto bancario e moduli fiscali. Senza, i prodotti restano "in attesa".
+1. *Business* (un tempo *Accordi, imposte e banche*): firma l'accordo **App a pagamento**, inserisci conto bancario e moduli fiscali (il W-8BEN, vedi [LEGALE.md](LEGALE.md#6-tasse)). Senza, i prodotti restano "in attesa".
 2. *App → Monetizzazione → Acquisti in-app → +*, per ogni riga della tabella: tipo (Consumabile o Non consumabile), nome di riferimento, ID prodotto, fascia di prezzo, nome e descrizione in italiano (e inglese), **screenshot per la revisione** (uno del negozio con quella scheda scelta, dall'editor va benissimo) e una nota se serve.
 3. Al primo invio, nella pagina della versione, sezione *Acquisti in-app e abbonamenti*, seleziona tutti i prodotti: vengono rivisti insieme alla build.
 4. *Utenti e accesso → Sandbox → Tester*: crea un account di prova. Su iPhone, *Impostazioni → App Store → Account sandbox*, accedi con quello e compra senza pagare.
@@ -243,7 +248,7 @@ AIR HOCKEY in Wi-Fi funziona senza fare niente. Per giocare **via Internet** ser
 1. Mettilo online, per esempio su Render: i passi sono in [server/README.md](server/README.md#metterlo-online). Aprendo l'indirizzo nel browser deve comparire `One More Tap relay: ok`.
 2. In `scripts/net.gd` scrivi l'indirizzo in `RELAY_URL`, con `wss://`: per esempio `const RELAY_URL := "wss://omt-relay.onrender.com"`.
 3. Prova con due telefoni su reti diverse (uno in Wi-Fi, uno col 4G): LOBBY ONLINE su uno, il codice in ENTRA sull'altro.
-4. Aggiorna l'informativa privacy (`docs/privacy.html` lo dice già) e le dichiarazioni sui dati degli store (passi 4 e 5): online il nome e l'indirizzo IP passano dal tuo server.
+4. Nell'informativa privacy (`docs/privacy.html`, che descrive già il relay) scrivi chi ospita il server al posto di `[FORNITORE DEL SERVER, PAESE]`, accetta l'accordo sul trattamento dei dati del fornitore ([LEGALE.md](LEGALE.md#3-privacy-cosa-fare-fuori-dal-codice), punto 5) e aggiorna le dichiarazioni sui dati degli store (passi 4 e 5): online il nome e l'indirizzo IP passano dal tuo server.
 5. Se cambi qualcosa nel modo in cui gioco e relay si parlano, aumenta `PROTOCOL` in `server/relay.mjs` e in `scripts/relay_peer.gd`, e aggiorna prima il server.
 
 Con il piano gratuito di Render il server si addormenta dopo un po' senza traffico: la prima lobby online dopo una pausa può metterci un minuto (o fallire e riuscire al secondo tentativo). Per il gioco pubblicato conviene un piano sempre acceso.
@@ -252,8 +257,11 @@ Con il piano gratuito di Render il server si addormenta dopo un po' senza traffi
 
 - [ ] ID app AdMob nelle Project Settings, ID unità in `LIVE_IDS`
 - [ ] Messaggio GDPR pubblicato in AdMob
-- [ ] Informativa online con i tuoi dati, `PRIVACY_URL` corretto
-- [ ] Build di **release** provata su telefono: compare il consenso, il video "Continua" fa ripartire, l'interstitial compare a fine partita, il banner c'è solo nel menu, RICARICA ridà le vite, PRIVACY e CONSENSO si aprono, CONDIVIDI apre il menu di condivisione con l'immagine della partita
+- [ ] Informativa, termini e pagina del gioco online con i tuoi dati, `PRIVACY_URL` corretto, nessun segnaposto rimasto (comando in [LEGALE.md](LEGALE.md#1-i-dati-da-inserire))
+- [ ] Nome ed email in `scripts/info_panel.gd`: INFO li mostra nel gioco
+- [ ] Stato di operatore commerciale dichiarato su Play Console e App Store Connect
+- [ ] Informazioni fiscali (W-8BEN) in AdMob, Play Console e App Store Connect; partita IVA decisa con il commercialista
+- [ ] Build di **release** provata su telefono: compare il consenso, il video "Continua" fa ripartire, l'interstitial compare a fine partita, il banner c'è solo nel menu, RICARICA ridà le vite, INFO si apre (con PRIVACY e TERMINI che aprono le pagine, e le licenze che scorrono), CONSENSO si apre, CONDIVIDI apre il menu di condivisione con l'immagine della partita
 - [ ] Gioco provato con il telefono in inglese (testi inglesi) e in italiano
 - [ ] AIR HOCKEY provato con almeno due telefoni sulla stessa Wi-Fi: la lobby compare nell'elenco (su Android), si entra col codice, 2 contro 2 con la CPU nei posti vuoti, rivincita, e chi esce viene sostituito dalla CPU
 - [ ] Se c'è il relay: `RELAY_URL` impostato con `wss://`, e una partita online provata tra due telefoni su reti diverse

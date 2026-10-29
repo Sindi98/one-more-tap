@@ -2,13 +2,14 @@ class_name Hud
 extends CanvasLayer
 ## On-screen UI, built in code: score, combo, start / game over / pause / continue
 ## / no lives panels, the mode picker, the lives, the shop, the AIR HOCKEY
-## lobbies, the sound toggle, the share button, the privacy links and, on the
-## web version, the link to the app. Panels never block taps; only the buttons do.
+## lobbies, the sound toggle, the share button, INFO (privacy, terms, credits,
+## licenses), the ad consent and, on the web version, the link to the app.
+## Panels never block taps; only the buttons do.
 
 signal retry_pressed
 signal continue_pressed
 signal mute_pressed
-signal privacy_pressed
+signal info_pressed  ## INFO in the corner: privacy, terms, credits and licenses
 signal consent_pressed
 signal mode_pressed(mode: String)
 signal menu_pressed  ## back to the start screen, to pick another mode
@@ -57,6 +58,7 @@ const REASONS := {
 
 var shop_panel: ShopPanel  ## Main listens to it and fills it
 var lobby_panel: LobbyPanel  ## HockeyGame listens to it and fills it
+var info_panel: InfoPanel  ## Main listens to it
 
 var _display: Font
 var _body: Font
@@ -112,7 +114,7 @@ var _no_lives_box: VBoxContainer
 var _refill: Button
 var _refill_hint: Label
 var _no_lives_menu_row: HBoxContainer
-var _privacy: Button
+var _info: Button
 var _consent: Button
 var _consent_available := false
 var _app: Button
@@ -141,8 +143,10 @@ func _ready() -> void:
 	_root.add_child(shop_panel)
 	lobby_panel = LobbyPanel.new()
 	_root.add_child(lobby_panel)
+	info_panel = InfoPanel.new()
+	_root.add_child(info_panel)
 	_build_mute()
-	_build_privacy()
+	_build_corner()
 	_card = ShareCard.new(_display, _body, _body_bold)
 	add_child(_card)
 	_apply_safe_area()
@@ -168,6 +172,7 @@ func show_playing() -> void:
 
 func show_pause() -> void:
 	_set_panel(_pause)
+	_top.visible = true  # back from INFO, which hid the score
 
 
 ## After a rewarded video: the ball is back, waiting for a tap.
@@ -203,8 +208,8 @@ func set_banner_height(height: float) -> void:
 	_apply_safe_area()
 
 
-## A screen of its own on top of the game: the shop or the AIR HOCKEY
-## lobbies. null: a full-screen ad is on top, nothing of ours should show or
+## A screen of its own on top of the game: the shop, the AIR HOCKEY lobbies or
+## INFO. null: a full-screen ad is on top, nothing of ours should show or
 ## take taps.
 func show_overlay(panel: Control) -> void:
 	_set_panel(panel)
@@ -336,7 +341,7 @@ func _show_notice(text: String) -> void:
 
 func set_consent_available(available: bool) -> void:
 	_consent_available = available
-	_consent.visible = available and _privacy.visible
+	_consent.visible = available and _info.visible
 
 
 ## A picture of the run on the game over panel: the world around `center`
@@ -374,6 +379,7 @@ func set_hue(hue: float) -> void:
 		v.queue_redraw()
 	shop_panel.set_neon(_neon)
 	lobby_panel.set_neon(_neon)
+	info_panel.set_neon(_neon)
 
 
 # --- building --------------------------------------------------------------
@@ -602,11 +608,11 @@ func _build_mute() -> void:
 	_mute.set_anchors_preset(Control.PRESET_TOP_RIGHT)
 
 
-## Privacy policy link (required by both stores), for players in the EEA/UK the
-## ad consent form and, on the web version, the way to the app. Shown on the
-## menus only, never during a run.
-func _build_privacy() -> void:
-	_privacy = _small_button(tr("PRIVACY"), func() -> void: privacy_pressed.emit())
+## INFO (the privacy policy both stores require, the terms, the credits and
+## the licenses), for players in the EEA/UK the ad consent form and, on the web
+## version, the way to the app. Shown on the menus only, never during a run.
+func _build_corner() -> void:
+	_info = _small_button(tr("INFO"), func() -> void: info_pressed.emit())
 	_consent = _small_button(tr("CONSENT"), func() -> void: consent_pressed.emit())
 	_consent.visible = false
 	_app = _small_button(tr("GET_APP"), func() -> void: app_pressed.emit())
@@ -631,6 +637,9 @@ func _apply_safe_area() -> void:
 	_place_bottom(_no_lives_menu_row, 44.0 + inset.w)
 	_place_bottom(shop_panel.bottom, 44.0 + inset.w)
 	_place_bottom(lobby_panel.bottom, 44.0 + inset.w)
+	# INFO fills the screen down to its back button, level with the shop's.
+	info_panel.box.offset_top = 96.0 + inset.y
+	info_panel.box.offset_bottom = -44.0 - inset.w
 	var w := 190.0
 	var h := 60.0
 	_mute.offset_right = -20.0 - inset.x
@@ -639,7 +648,7 @@ func _apply_safe_area() -> void:
 	_mute.offset_bottom = _mute.offset_top + h
 	# The consent form (ads) and the app link (web version) never show together;
 	# the way out of a hockey match shows alone.
-	for slot in [[_privacy, 0], [_consent, 1], [_app, 1], [lobby_panel.exit, 0]]:
+	for slot in [[_info, 0], [_consent, 1], [_app, 1], [lobby_panel.exit, 0]]:
 		var b: Button = slot[0]
 		b.offset_left = 20.0 + inset.z + slot[1] * (w + 12.0)
 		b.offset_right = b.offset_left + w
@@ -679,11 +688,11 @@ func _safe_insets() -> Vector4:
 
 
 func _set_panel(panel: Control) -> void:
-	for p in [_start, _over, _pause, _revive, _no_lives, shop_panel, lobby_panel]:
+	for p in [_start, _over, _pause, _revive, _no_lives, shop_panel, lobby_panel, info_panel]:
 		p.visible = p == panel
-	_privacy.visible = panel == _start or panel == _over or panel == _pause
-	_consent.visible = _consent_available and _privacy.visible
-	_app.visible = OS.has_feature("web") and _privacy.visible  # the web version leads to the app
+	_info.visible = panel == _start or panel == _over or panel == _pause
+	_consent.visible = _consent_available and _info.visible
+	_app.visible = OS.has_feature("web") and _info.visible  # the web version leads to the app
 
 
 # --- helpers ---------------------------------------------------------------
