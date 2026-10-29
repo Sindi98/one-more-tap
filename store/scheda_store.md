@@ -100,4 +100,4 @@ Note: the game's interface is in Italian.
 - **Acquisti in-app**: No
 - **Sito web / email di supporto**: `https://sindi98.github.io/one-more-tap/` · [EMAIL DI CONTATTO]
 - **Informativa privacy**: `https://sindi98.github.io/one-more-tap/privacy.html`
-- **Note per la revisione Apple**: "Free arcade game with AdMob ads. Interstitials appear only between runs (at most every 3 runs and 90 seconds). An optional rewarded video lets the player continue a run once. No login required."
+- **Note per la revisione Apple**: "Free arcade game with AdMob ads. Ads never appear during play. Interstitials appear only when a run has ended (at most every 3 runs and 90 seconds); a banner shows on the mode selection screen only. Each run costs one of 5 lives, which come back over time or all at once with an optional rewarded video; another optional rewarded video lets the player continue a run once. No login required."

@@ -3,8 +3,8 @@ extends RefCounted
 ## When to show a full-screen ad between runs. Pure logic: the caller passes
 ## the clock, so it is testable headless.
 ##
-## An interstitial only ever appears on "retry", never during a run, and at most
-## once every few runs and every few minutes. A rewarded ad the player chose to
+## An interstitial only ever appears right after a run has ended, never during
+## one, and at most once every few runs and every few minutes. A rewarded ad the player chose to
 ## watch counts as an ad too, so the two never come back to back.
 
 const RUNS_BETWEEN := 3  ## runs finished before the next interstitial

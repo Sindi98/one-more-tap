@@ -1,8 +1,8 @@
 class_name Hud
 extends CanvasLayer
 ## On-screen UI, built in code: score, combo, start / game over / pause / continue
-## panels, the mode picker, the sound toggle and the privacy links. Panels never
-## block taps; only the buttons do.
+## / no lives panels, the mode picker, the lives, the sound toggle and the
+## privacy links. Panels never block taps; only the buttons do.
 
 signal retry_pressed
 signal continue_pressed
@@ -11,6 +11,7 @@ signal privacy_pressed
 signal consent_pressed
 signal mode_pressed(mode: String)
 signal menu_pressed  ## back to the start screen, to pick another mode
+signal refill_pressed  ## out of lives: watch a video to get them all back
 
 const INK := Color("eef2ff")
 const MUTED := Color("8a90b8")
@@ -19,6 +20,7 @@ const SHADE := Color("06060c")
 const BUTTON_W := 380.0
 const BUTTON_PAIR_W := 310.0  ## CONTINUA and RIPROVA side by side
 const MODE_BUTTON_W := 206.0
+const BANNER_GAP := 24.0  ## between the banner and the buttons above it: no accidental taps
 
 ## Game modes, in the order of the picker.
 const MODE_NAMES := {"zigzag": "ZIGZAG", "tower": "TORRE", "runner": "DINO"}
@@ -69,6 +71,7 @@ var _last_hue := -1000.0
 var _neon_labels: Array[Label] = []  ## labels whose colour follows the theme
 var _mode := "zigzag"
 var _digits := 0  ## scores are padded with zeros to this many digits
+var _banner_h := 0.0  ## height of the ad banner along the bottom edge, 0 if none
 
 var _root: Control
 var _top: VBoxContainer
@@ -83,6 +86,7 @@ var _start_rules: Label
 var _prompt: Label
 var _modes: HBoxContainer
 var _mode_buttons := {}  ## mode -> Button
+var _lives_views: Array[LivesView] = []  ## start, game over and no lives panels
 var _over: Control
 var _over_box: VBoxContainer
 var _reason: Label
@@ -100,6 +104,11 @@ var _pause: Control
 var _pause_box: VBoxContainer
 var _revive: Control
 var _revive_box: VBoxContainer
+var _no_lives: Control
+var _no_lives_box: VBoxContainer
+var _refill: Button
+var _refill_hint: Label
+var _no_lives_menu_row: HBoxContainer
 var _privacy: Button
 var _consent: Button
 var _consent_available := false
@@ -122,6 +131,7 @@ func _ready() -> void:
 	_build_over()
 	_build_pause()
 	_build_revive()
+	_build_no_lives()
 	_build_mute()
 	_build_privacy()
 	_apply_safe_area()
@@ -150,6 +160,35 @@ func show_pause() -> void:
 func show_revive() -> void:
 	_set_panel(_revive)
 	_top.visible = false
+
+
+## Out of lives: watch a video, wait, or go back to the menu.
+func show_no_lives(video_ready: bool) -> void:
+	set_refill_available(video_ready)
+	_set_panel(_no_lives)
+	_top.visible = false
+
+
+func set_refill_available(available: bool) -> void:
+	_refill.visible = available
+	_refill_hint.text = (
+		"Guarda un video: tornano tutte" if available else "Video non disponibile, riprova tra poco"
+	)
+
+
+## Hearts on the menus. total = 0 hides them (no ads, no lives: unlimited play).
+func set_lives(left: int, total: int, wait_seconds: int) -> void:
+	for v in _lives_views:
+		v.visible = total > 0
+		v.set_lives(left, total, wait_seconds)
+
+
+## The start screen's banner sits along the bottom: lift the mode picker above it.
+func set_banner_height(height: float) -> void:
+	if absf(height - _banner_h) < 0.5:
+		return
+	_banner_h = height
+	_apply_safe_area()
 
 
 ## A full-screen ad is on top: nothing of ours should show or take taps.
@@ -251,7 +290,11 @@ func set_hue(hue: float) -> void:
 	_score.label_settings.shadow_color = Color(_neon, 0.4)
 	_style_button(_retry, 40, _neon)
 	_style_button(_continue, 40, _neon)
+	_style_button(_refill, 40, _neon)
 	_style_mode_buttons()
+	for v in _lives_views:
+		v.color = _neon
+		v.queue_redraw()
 
 
 # --- building --------------------------------------------------------------
@@ -298,6 +341,8 @@ func _build_start() -> void:
 	_start_box.add_child(_spacer(16))
 	_start_best = _label("", _body_bold, 28, INK)
 	_start_box.add_child(_start_best)
+	_start_box.add_child(_spacer(10))
+	_start_box.add_child(_lives_view())
 
 	# Mode picker, low on the screen where the thumb is. Switching does not
 	# hide anything, so it can act on press.
@@ -332,7 +377,9 @@ func _build_over() -> void:
 	_over_box.add_child(_final)
 	_over_box.add_child(_record)
 	_over_box.add_child(_stats)
-	_over_box.add_child(_spacer(40))
+	_over_box.add_child(_spacer(10))
+	_over_box.add_child(_lives_view())
+	_over_box.add_child(_spacer(30))
 
 	var row := HBoxContainer.new()
 	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -397,6 +444,41 @@ func _build_revive() -> void:
 	_revive_box.add_child(_label("la pallina riparte piano", _body, 26, MUTED))
 
 
+func _build_no_lives() -> void:
+	_no_lives = _panel()
+	_no_lives_box = _vbox(10)
+	_no_lives.add_child(_no_lives_box)
+	_no_lives_box.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
+	var title := _label("VITE FINITE", _display, 72, HOT, true)
+	title.label_settings.shadow_color = Color(HOT, 0.3)
+	_no_lives_box.add_child(title)
+	_no_lives_box.add_child(_spacer(8))
+	_no_lives_box.add_child(_lives_view())
+	_no_lives_box.add_child(_spacer(36))
+	_refill = Button.new()
+	_refill.text = "RICARICA"
+	_refill.custom_minimum_size = Vector2(BUTTON_W, 104)
+	_refill.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	_refill.focus_mode = Control.FOCUS_NONE
+	_refill.action_mode = BaseButton.ACTION_MODE_BUTTON_RELEASE  # a video goes on top
+	_refill.pressed.connect(func() -> void: refill_pressed.emit())
+	_style_button(_refill, 40, _neon)
+	_no_lives_box.add_child(_refill)
+	_no_lives_box.add_child(_spacer(6))
+	_refill_hint = _label("", _body, 26, INK)
+	_no_lives_box.add_child(_refill_hint)
+	_no_lives_box.add_child(_label("oppure aspetta che tornino da sole", _body, 24, MUTED))
+	_no_lives_menu_row = _bottom_row(_no_lives)
+	var menu := Button.new()
+	menu.text = "MODALITÀ"
+	menu.custom_minimum_size = Vector2(MODE_BUTTON_W * 1.3, 72)
+	menu.focus_mode = Control.FOCUS_NONE
+	menu.action_mode = BaseButton.ACTION_MODE_BUTTON_RELEASE
+	menu.pressed.connect(func() -> void: menu_pressed.emit())
+	_style_button(menu, 26, MUTED)
+	_no_lives_menu_row.add_child(menu)
+
+
 func _build_mute() -> void:
 	_mute = Button.new()
 	_mute.text = "SUONO ON"
@@ -424,8 +506,11 @@ func _apply_safe_area() -> void:
 	_place_top(_over_box, 120.0 + inset.y)
 	_place_top(_pause_box, 320.0 + inset.y)
 	_place_top(_revive_box, 320.0 + inset.y)
-	_place_bottom(_modes, 44.0 + inset.w)
+	_place_top(_no_lives_box, 220.0 + inset.y)
+	var banner := _banner_h + BANNER_GAP if _banner_h > 0.0 else 0.0
+	_place_bottom(_modes, 44.0 + inset.w + banner)
 	_place_bottom(_menu_row, 44.0 + inset.w)
+	_place_bottom(_no_lives_menu_row, 44.0 + inset.w)
 	var w := 190.0
 	var h := 60.0
 	_mute.offset_right = -20.0 - inset.x
@@ -472,7 +557,7 @@ func _safe_insets() -> Vector4:
 
 
 func _set_panel(panel: Control) -> void:
-	for p in [_start, _over, _pause, _revive]:
+	for p in [_start, _over, _pause, _revive, _no_lives]:
 		p.visible = p == panel
 	_privacy.visible = panel == _start or panel == _over or panel == _pause
 	_consent.visible = _consent_available and _privacy.visible
@@ -544,6 +629,16 @@ func _style_mode_buttons() -> void:
 				b.add_theme_color_override(state, SHADE)
 		else:
 			_style_button(b, 30, MUTED)
+
+
+func _lives_view() -> LivesView:
+	var v := LivesView.new()
+	v.font = _body_bold
+	v.color = _neon
+	v.text_color = MUTED
+	v.visible = false
+	_lives_views.append(v)
+	return v
 
 
 func _format(score: int) -> String:

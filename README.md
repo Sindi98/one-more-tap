@@ -44,8 +44,11 @@ La modalità si sceglie con i pulsanti in basso nella schermata iniziale; dal ga
 
 Plugin [AdMob di Poing Studios](https://github.com/poingstudios/godot-admob-plugin) v5.1.0 in `addons/admob` (licenza MIT), già attivo.
 
-- **Video con premio**: il pulsante CONTINUA nel game over.
-- **Interstitial**: solo toccando RIPROVA, al massimo uno ogni 3 partite e ogni 90 secondi (`scripts/ad_pacing.gd`). Mai durante una partita, nessun banner.
+- **Solo a gioco fermo**: mai durante una partita.
+- **Interstitial**: appena finisce una partita, prima del pannello col punteggio. Al massimo uno ogni 3 partite e ogni 90 secondi (`scripts/ad_pacing.gd`). RIPROVA fa sempre ripartire subito.
+- **Banner**: solo nella schermata iniziale (la scelta della modalità), in basso, con i pulsanti sollevati sopra di lui; sparisce appena parte la partita.
+- **Video con premio**: CONTINUA nel game over e RICARICA quando le vite sono finite.
+- **Vite** (`scripts/lives.gd`): 5. Ogni partita ne usa una, CONTINUA no. Ne torna una ogni 15 minuti, oppure tutte con un video. Esistono solo dove ci sono gli annunci: su desktop e nei test si gioca senza limiti.
 - **Consenso GDPR** con il modulo di Google (UMP) al primo avvio in UE. I pulsanti PRIVACY e CONSENSO stanno nei menu.
 - **ID**: finché `LIVE_IDS` in `scripts/ads.gd` è vuoto, e sempre nelle build di debug, il gioco usa gli annunci di prova di Google.
 - **Dove compaiono**: su telefono con il plugin nativo; dall'editor (F5) il plugin mostra annunci finti. Su desktop esportato e nei test headless gli annunci sono spenti e il gioco funziona come prima.
@@ -66,13 +69,16 @@ Plugin [AdMob di Poing Studios](https://github.com/poingstudios/godot-admob-plug
 | `scripts/game.gd` | Flusso: modalità, stati, input, camera, shake, vibrazione, salvataggio, continua e annunci tra le partite |
 | `scripts/hud.gd` | UI costruita in codice: punteggio, combo, start con scelta della modalità, game over, pausa, continua, privacy |
 | `scripts/sfx.gd` | Suoni sintetizzati all'avvio, nessun file audio |
-| `scripts/ads.gd` | Quello che il gioco sa degli annunci: ID, "c'è un video pronto?", interstitial quando è il momento |
+| `scripts/ads.gd` | Quello che il gioco sa degli annunci: ID, "c'è un video pronto?", interstitial quando è il momento, banner del menu |
 | `scripts/admob_backend.gd` | Unico file che usa il plugin AdMob: consenso, avvio SDK, caricamento e visualizzazione |
 | `scripts/ad_pacing.gd` | Regole pure su quando mostrare un interstitial |
+| `scripts/lives.gd` | Regole pure delle vite: una a partita, ritorno col tempo, ricarica |
+| `scripts/lives_view.gd` | Cuori disegnati in codice, col tempo che manca alla prossima vita |
 | `tests/test_track.gd` | Test headless delle regole di ZIGZAG, compreso il "continua" |
 | `tests/test_tower.gd` | Test headless delle regole di TORRE |
 | `tests/test_runner.gd` | Test headless delle regole di DINO |
 | `tests/test_ad_pacing.gd` | Test headless della frequenza degli annunci |
+| `tests/test_lives.gd` | Test headless delle vite |
 | `tools/make_icons.gd` | Rigenera le icone PNG da `assets/icons/*.svg` |
 | `export_presets.cfg` | Preset Android (AAB) e iOS |
 | `docs/` | Informativa privacy da pubblicare con GitHub Pages |
@@ -87,9 +93,10 @@ godot --headless --path . --script res://tests/test_track.gd
 godot --headless --path . --script res://tests/test_tower.gd
 godot --headless --path . --script res://tests/test_runner.gd
 godot --headless --path . --script res://tests/test_ad_pacing.gd
+godot --headless --path . --script res://tests/test_lives.gd
 ```
 
-Controllano che un giocatore perfetto sopravviva su 60 percorsi diversi per modalità (in DINO fino alla velocità massima), che gli angoli restino sempre nello schermo, che dopo ogni buco ci sia rampa per reagire, che ogni gruppo di cactus sia superabile con un margine, che "presto/tardi/non saltare" sia corretto, il conteggio dei perfetti e la rampa di difficoltà. Controllano anche che "continua" valga una volta sola, mantenga il punteggio e riparta piano, e che gli interstitial rispettino le pause. Durano qualche secondo.
+Controllano che un giocatore perfetto sopravviva su 60 percorsi diversi per modalità (in DINO fino alla velocità massima), che gli angoli restino sempre nello schermo, che dopo ogni buco ci sia rampa per reagire, che ogni gruppo di cactus sia superabile con un margine, che "presto/tardi/non saltare" sia corretto, il conteggio dei perfetti e la rampa di difficoltà. Controllano anche che "continua" valga una volta sola, mantenga il punteggio e riparta piano, che gli interstitial rispettino le pause e che le vite si spendano, tornino col tempo senza superare il massimo e non si possano ottenere spostando l'orologio. Durano qualche secondo.
 
 ## Export su telefono
 
@@ -99,7 +106,7 @@ Prova veloce su Android: template di export, JDK 17 e Android SDK installati, *P
 
 ## Prossimi passi
 
-1. Playtest su telefono vero: tarare `W_START`, `W_STEP`, `V_START`, `V_STEP`, `PERFECT_FRAC` in `track.gd`, le costanti in cima a `tower.gd` e `runner.gd`, più `REVIVE_SLOW` e la frequenza degli annunci in `ad_pacing.gd`.
+1. Playtest su telefono vero: tarare `W_START`, `W_STEP`, `V_START`, `V_STEP`, `PERFECT_FRAC` in `track.gd`, le costanti in cima a `tower.gd` e `runner.gd`, più `REVIVE_SLOW`, la frequenza degli annunci in `ad_pacing.gd` e le vite in `lives.gd` (`MAX`, `REFILL_SECONDS`).
 2. Sfida giornaliera: `Track.new(width, height, seed)` accetta già un seed, basta derivarlo dalla data.
 3. "Rimuovi annunci" come acquisto in-app, traduzione inglese.
 
