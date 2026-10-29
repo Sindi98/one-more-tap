@@ -93,7 +93,6 @@ var _mode_locks := {}  ## locked mode -> progress shown on its button, e.g. "1/3
 var _lives_views: Array[LivesView] = []  ## start, game over and no lives panels
 var _styles_row: HBoxContainer
 var _styles: Button
-var _notice: Label
 var _notice_tween: Tween
 var _over: Control
 var _over_box: VBoxContainer
@@ -175,12 +174,12 @@ func show_revive() -> void:
 
 ## Out of lives: watch a video, wait, or go back to the menu.
 func show_no_lives(video_ready: bool) -> void:
-	set_refill_available(video_ready)
+	_set_refill_available(video_ready)
 	_set_panel(_no_lives)
 	_top.visible = false
 
 
-func set_refill_available(available: bool) -> void:
+func _set_refill_available(available: bool) -> void:
 	_refill.visible = available
 	_refill_hint.text = (
 		"Guarda un video: tornano tutte" if available else "Video non disponibile, riprova tra poco"
@@ -215,14 +214,16 @@ func show_shop(tab: String, pick := "") -> void:
 	shop_panel.open(tab, pick)
 
 
-## stats: one line about the run, already worded for the mode. offer: what
-## CONTINUA does (see set_continue_offer).
+## stats: one line about the run, already worded for the mode. unlocked: names
+## of the looks this record unlocked. offer: what CONTINUA does (see
+## set_continue_offer).
 func show_over(
 	score: int,
 	best: int,
 	new_record: bool,
 	reason: String,
 	stats: String,
+	unlocked: PackedStringArray,
 	offer: String,
 	tokens: int
 ) -> void:
@@ -234,7 +235,8 @@ func show_over(
 	_record.text = "NUOVO RECORD" if new_record else "RECORD  %d" % best
 	_record.label_settings.font_color = _neon if new_record else MUTED
 	_stats.text = stats
-	_unlocked.visible = false
+	_unlocked.text = "NUOVO STILE: %s" % ", ".join(unlocked)
+	_unlocked.visible = not unlocked.is_empty()
 	set_continue_offer(offer, tokens)
 	_set_panel(_over)
 	_top.visible = false
@@ -243,10 +245,19 @@ func show_over(
 
 
 ## Rules on the start screen, reasons on the game over panel, score digits and
-## the highlighted button of the picker all follow the mode.
-func set_mode(mode: String) -> void:
+## the highlighted button of the picker all follow the mode. locked: the modes
+## not open yet, with the progress shown on their button, e.g. {"runner": "1/3"}.
+func set_mode(mode: String, locked := {}) -> void:
 	_mode = mode
+	_mode_locks = locked
+	if _notice_tween:
+		_notice_tween.kill()  # the rules come back at once
 	_start_rules.text = "\n".join(PackedStringArray(RULES[mode]))
+	_start_rules.label_settings.font_color = MUTED
+	_start_rules.modulate.a = 1.0
+	# A shorter notice in its place must not move the screen.
+	_start_rules.custom_minimum_size.y = 0.0
+	_start_rules.custom_minimum_size.y = _start_rules.get_minimum_size().y
 	_digits = 5 if mode == "runner" else 0  # like the offline game's counter
 	_score.label_settings.font_size = 84 if _digits > 0 else 120
 	_final.label_settings.font_size = 128 if _digits > 0 else 168
@@ -304,36 +315,23 @@ func set_continue_offer(offer: String, tokens: int) -> void:
 	_tap_hint.text = "tocca lo schermo per riprovare" if available else "oppure tocca lo schermo"
 
 
-## Looks a new record just unlocked, on the game over panel.
-func show_unlocked(names: PackedStringArray) -> void:
-	_unlocked.text = "NUOVO STILE: %s" % ", ".join(names)
-	_unlocked.visible = not names.is_empty()
-
-
-## A mode the player cannot pick yet: progress shows on its button ("" = open).
-func set_mode_lock(mode: String, progress: String) -> void:
-	if progress.is_empty():
-		_mode_locks.erase(mode)
-	else:
-		_mode_locks[mode] = progress
-	_style_mode_buttons()
-
-
-func show_mode_locked(days: int, needed: int) -> void:
-	show_notice(
-		"DINO si apre dopo %d giorni di fila.\nSei al giorno %d: torna domani!" % [needed, days]
-	)
-
-
-## A short message on the start screen that fades away.
+## A short message on the start screen, in place of the rules for a few
+## seconds: the screen has no room to spare above the buttons.
 func show_notice(text: String) -> void:
-	_notice.text = text
 	if _notice_tween:
 		_notice_tween.kill()
-	_notice.modulate.a = 1.0
+	_start_rules.text = text
+	_start_rules.label_settings.font_color = _neon
+	_start_rules.modulate.a = 1.0
 	_notice_tween = create_tween()
 	_notice_tween.tween_interval(3.5)
-	_notice_tween.tween_property(_notice, "modulate:a", 0.0, 0.6)
+	_notice_tween.tween_property(_start_rules, "modulate:a", 0.0, 0.4)
+	_notice_tween.tween_callback(
+		func() -> void:
+			_start_rules.text = "\n".join(PackedStringArray(RULES[_mode]))
+			_start_rules.label_settings.font_color = MUTED
+	)
+	_notice_tween.tween_property(_start_rules, "modulate:a", 1.0, 0.4)
 
 
 func set_consent_available(available: bool) -> void:
@@ -412,11 +410,6 @@ func _build_start() -> void:
 	_start_box.add_child(_start_best)
 	_start_box.add_child(UiKit.spacer(10))
 	_start_box.add_child(_lives_view())
-	_start_box.add_child(UiKit.spacer(8))
-	_notice = UiKit.label("", _body_bold, 28, _neon, true)
-	_notice.modulate.a = 0.0
-	_neon_labels.append(_notice)
-	_start_box.add_child(_notice)
 
 	# The shop, just above the mode picker. It hides the start screen, so it
 	# acts on release (same reason as RIPROVA).

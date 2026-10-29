@@ -190,7 +190,7 @@ func _set_mode(m: String) -> void:
 	mode = m
 	for k in views:
 		views[k].visible = k == mode
-	hud.set_mode(mode)
+	hud.set_mode(mode, _mode_locks())
 	hud.set_best(best[mode])
 	_new_run()
 	_set_state(State.READY)
@@ -274,10 +274,10 @@ func _show_over_panel() -> void:
 		_new_record,
 		run.reason,
 		_stats(),
+		_unlocked_looks,
 		_continue_offer(),
 		shop.inventory.tokens
 	)
-	hud.show_unlocked(_unlocked_looks)
 
 
 ## One line about the run for the game over panel.
@@ -393,7 +393,12 @@ func _on_mode_pressed(m: String) -> void:
 	if state != State.READY or m == mode:
 		return
 	if not _mode_open(m):
-		hud.show_mode_locked(streak.days, Streak.DAYS_TO_UNLOCK)
+		hud.show_notice(
+			(
+				"DINO si apre dopo %d giorni di fila.\nSei al giorno %d: torna domani!"
+				% [Streak.DAYS_TO_UNLOCK, streak.days]
+			)
+		)
 		return
 	_set_mode(m)
 	_save()
@@ -461,7 +466,7 @@ func _on_ads_changed() -> void:
 	if state == State.OVER:
 		hud.set_continue_offer(_continue_offer(), shop.inventory.tokens)
 	elif state == State.NO_LIVES:
-		hud.set_refill_available(ads.rewarded_ready())
+		hud.show_no_lives(ads.rewarded_ready())
 
 
 # --- shop ------------------------------------------------------------------
@@ -532,12 +537,17 @@ func _mode_open(m: String) -> bool:
 	return m != LOCKED_MODE or streak.unlocked
 
 
+## Modes not open yet -> progress shown on their button.
+func _mode_locks() -> Dictionary:
+	if streak.unlocked:
+		return {}
+	return {LOCKED_MODE: "%d/%d" % [streak.days, Streak.DAYS_TO_UNLOCK]}
+
+
 func _visit_today() -> void:
 	var opened := streak.visit(Streak.day_number(Time.get_date_dict_from_system()))
 	_save()
-	hud.set_mode_lock(
-		LOCKED_MODE, "" if streak.unlocked else "%d/%d" % [streak.days, Streak.DAYS_TO_UNLOCK]
-	)
+	hud.set_mode(mode, _mode_locks())
 	if opened and state == State.READY:
 		sfx.record()
 		hud.show_notice("DINO È APERTO!\nSalta cactus e uccelli: tocca DINO in basso")
