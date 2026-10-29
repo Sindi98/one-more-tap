@@ -5,7 +5,13 @@ extends RunRules
 ##
 ## The dino runs on its own and a tap makes it jump. Jump the cacti and the low
 ## birds; the high birds fly over a dino that stays on the ground. The score is
-## the distance run, and the dino keeps getting faster.
+## the distance run.
+##
+## It never stops getting harder: as the score grows the dino speeds up, birds
+## and large cacti come more often, and the time to react and the margin to
+## jump shrink, more and more slowly, towards limits that stay playable.
+## Further on come groups of four cacti and chains: obstacles right after a
+## landing, to clear in rhythm.
 ## x grows to the right; heights grow upward from the ground, in pixels.
 
 signal jumped
@@ -29,18 +35,39 @@ const HIT_INSET := 3.0  ## obstacles can be hit a bit inside their drawing too
 const GRAVITY := 2300.0
 const JUMP_V := 620.0
 const JUMP_BUFFER := 0.12  ## a tap this close before landing jumps on landing
-const V_START := 230.0  ## starting speed, px/s
-const V_MAX := 540.0
-const ACCEL := 0.006  ## speed gained per pixel run
 const POINTS_PER_PX := 0.04
 const MILESTONE := 100  ## a "ding" every 100 points
 const FIRST_OBSTACLE := 2.4  ## seconds of run before the first obstacle
-const REACT := 0.36  ## seconds of run, at least, after the farthest landing
-const GAP_EXTRA := 0.9  ## up to this many seconds of run added at random
-const MIN_WINDOW := 0.12  ## seconds in which a take-off clears an obstacle, at least
-const LARGE_CHANCE := 0.4
+## Each value below goes from its start to its end (never reached) as the score
+## grows: about two thirds of the way after the given points, see _toward().
+const V_START := 230.0  ## speed, px/s
+const V_END := 620.0
+const V_POINTS := 1300.0
+## Seconds of run, at least, after the farthest landing, to see what comes next.
+const REACT_START := 0.36
+const REACT_END := 0.22
+const GAP_EXTRA_START := 0.9  ## up to this many seconds of run added at random
+const GAP_EXTRA_END := 0.35
+## Seconds in which a take-off clears an obstacle, at least: as it shrinks,
+## wider groups of cacti fit.
+const MIN_WINDOW_START := 0.12
+const MIN_WINDOW_END := 0.08
+const LARGE_START := 0.4  ## chance that a group is of large cacti
+const LARGE_END := 0.65
 const BIRDS_FROM := 250  ## score after which birds can appear
-const BIRD_CHANCE := 0.3
+const BIRD_START := 0.3  ## chance that an obstacle is a bird
+const BIRD_END := 0.45
+const MIX_POINTS := 1500.0  ## for the gaps, the window and the mix of obstacles
+const GROUP4_FROM := 800  ## score after which four cacti can stand together
+## Chains: from this score on, an obstacle may come right after the landing
+## of the jump before, to clear in rhythm (a tap just before landing jumps
+## again as soon as the dino touches the ground), up to three in a row.
+const CHAIN_FROM := 400
+const CHAIN_CHANCE_END := 0.35
+const CHAIN_POINTS := 1200.0
+const CHAIN_REACT_START := 0.2
+const CHAIN_REACT_END := 0.12
+const CHAIN_MAX := 3
 const AHEAD := 900.0  ## obstacles prepared ahead of the dino
 const BEHIND := 200.0  ## passed obstacles kept while they can still be on screen
 const REVIVE_SLOW := 0.4  ## speed factor right after a continue
@@ -55,6 +82,7 @@ class Obstacle:
 	var count := 1  ## cacti side by side
 	var index: int
 	var passed := false
+	var chained := false  ## right after the landing of the jump before: part of a chain
 
 	func right() -> float:
 		return x + size.x
@@ -78,6 +106,8 @@ var hit: Obstacle  ## what ended the run
 var _rng := RandomNumberGenerator.new()
 var _spawned := 0
 var _next_x := 0.0  ## where the next obstacle goes
+var _next_chained := false  ## the next obstacle comes right after the last one
+var _chain := 1  ## obstacles in the chain the last one belongs to
 var _buffer := 0.0  ## time left on a tap made in the air
 var _slow := 1.0  ## speed factor, below 1 only for a moment after a continue
 
@@ -109,7 +139,7 @@ func update(delta: float) -> void:
 	if not started or not alive:
 		return
 	_slow = minf(1.0, _slow + delta * (1.0 - REVIVE_SLOW) / REVIVE_RECOVER)
-	speed = _speed_at(x) * _slow
+	speed = speed_at(x) * _slow
 	var g := GRAVITY * unit
 	var steps := maxi(1, ceili(speed * delta / (3.0 * unit)))
 	var dt := delta / steps
@@ -154,12 +184,14 @@ func revive() -> bool:
 	height = 0.0
 	vy = 0.0
 	_buffer = 0.0
-	var clear_to := x + _speed_at(x) * (REVIVE_RECOVER + air_time() + REACT)
+	var clear_to := x + speed_at(x) * (REVIVE_RECOVER + air_time() + react_at(x))
 	for i in range(obstacles.size() - 1, -1, -1):
 		var o := obstacles[i]
 		if o.right() >= x and o.x <= clear_to:
 			obstacles.remove_at(i)
 	_next_x = maxf(_next_x, clear_to)
+	_next_chained = false
+	_chain = 1
 	_slow = REVIVE_SLOW
 	return true
 
@@ -200,8 +232,29 @@ func _jump() -> void:
 	jumped.emit()
 
 
-func _speed_at(at: float) -> float:
-	return minf(V_MAX, V_START + at / unit * ACCEL) * unit
+## Full speed (px/s) at distance `at`.
+func speed_at(at: float) -> float:
+	return _toward(V_START, V_END, _points(at), V_POINTS) * unit
+
+
+## Seconds of run, at least, between the farthest landing and the next obstacle.
+func react_at(at: float) -> float:
+	return _toward(REACT_START, REACT_END, _points(at), MIX_POINTS)
+
+
+## Seconds in which a take-off must clear every obstacle placed at `at`.
+func min_window_at(at: float) -> float:
+	return _toward(MIN_WINDOW_START, MIN_WINDOW_END, _points(at), MIX_POINTS)
+
+
+func _points(at: float) -> float:
+	return at / unit * POINTS_PER_PX
+
+
+## From `start` towards `end` as the score grows: two thirds of the way after
+## `points`, then ever more slowly. It always moves on, never arrives.
+static func _toward(start: float, end: float, score_now: float, points: float) -> float:
+	return end + (start - end) * exp(-maxf(0.0, score_now) / points)
 
 
 func _collision() -> Obstacle:
@@ -232,31 +285,46 @@ func _ensure_ahead() -> void:
 
 
 func _add_obstacle() -> void:
-	var v := _speed_at(_next_x)
+	var at := _next_x
+	var v := speed_at(at)
+	var points := _points(at)
 	var o := Obstacle.new()
 	o.index = _spawned
 	_spawned += 1
-	o.x = _next_x
-	if int(_next_x / unit * POINTS_PER_PX) >= BIRDS_FROM and _rng.randf() < BIRD_CHANCE:
+	o.x = at
+	o.chained = _next_chained
+	var bird_chance := _toward(BIRD_START, BIRD_END, points - BIRDS_FROM, MIX_POINTS)
+	if points >= BIRDS_FROM and _rng.randf() < bird_chance:
 		var high := _rng.randf() < 0.5
 		o.kind = Kind.BIRD_HIGH if high else Kind.BIRD_LOW
 		o.size = BIRD * unit
 		o.y = (BIRD_HIGH_Y if high else BIRD_LOW_Y) * unit
 	else:
-		o.kind = Kind.LARGE if _rng.randf() < LARGE_CHANCE else Kind.SMALL
-		o.count = _rng.randi_range(1, 3)
+		var large := _rng.randf() < _toward(LARGE_START, LARGE_END, points, MIX_POINTS)
+		o.kind = Kind.LARGE if large else Kind.SMALL
+		o.count = _rng.randi_range(1, 4 if points >= GROUP4_FROM else 3)
 		_size_cacti(o)
 		# Fewer cacti, then smaller ones, until a jump clears them with time to spare.
-		while o.count > 1 and window(o, v) < MIN_WINDOW:
+		var need := min_window_at(at)
+		while o.count > 1 and window(o, v) < need:
 			o.count -= 1
 			_size_cacti(o)
-		if window(o, v) < MIN_WINDOW:
+		if window(o, v) < need:
 			o.kind = Kind.SMALL
 			_size_cacti(o)
 	obstacles.append(o)
 	# A jump that only just clears it lands about a jump past it: from there,
-	# leave time to see the next one coming.
-	_next_x = o.right() + v * (air_time() + REACT + _rng.randf() * GAP_EXTRA)
+	# leave time to see the next one coming, or just enough to jump again in a chain.
+	var chain_chance := _toward(0.0, CHAIN_CHANCE_END, points - CHAIN_FROM, CHAIN_POINTS)
+	_next_chained = points >= CHAIN_FROM and _chain < CHAIN_MAX and _rng.randf() < chain_chance
+	if _next_chained:
+		_chain += 1
+		var react := _toward(CHAIN_REACT_START, CHAIN_REACT_END, points, MIX_POINTS)
+		_next_x = o.right() + v * (air_time() + react)
+	else:
+		_chain = 1
+		var extra := _rng.randf() * _toward(GAP_EXTRA_START, GAP_EXTRA_END, points, MIX_POINTS)
+		_next_x = o.right() + v * (air_time() + react_at(at) + extra)
 
 
 func _size_cacti(o: Obstacle) -> void:
