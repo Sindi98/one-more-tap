@@ -1,0 +1,18 @@
+{
+  "name": "one-more-tap-relay",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Relay server for One More Tap's AIR HOCKEY over the internet",
+  "type": "module",
+  "main": "relay.mjs",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node relay.mjs",
+    "test": "node --test test.mjs"
+  },
+  "dependencies": {
+    "ws": "8.18.0"
+  }
+}

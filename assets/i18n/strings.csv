@@ -147,7 +147,7 @@ NO_LOBBIES,"No lobbies on this Wi-Fi yet: create one, or type a friend's code","
 LOBBY_OF,%s'S LOBBY,LOBBY DI %s
 CODE,CODE,CODICE
 JOIN,JOIN,ENTRA
-CREATE_LOBBY,CREATE LOBBY,CREA LOBBY
+CREATE_LOBBY,CREATE A LOBBY,CREA UNA LOBBY
 LOBBY,LOBBY,LOBBY
 ROOM_HINT,"Friends on the same Wi-Fi find it in LOBBIES NEARBY, or type the code","Gli amici sulla stessa Wi-Fi la trovano tra le LOBBY VICINE, o scrivono il codice"
 TEAM_BLUE,BLUE,BLU
@@ -180,3 +180,16 @@ LEFT_PLAYING,A match is on there: try again when it ends,Lì c'è una partita in
 LEFT_VERSION,Another version of the game: update the app on every phone,Versione del gioco diversa: aggiorna l'app su tutti i telefoni
 LEFT_FAILED,Can't reach the lobby: are you on the same Wi-Fi?,Lobby non raggiungibile: siete sulla stessa Wi-Fi?
 PLAYER_LEFT,A player left: the CPU takes over,Un giocatore è uscito: gioca la CPU
+HOCKEY_SUB_ONLINE,"Play in teams with friends, wherever they are","Gioca in squadra con gli amici, ovunque siano"
+HOCKEY_SUB_BOTH,Play in teams: on the same Wi-Fi or over the internet,Gioca in squadra: sulla stessa Wi-Fi o via Internet
+WIFI_LOBBY,WI-FI,WI-FI
+ONLINE_LOBBY,ONLINE,ONLINE
+ROOM_ONLINE,ONLINE LOBBY,LOBBY ONLINE
+ROOM_HINT_ONLINE,Friends join from anywhere: they type this code in JOIN,Gli amici entrano da dove vogliono: scrivono questo codice in ENTRA
+COPY,COPY,COPIA
+CODE_COPIED,Invite copied: paste it in a chat,Invito copiato: incollalo in una chat
+INVITE_TEXT,Play AIR HOCKEY with me on One More Tap! Lobby code: %s  %s,Gioca ad AIR HOCKEY con me su One More Tap! Codice della lobby: %s  %s
+CONNECTING_SERVER,Connecting to the server…,Connessione al server…
+LEFT_OFFLINE,Can't reach the server: check the connection and try again,Server non raggiungibile: controlla la connessione e riprova
+LEFT_NOT_FOUND,No lobby with that code: check it,Nessuna lobby con quel codice: controllalo
+LEFT_BUSY,The server is busy: try again in a minute,Il server è occupato: riprova tra un minuto

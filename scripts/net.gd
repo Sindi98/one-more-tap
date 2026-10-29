@@ -1,18 +1,22 @@
 class_name Net
 extends Node
-## AIR HOCKEY over the local network (the same Wi-Fi, or a phone's hotspot),
-## with no server: the phone that creates a lobby hosts it with ENet and says
-## so on the network every second (a UDP broadcast), so the others can list
-## it. Guests can also type the lobby's code (see Lobby.code_for), which works
-## where broadcasts don't get through, as on iPhones. The host keeps the
-## lobby, runs the match and sends snapshots; guests send where their finger
-## is. The only file that touches sockets.
+## AIR HOCKEY between phones, two ways. On the local network (the same Wi-Fi,
+## or a phone's hotspot) there is no server: the phone that creates a lobby
+## hosts it with ENet and says so on the network every second (a UDP
+## broadcast), so the others can list it; guests can also type the lobby's
+## 4-character code (see Lobby.code_for), which works where broadcasts don't
+## get through, as on iPhones. Over the internet, phones talk through the
+## relay in server/ (see RelayPeer), and the relay gives the lobby a
+## 5-character code to send to friends.
+## Either way the host keeps the lobby, runs the match and sends snapshots;
+## guests send where their finger is. The only file that opens connections.
 
 signal lobbies_changed  ## the lobbies heard nearby changed: see `found`
 signal joined  ## in a lobby: hosting one, or the host let us in
 ## Out of the lobby without asking: "closed" (the host left), "full",
-## "playing" (a match is on), "version" (another version of the game) or
-## "failed" (the host can't be reached).
+## "playing" (a match is on), "version" (another version of the game),
+## "failed" (the host can't be reached); online also "offline" (no relay),
+## "not_found" (no lobby with that code), "busy" (the relay is) or "bad".
 signal left(reason: String)
 signal lobby_changed  ## players, teams or settings changed: see `lobby`
 signal match_started(setup: Dictionary)  ## see start_match()
@@ -29,6 +33,14 @@ const LOBBY_TIMEOUT := 3.5  ## a lobby not heard for this long is gone
 const LOBBIES_MAX := 8  ## lobbies listed at most
 const CONNECT_TIMEOUT := 6.0  ## seconds to reach the host and be let in
 const PACKETS_PER_FRAME := 32
+const BEACON_RETRY := 5.0  ## seconds before trying again when a beacon can't go out
+## The relay for AIR HOCKEY over the internet (see server/README.md), for
+## example "wss://omt-relay.onrender.com". Empty: debug builds use the one
+## started on this computer (npm start in server/), release builds have no
+## online lobbies.
+const RELAY_URL := ""
+const RELAY_LOCAL := "ws://127.0.0.1:47620"
+const ONLINE_TIMEOUT := 45.0  ## seconds: a relay on a free plan may need waking up
 
 var lobby := Lobby.new()
 var found := {}  ## ip -> what its beacon says (see Lobby.parse_beacon) and "seen"
@@ -39,10 +51,11 @@ var _hosting := false
 var _in_lobby := false
 var _connecting := 0.0  ## seconds left to get into a lobby, 0 when not trying
 var _beacon_in := 0.0
-var _beacon_off := false  ## broadcasts are not allowed here: the code still works
 var _listener: PacketPeerUDP
 var _sender: PacketPeerUDP
 var _clock := 0.0
+var _relay: RelayPeer  ## the connection to the relay, when online
+var _retired: MultiplayerPeer  ## a connection just let go, kept until the next frame
 
 
 func _ready() -> void:
@@ -55,27 +68,48 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	_clock += delta
+	_retired = null
 	if _listener:
 		_listen()
-	if _hosting and not playing and not _beacon_off:
+	if _hosting and not playing and _relay == null:
 		_beacon_in -= delta
 		if _beacon_in <= 0.0:
-			_beacon_in = BEACON_EVERY
-			_send_beacon()
+			_beacon_in = BEACON_EVERY if _send_beacon() else BEACON_RETRY
 	if _connecting > 0.0:
 		_connecting -= delta
 		if _connecting <= 0.0:
+			var why := "offline" if _relay else "failed"
 			_close()
-			left.emit("failed")
+			left.emit(why)
 
 
-## Hockey needs sockets: not in the web version.
-func available() -> bool:
+## Lobbies on the local network need sockets the web version doesn't have.
+func lan_available() -> bool:
 	return not OS.has_feature("web")
+
+
+## Lobbies over the internet need a relay.
+func online_available() -> bool:
+	return not _relay_url().is_empty()
+
+
+func available() -> bool:
+	return lan_available() or online_available()
+
+
+func _relay_url() -> String:
+	if not RELAY_URL.is_empty():
+		return RELAY_URL
+	return RELAY_LOCAL if OS.is_debug_build() else ""
 
 
 func is_host() -> bool:
 	return _hosting
+
+
+## The lobby goes through the relay.
+func is_online() -> bool:
+	return _relay != null
 
 
 func in_lobby() -> bool:
@@ -107,9 +141,14 @@ func stop_browsing() -> void:
 	found.clear()
 
 
-## A new lobby, with this phone as host and first player. False if the game
-## port can't be opened.
-func host() -> bool:
+## A new lobby, with this phone as host and first player: on this network
+## (`joined` at once; false if the game port can't be opened), or online on
+## the relay (`joined` once the relay gives it its code, `left` if it can't
+## be reached).
+func host(online := false) -> bool:
+	if online:
+		_host_online()
+		return true
 	_close()
 	var peer := ENetMultiplayerPeer.new()
 	if peer.create_server(GAME_PORT, MAX_GUESTS) != OK:
@@ -138,10 +177,32 @@ func join(ip: String) -> void:
 	_connecting = CONNECT_TIMEOUT
 
 
-## Into the lobby with `text` as code. False if the code is not right: then
-## nothing is tried.
+func _host_online() -> void:
+	_close()
+	stop_browsing()
+	var relay := RelayPeer.new()
+	if relay.host(_relay_url()) != OK:
+		left.emit("offline")
+		return
+	relay.hosted.connect(_on_hosted)
+	_relay = relay
+	_use(relay)
+	_connecting = ONLINE_TIMEOUT
+
+
+## Into the lobby with `text` as code: 5 characters for one on the relay, 4
+## for one on this network. False if the code can't be right: then nothing
+## is tried.
 func join_code(text: String) -> bool:
-	var ip := Lobby.ip_for(text, Lobby.local_ip(IP.get_local_addresses()))
+	var clean := Lobby.clean_code(text)
+	if clean.length() == Lobby.ONLINE_CODE_LENGTH:
+		if not online_available():
+			return false
+		_join_online(clean)
+		return true
+	if not lan_available():
+		return false
+	var ip := Lobby.ip_for(clean, Lobby.local_ip(IP.get_local_addresses()))
 	if ip.is_empty():
 		return false
 	join(ip)
@@ -302,15 +363,47 @@ func _on_connected() -> void:
 
 func _on_connection_failed() -> void:
 	if _connecting > 0.0:
+		var why := _relay_reason("failed")
 		_close()
-		left.emit("failed")
+		left.emit(why)
 
 
 func _on_server_disconnected() -> void:
 	if not _in_lobby and _connecting <= 0.0:
 		return
+	var why := _relay_reason("closed")
 	_close()
-	left.emit("closed")
+	left.emit(why)
+
+
+## Online: the relay opened our lobby.
+func _on_hosted(room_code: String) -> void:
+	_connecting = 0.0
+	_hosting = true
+	_in_lobby = true
+	lobby = Lobby.new()
+	lobby.add(1, player_name)
+	lobby.code = room_code
+	joined.emit()
+	lobby_changed.emit()
+
+
+func _join_online(room_code: String) -> void:
+	_close()
+	var relay := RelayPeer.new()
+	if relay.join(_relay_url(), room_code) != OK:
+		left.emit("offline")
+		return
+	_relay = relay
+	_use(relay)
+	_connecting = ONLINE_TIMEOUT
+
+
+## Why the relay let us go, if it did; `fallback` otherwise.
+func _relay_reason(fallback: String) -> String:
+	if _relay and not _relay.reason.is_empty():
+		return _relay.reason
+	return fallback
 
 
 func _on_peer_connected(id: int) -> void:
@@ -326,7 +419,7 @@ func _on_peer_disconnected(id: int) -> void:
 	_share_lobby()
 
 
-func _use(peer: ENetMultiplayerPeer) -> void:
+func _use(peer: MultiplayerPeer) -> void:
 	var api := multiplayer as SceneMultiplayer
 	if api:
 		api.server_relay = false  # guests talk to the host only
@@ -334,7 +427,8 @@ func _use(peer: ENetMultiplayerPeer) -> void:
 
 
 ## Back to no network at all. The flags go first: closing the peer may fire
-## the disconnection signals, which then have nothing to do.
+## the disconnection signals, which then have nothing to do. The peer is
+## kept until the next frame: this may run while it is still busy.
 func _close() -> void:
 	_hosting = false
 	_in_lobby = false
@@ -342,9 +436,10 @@ func _close() -> void:
 	playing = false
 	lobby = Lobby.new()
 	_sender = null
-	_beacon_off = false
+	_relay = null
 	var peer := multiplayer.multiplayer_peer
 	if peer and not peer is OfflineMultiplayerPeer:
+		_retired = peer
 		peer.close()
 		multiplayer.multiplayer_peer = OfflineMultiplayerPeer.new()
 
@@ -377,7 +472,10 @@ func _share_lobby() -> void:
 # --- discovery ---------------------------------------------------------------
 
 
-func _send_beacon() -> void:
+## True if the beacon went out. iPhones need a special permission from Apple
+## to broadcast, and Wi-Fi may be off for a moment: then it is tried again
+## less often, and guests can still use the code.
+func _send_beacon() -> bool:
 	if _sender == null:
 		_sender = PacketPeerUDP.new()
 		_sender.set_broadcast_enabled(true)
@@ -386,9 +484,7 @@ func _send_beacon() -> void:
 	for address in _broadcast_addresses():
 		_sender.set_dest_address(address, DISCOVERY_PORT)
 		sent = _sender.put_packet(data) == OK or sent
-	# iPhones need a special permission from Apple to broadcast: without it,
-	# stop trying (and filling the log). Guests use the code.
-	_beacon_off = not sent
+	return sent
 
 
 ## The whole network, and this phone's own subnet for routers that drop the

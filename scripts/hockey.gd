@@ -147,6 +147,10 @@ func apply_snapshot(s: PackedFloat32Array, own := -1) -> void:
 	puck = Vector2(s[0], s[1])
 	puck_vel = Vector2(s[2], s[3])
 	serve = maxf(0.0, s[4])
+	if serve > 0.0:
+		# Waiting to be served: the seven seconds start again, in that half.
+		side = 0 if puck.y > HEIGHT * 0.5 else 1
+		held_for = 0.0
 	for team in 2:
 		var goals := int(s[5 + team])
 		var before := score[team]

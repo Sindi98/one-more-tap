@@ -1,13 +1,14 @@
 class_name LobbyPanel
 extends Control
-## AIR HOCKEY's screens, built in code: the lobbies nearby (create one, join
-## one, or type its code), the lobby itself (teams, settings, start), the
-## result of a match, and the way out during one. HockeyGame fills it and
+## AIR HOCKEY's screens, built in code: the lobbies nearby (create one on the
+## Wi-Fi or online, join one, or type its code), the lobby itself (teams,
+## settings, the code to copy, start), the result of a match, and the way out
+## during one. HockeyGame fills it and
 ## listens to it; Hud shows it and places it. Texts are keys of
 ## assets/i18n/strings.csv.
 
 signal back_pressed  ## out of AIR HOCKEY, to the start screen
-signal create_pressed
+signal create_pressed(online: bool)
 signal join_pressed(ip: String)
 signal code_entered(code: String)
 signal name_changed(player_name: String)
@@ -36,14 +37,21 @@ var _neon_labels: Array[Label] = []
 var _page := ""  ## "browse", "room", "result" or "play"
 var _menus: Control  ## the pages, on a shade; hidden during a match
 var _browse: VBoxContainer
+var _sub: Label
 var _name: LineEdit
+var _nearby: Array[Control] = []  ## what is about lobbies on this network
 var _list: VBoxContainer
 var _none: Label
+var _found := {}  ## the lobbies listed, kept to list them again
 var _code: LineEdit
 var _join: Button
-var _create: Button
+var _create_lan: Button
+var _create_online: Button
 var _room: VBoxContainer
+var _room_title: Label
 var _room_code: Label
+var _room_hint: Label
+var _copy: Button
 var _teams: Array[VBoxContainer] = []
 var _switch: Button
 var _host_row: HBoxContainer
@@ -57,6 +65,7 @@ var _result_title: Label
 var _result_score: Label
 var _rematch: Button
 var _result_hint: Label
+var _to_lobby: Button
 var _message: Label
 var _back: Button
 var _busy := false
@@ -91,14 +100,23 @@ func _init() -> void:
 
 
 ## The lobbies nearby. found: ip -> {"name", "players", "places"} (see Net).
-func show_browse(player_name: String, found: Dictionary) -> void:
+## lan / online: lobbies can be made on this network / over the internet.
+func show_browse(player_name: String, found: Dictionary, lan: bool, online: bool) -> void:
 	_show("browse")
 	if not _name.has_focus():
 		_name.text = player_name
+	_sub.text = tr("HOCKEY_SUB_BOTH") if lan and online else tr("HOCKEY_SUB")
+	if not lan:
+		_sub.text = tr("HOCKEY_SUB_ONLINE")
+	for c in _nearby:
+		c.visible = lan
+	_create_lan.visible = lan
+	_create_online.visible = online
 	set_lobbies(found)
 
 
 func set_lobbies(found: Dictionary) -> void:
+	_found = found
 	for c in _list.get_children():
 		_list.remove_child(c)
 		c.queue_free()
@@ -119,10 +137,13 @@ func set_lobbies(found: Dictionary) -> void:
 
 
 ## Who is in the lobby and on which team, and what the host can change.
-## me: this phone's peer id.
-func show_room(lobby: Lobby, me: int, host: bool) -> void:
+## me: this phone's peer id. online: the lobby is on the relay.
+func show_room(lobby: Lobby, me: int, host: bool, online: bool) -> void:
 	_show("room")
+	_room_title.text = tr("ROOM_ONLINE") if online else tr("LOBBY")
 	_room_code.text = lobby.code if not lobby.code.is_empty() else "—"
+	_room_hint.text = tr("ROOM_HINT_ONLINE") if online else tr("ROOM_HINT")
+	_copy.visible = not lobby.code.is_empty()
 	for team in 2:
 		var column := _teams[team]
 		for c in column.get_children():
@@ -177,13 +198,13 @@ func show_message(text: String, bad := false) -> void:
 	_message.label_settings.font_color = UiKit.HOT if bad else _neon
 
 
-## While joining a lobby: nothing else can be started.
+## While joining or creating a lobby: nothing else can be started.
 func set_busy(on: bool) -> void:
 	_busy = on
-	_create.disabled = on
+	_create_lan.disabled = on
+	_create_online.disabled = on
 	_join.disabled = on
-	for b in _list.get_children():
-		(b as Button).disabled = on
+	set_lobbies(_found)  # full lobbies stay out of reach
 	_style_all()
 
 
@@ -203,7 +224,8 @@ func _build_browse() -> void:
 	_browse = UiKit.vbox(8)
 	box.add_child(_browse)
 	_browse.add_child(_title(tr("MODE_HOCKEY"), 72))
-	_browse.add_child(UiKit.label(tr("HOCKEY_SUB"), _body, 26, UiKit.MUTED))
+	_sub = UiKit.label(tr("HOCKEY_SUB"), _body, 26, UiKit.MUTED)
+	_browse.add_child(_sub)
 	_browse.add_child(UiKit.spacer(10))
 
 	var name_row := UiKit.center_row(14)
@@ -215,7 +237,8 @@ func _build_browse() -> void:
 	name_row.add_child(_name)
 	_browse.add_child(UiKit.spacer(8))
 
-	_browse.add_child(UiKit.label(tr("NEARBY_LOBBIES"), _body_bold, 22, UiKit.MUTED))
+	var nearby := UiKit.label(tr("NEARBY_LOBBIES"), _body_bold, 22, UiKit.MUTED)
+	_browse.add_child(nearby)
 	_list = UiKit.vbox(10)
 	_browse.add_child(_list)
 	_none = UiKit.label(tr("NO_LOBBIES"), _body, 22, UiKit.MUTED)
@@ -223,11 +246,12 @@ func _build_browse() -> void:
 	_none.custom_minimum_size.x = ROW_W
 	_none.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	_browse.add_child(_none)
+	_nearby.append_array([nearby, _list, _none])
 	_browse.add_child(UiKit.spacer(8))
 
 	var code_row := UiKit.center_row(14)
 	_browse.add_child(code_row)
-	_code = _line_edit(Vector2(220, 72), Lobby.CODE_LENGTH)
+	_code = _line_edit(Vector2(240, 72), Lobby.ONLINE_CODE_LENGTH)
 	_code.placeholder_text = tr("CODE")
 	_code.alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_code.text_changed.connect(_on_code_typed)
@@ -237,26 +261,32 @@ func _build_browse() -> void:
 	code_row.add_child(_join)
 	_browse.add_child(UiKit.spacer(12))
 
-	var row := UiKit.center_row(0)
+	_browse.add_child(UiKit.label(tr("CREATE_LOBBY"), _body_bold, 22, UiKit.MUTED))
+	var row := UiKit.center_row(14)
 	_browse.add_child(row)
-	_create = _button(tr("CREATE_LOBBY"), Vector2(Hud.BUTTON_W, 96), 34, _on_create)
-	row.add_child(_create)
+	_create_lan = _button(tr("WIFI_LOBBY"), Vector2(300, 96), 28, _on_create.bind(false))
+	row.add_child(_create_lan)
+	_create_online = _button(tr("ONLINE_LOBBY"), Vector2(300, 96), 28, _on_create.bind(true))
+	row.add_child(_create_online)
 
 
 func _build_room() -> void:
 	_room = UiKit.vbox(8)
 	box.add_child(_room)
-	_room.add_child(_title(tr("LOBBY"), 64))
+	_room_title = _title(tr("LOBBY"), 64)
+	_room.add_child(_room_title)
 	var code_row := UiKit.center_row(16)
 	_room.add_child(code_row)
 	code_row.add_child(UiKit.label(tr("CODE"), _body_bold, 24, UiKit.MUTED))
 	_room_code = UiKit.label("", _display, 56, UiKit.INK)
 	code_row.add_child(_room_code)
-	var hint := UiKit.label(tr("ROOM_HINT"), _body, 22, UiKit.MUTED)
-	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	hint.custom_minimum_size.x = ROW_W
-	hint.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	_room.add_child(hint)
+	_copy = _button(tr("COPY"), Vector2(150, 60), 22, _on_copy)
+	code_row.add_child(_copy)
+	_room_hint = UiKit.label(tr("ROOM_HINT"), _body, 22, UiKit.MUTED)
+	_room_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_room_hint.custom_minimum_size.x = ROW_W
+	_room_hint.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	_room.add_child(_room_hint)
 	_room.add_child(UiKit.spacer(14))
 
 	var teams := UiKit.center_row(24)
@@ -315,7 +345,8 @@ func _build_result() -> void:
 	_result.add_child(UiKit.spacer(10))
 	var lobby_row := UiKit.center_row(0)
 	_result.add_child(lobby_row)
-	lobby_row.add_child(_button(tr("TO_LOBBY"), Vector2(Hud.BUTTON_W, 72), 28, lobby_pressed.emit))
+	_to_lobby = _button(tr("TO_LOBBY"), Vector2(Hud.BUTTON_W, 72), 28, lobby_pressed.emit)
+	lobby_row.add_child(_to_lobby)
 
 
 # --- events ----------------------------------------------------------------
@@ -343,9 +374,15 @@ func _on_back() -> void:
 		leave_pressed.emit()
 
 
-func _on_create() -> void:
+func _on_create(online: bool) -> void:
 	_commit_name()
-	create_pressed.emit()
+	create_pressed.emit(online)
+
+
+## An invite with the code, ready to paste in a chat.
+func _on_copy() -> void:
+	DisplayServer.clipboard_set(tr("INVITE_TEXT") % [_room_code.text, Social.SITE_URL])
+	show_message(tr("CODE_COPIED"))
 
 
 func _on_lobby(ip: String) -> void:
@@ -433,9 +470,9 @@ func _line_edit(min_size: Vector2, max_length: int) -> LineEdit:
 ## Buttons: the main ones in the theme colour, the others outlined in grey;
 ## a button that can't be pressed now is grey.
 func _style_all() -> void:
-	for b in [_join, _create, _start, _rematch]:
+	for b in [_join, _create_lan, _create_online, _start, _rematch]:
 		_style(b, int(b.get_meta("font_size")), UiKit.MUTED if b.disabled else _neon)
-	for b in [_back, exit, _switch, _size, _goals]:
+	for b in [_back, exit, _switch, _size, _goals, _copy, _to_lobby]:
 		_style(b, int(b.get_meta("font_size")), UiKit.MUTED)
 	for e in [_name, _code]:
 		var focus := (e.get_meta("normal") as StyleBoxFlat).duplicate() as StyleBoxFlat

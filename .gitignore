@@ -14,3 +14,6 @@
 
 # Built from assets/i18n/strings.csv when Godot imports the project
 *.translation
+
+# The relay server's packages: npm install in server/
+/server/node_modules/

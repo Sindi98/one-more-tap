@@ -43,10 +43,10 @@ Le piattaforme si stringono, la pallina accelera, i colori cambiano. Quando sbag
 
 Altre due modalità, sempre con un tap: TORRE, dove sali una spirale intorno a una torre che gira e salti i buchi della rampa, e DINO, dove corri e salti cactus e uccelli come nel gioco del browser senza internet. DINO si apre giocando tre giorni di fila.
 
-E per giocare insieme, AIR HOCKEY: create una lobby sulla stessa Wi-Fi, dividetevi in squadre, 1 contro 1 o 2 contro 2, e trascinate la racchetta. Se manca qualcuno gioca la CPU.
+E per giocare insieme, AIR HOCKEY: create una lobby sulla stessa Wi-Fi o online, mandate il codice agli amici, dividetevi in squadre, 1 contro 1 o 2 contro 2, e trascinate la racchetta. Se manca qualcuno gioca la CPU.
 
 • Tre modalità di gioco, ognuna col suo record
-• AIR HOCKEY a squadre con gli amici sulla stessa Wi-Fi, senza account né internet
+• AIR HOCKEY a squadre con gli amici, sulla stessa Wi-Fi o via Internet, senza account
 • Un dito, zero tutorial: si impara in tre secondi
 • Partite da pochi secondi, perfette per una pausa
 • PERFETTO e combo musicali per chi cerca la precisione
@@ -88,10 +88,10 @@ Platforms get narrower, the ball gets faster, colours shift. When you miss, you 
 
 Two more modes, still one tap: TOWER, where you climb a spiral round a spinning tower and jump the holes in the ramp, and DINO, where you run and jump cacti and birds like in the browser's offline game. DINO opens when you play three days in a row.
 
-And to play together, AIR HOCKEY: create a lobby on the same Wi-Fi, split into teams, 1 vs 1 or 2 vs 2, and drag your mallet. If someone's missing, the CPU plays.
+And to play together, AIR HOCKEY: create a lobby on the same Wi-Fi or online, send friends the code, split into teams, 1 vs 1 or 2 vs 2, and drag your mallet. If someone's missing, the CPU plays.
 
 • Three game modes, each with its own best score
-• Team AIR HOCKEY with friends on the same Wi-Fi, no account or internet needed
+• Team AIR HOCKEY with friends, on the same Wi-Fi or over the internet, no account needed
 • One finger, no tutorial: learn it in three seconds
 • Runs last seconds, perfect for a short break
 • PERFECT turns and musical combos for precision players
@@ -113,4 +113,4 @@ Optional purchases: styles for the colours and the ball, tokens to continue with
 - **Acquisti in-app**: Sì, da 0,99 € a 9,99 € (prodotti e ID in `PUBBLICAZIONE.md`, passo 7)
 - **Sito web / email di supporto**: `https://sindi98.github.io/one-more-tap/` · [EMAIL DI CONTATTO]
 - **Informativa privacy**: `https://sindi98.github.io/one-more-tap/privacy.html`
-- **Note per la revisione Apple**: "Free arcade game with AdMob ads. Ads never appear during play. Interstitials appear only when a run has ended (at most every 3 runs and 90 seconds); a banner shows on the mode selection screen only. Each run costs one of 5 lives, which come back over time or all at once with an optional rewarded video; another optional rewarded video lets the player continue a run once. No login required. In-app purchases are in STILI on the start screen: cosmetic styles (non-consumable), Remove Ads (non-consumable: no ads, no banner and no lives limit from then on), Full Collection (non-consumable) and token packs (consumable, one token continues a run without a video). RIPRISTINA restores purchases. The third mode, DINO, opens after the game is opened on three days in a row; the other two modes are available at once. AIR HOCKEY (button next to STILI) is a local multiplayer mode for phones on the same Wi-Fi, with no server: one player creates a lobby, the others join it from the list or with its 4-character code. Empty places are played by the CPU, so it can be tried on a single device: CREA LOBBY, then INIZIA. The Local Network permission is used only for this."
+- **Note per la revisione Apple**: "Free arcade game with AdMob ads. Ads never appear during play. Interstitials appear only when a run has ended (at most every 3 runs and 90 seconds); a banner shows on the mode selection screen only. Each run costs one of 5 lives, which come back over time or all at once with an optional rewarded video; another optional rewarded video lets the player continue a run once. No login required. In-app purchases are in STILI on the start screen: cosmetic styles (non-consumable), Remove Ads (non-consumable: no ads, no banner and no lives limit from then on), Full Collection (non-consumable) and token packs (consumable, one token continues a run without a video). RIPRISTINA restores purchases. The third mode, DINO, opens after the game is opened on three days in a row; the other two modes are available at once. AIR HOCKEY (button next to STILI) is a multiplayer mode: one player creates a lobby, on the same Wi-Fi (WI-FI: direct, no server; the others join from the list or with its 4-character code) or online (ONLINE: through our relay server; the others type its 5-character code). Online lobbies are private, joined by code only, with no chat. Empty places are played by the CPU, so it can be tried on a single device: AIR HOCKEY, then WI-FI or ONLINE, then INIZIA. The Local Network permission is used only for Wi-Fi lobbies."
