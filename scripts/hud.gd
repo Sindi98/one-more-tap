@@ -1,9 +1,9 @@
 class_name Hud
 extends CanvasLayer
 ## On-screen UI, built in code: score, combo, start / game over / pause / continue
-## / no lives panels, the mode picker, the lives, the shop, the sound toggle,
-## the share button, the privacy links and, on the web version, the link to the
-## app. Panels never block taps; only the buttons do.
+## / no lives panels, the mode picker, the lives, the shop, the AIR HOCKEY
+## lobbies, the sound toggle, the share button, the privacy links and, on the
+## web version, the link to the app. Panels never block taps; only the buttons do.
 
 signal retry_pressed
 signal continue_pressed
@@ -16,6 +16,7 @@ signal refill_pressed  ## out of lives: watch a video to get them all back
 signal share_pressed  ## game over: send a picture of the run to a friend
 signal app_pressed  ## web version: go to the page with the store links
 signal shop_pressed  ## STILI on the start screen
+signal hockey_pressed  ## AIR HOCKEY on the start screen: its lobbies
 
 const INK := UiKit.INK
 const MUTED := UiKit.MUTED
@@ -55,6 +56,7 @@ const REASONS := {
 }
 
 var shop_panel: ShopPanel  ## Main listens to it and fills it
+var lobby_panel: LobbyPanel  ## HockeyGame listens to it and fills it
 
 var _display: Font
 var _body: Font
@@ -84,6 +86,7 @@ var _mode_locks := {}  ## locked mode -> progress shown on its button, e.g. "1/3
 var _lives_views: Array[LivesView] = []  ## start, game over and no lives panels
 var _styles_row: HBoxContainer
 var _styles: Button
+var _hockey: Button
 var _notice_tween: Tween
 var _over: Control
 var _over_box: VBoxContainer
@@ -136,6 +139,8 @@ func _ready() -> void:
 	_build_no_lives()
 	shop_panel = ShopPanel.new()
 	_root.add_child(shop_panel)
+	lobby_panel = LobbyPanel.new()
+	_root.add_child(lobby_panel)
 	_build_mute()
 	_build_privacy()
 	_card = ShareCard.new(_display, _body, _body_bold)
@@ -198,17 +203,12 @@ func set_banner_height(height: float) -> void:
 	_apply_safe_area()
 
 
-## A full-screen ad is on top: nothing of ours should show or take taps.
-func show_ad() -> void:
-	_set_panel(null)
+## A screen of its own on top of the game: the shop or the AIR HOCKEY
+## lobbies. null: a full-screen ad is on top, nothing of ours should show or
+## take taps.
+func show_overlay(panel: Control) -> void:
+	_set_panel(panel)
 	_top.visible = false
-
-
-## tab: "colors", "ball" or "extra"; pick: a card to start on, if not the first.
-func show_shop(tab: String, pick := "") -> void:
-	_set_panel(shop_panel)
-	_top.visible = false
-	shop_panel.open(tab, pick)
 
 
 ## stats: one line about the run, already worded for the mode. unlocked: names
@@ -367,11 +367,13 @@ func set_hue(hue: float) -> void:
 	UiKit.style_button(_continue, _display, 40, _neon)
 	UiKit.style_button(_refill, _display, 40, _neon)
 	UiKit.style_button(_styles, _display, 28, _neon)
+	UiKit.style_button(_hockey, _display, 28, _neon)
 	_style_mode_buttons()
 	for v in _lives_views:
 		v.color = _neon
 		v.queue_redraw()
 	shop_panel.set_neon(_neon)
+	lobby_panel.set_neon(_neon)
 
 
 # --- building --------------------------------------------------------------
@@ -421,8 +423,8 @@ func _build_start() -> void:
 	_start_box.add_child(UiKit.spacer(10))
 	_start_box.add_child(_lives_view())
 
-	# The shop, just above the mode picker. It hides the start screen, so it
-	# acts on release (same reason as RIPROVA).
+	# The shop and AIR HOCKEY, just above the mode picker. They hide the start
+	# screen, so they act on release (same reason as RIPROVA).
 	_styles_row = UiKit.bottom_row(_start)
 	_styles = Button.new()
 	_styles.text = tr("STYLES")
@@ -432,6 +434,14 @@ func _build_start() -> void:
 	_styles.pressed.connect(func() -> void: shop_pressed.emit())
 	UiKit.style_button(_styles, _display, 28, _neon)
 	_styles_row.add_child(_styles)
+	_hockey = Button.new()
+	_hockey.text = tr("MODE_HOCKEY")
+	_hockey.custom_minimum_size = Vector2(MODE_BUTTON_W * 1.3, 72)
+	_hockey.focus_mode = Control.FOCUS_NONE
+	_hockey.action_mode = BaseButton.ACTION_MODE_BUTTON_RELEASE
+	_hockey.pressed.connect(func() -> void: hockey_pressed.emit())
+	UiKit.style_button(_hockey, _display, 28, _neon)
+	_styles_row.add_child(_hockey)
 
 	# Mode picker, low on the screen where the thumb is. Switching does not
 	# hide anything, so it can act on press.
@@ -613,20 +623,23 @@ func _apply_safe_area() -> void:
 	_place_top(_revive_box, 320.0 + inset.y)
 	_place_top(_no_lives_box, 220.0 + inset.y)
 	_place_top(shop_panel.box, 96.0 + inset.y)
+	_place_top(lobby_panel.box, 96.0 + inset.y)
 	var banner := _banner_h + BANNER_GAP if _banner_h > 0.0 else 0.0
 	_place_bottom(_modes, 44.0 + inset.w + banner)
 	_place_bottom(_styles_row, 44.0 + 84.0 + 22.0 + inset.w + banner)
 	_place_bottom(_menu_row, 44.0 + inset.w)
 	_place_bottom(_no_lives_menu_row, 44.0 + inset.w)
 	_place_bottom(shop_panel.bottom, 44.0 + inset.w)
+	_place_bottom(lobby_panel.bottom, 44.0 + inset.w)
 	var w := 190.0
 	var h := 60.0
 	_mute.offset_right = -20.0 - inset.x
 	_mute.offset_left = _mute.offset_right - w
 	_mute.offset_top = 20.0 + inset.y
 	_mute.offset_bottom = _mute.offset_top + h
-	# The consent form (ads) and the app link (web version) never show together.
-	for slot in [[_privacy, 0], [_consent, 1], [_app, 1]]:
+	# The consent form (ads) and the app link (web version) never show together;
+	# the way out of a hockey match shows alone.
+	for slot in [[_privacy, 0], [_consent, 1], [_app, 1], [lobby_panel.exit, 0]]:
 		var b: Button = slot[0]
 		b.offset_left = 20.0 + inset.z + slot[1] * (w + 12.0)
 		b.offset_right = b.offset_left + w
@@ -666,7 +679,7 @@ func _safe_insets() -> Vector4:
 
 
 func _set_panel(panel: Control) -> void:
-	for p in [_start, _over, _pause, _revive, _no_lives, shop_panel]:
+	for p in [_start, _over, _pause, _revive, _no_lives, shop_panel, lobby_panel]:
 		p.visible = p == panel
 	_privacy.visible = panel == _start or panel == _over or panel == _pause
 	_consent.visible = _consent_available and _privacy.visible

@@ -11,6 +11,7 @@ Il codice è pronto. Quello che resta sono account, chiavi e moduli che solo tu 
 | Negozio: stili con rarità, gettoni, Rimuovi annunci, Collezione completa, ripristino | `scripts/catalog.gd`, `scripts/shop.gd`, `scripts/iap_backend.gd`, `scripts/shop_panel.gd` |
 | Plugin acquisti in-app godot-iap 4.2.0, già attivo | `addons/godot-iap/` |
 | Plugin di condivisione e recensione in-app (Android e iOS), già attivi | `addons/SharePlugin/`, `addons/InappReviewPlugin/`, `ios/plugins/` |
+| AIR HOCKEY a squadre in rete locale, senza server: permesso Android per gli annunci delle lobby e testo del permesso "Rete locale" di iOS già nei preset | `scripts/net.gd`, `export_presets.cfg` |
 | Preset di export Android (AAB firmato), iOS (progetto Xcode) e Web (itch.io) | `export_presets.cfg` |
 | Icone (iOS 1024, Android adattiva e monocromatica) | `assets/icons/` (le rigeneri con `tools/make_icons.gd`) |
 | Pagina del gioco (dove porta il link condiviso) e informativa privacy (IT + EN), da pubblicare online | `docs/index.html`, `docs/privacy.html` |
@@ -98,9 +99,9 @@ In *Project → Export → Android → Keystore → Release* inserisci file, ali
    - **Annunci**: Sì, l'app contiene annunci.
    - **Accesso all'app**: tutte le funzionalità sono disponibili senza restrizioni.
    - **ID pubblicità**: Sì, lo usa (AdMob), per Pubblicità, Analisi e Prevenzione frodi. Il permesso `AD_ID` lo aggiunge già l'SDK.
-   - **Classificazione dei contenuti**: questionario IARC, categoria Gioco. Nessuna violenza, nessuna interazione tra utenti. Acquisti digitali: **sì**; oggetti casuali a pagamento (loot box): **no**.
+   - **Classificazione dei contenuti**: questionario IARC, categoria Gioco. Nessuna violenza. Interazione tra utenti: **sì**, solo in AIR HOCKEY, tra telefoni sulla stessa Wi-Fi: si vedono i nomi scelti dai giocatori, non c'è chat né scambio di contenuti. Acquisti digitali: **sì**; oggetti casuali a pagamento (loot box): **no**.
    - **Pubblico di destinazione**: scegli solo fasce **13 anni e oltre**. Se includi i minori di 13 anni si applicano le norme Famiglie, con regole molto più rigide sugli annunci.
-   - **Sicurezza dei dati**: dichiara quello che raccoglie l'SDK di Google, come indicato in [questa pagina di Google](https://developers.google.com/admob/android/privacy/play-data-disclosure). In pratica: dati raccolti e condivisi, cifrati in transito. Tipi: *Posizione approssimativa* (dall'IP), *ID dispositivo o altri ID*, *Attività nell'app* (interazioni), *Informazioni e prestazioni dell'app* (arresti anomali, diagnostica). Finalità: pubblicità o marketing, analisi, prevenzione delle frodi. Il gioco non ha account, quindi non c'è un meccanismo di cancellazione dati.
+   - **Sicurezza dei dati**: dichiara quello che raccoglie l'SDK di Google, come indicato in [questa pagina di Google](https://developers.google.com/admob/android/privacy/play-data-disclosure). In pratica: dati raccolti e condivisi, cifrati in transito. Tipi: *Posizione approssimativa* (dall'IP), *ID dispositivo o altri ID*, *Attività nell'app* (interazioni), *Informazioni e prestazioni dell'app* (arresti anomali, diagnostica). Finalità: pubblicità o marketing, analisi, prevenzione delle frodi. Il gioco non ha account, quindi non c'è un meccanismo di cancellazione dati. Il nome scelto in AIR HOCKEY passa solo agli altri telefoni della lobby, direttamente sulla Wi-Fi, e non arriva a te né a server: di solito non va dichiarato come dato raccolto; nel dubbio indicalo come *Nome*, facoltativo, usato per la funzionalità dell'app.
 5. *Scheda dello store principale*: testi in `store/scheda_store.md`, icona `store/icon_512.png`, grafica `store/feature_graphic_1024x500.png`, screenshot `store/screenshots/android/`.
    - Poi *Gestisci traduzioni → Aggiungi traduzioni → Inglese (Stati Uniti)* (e, se vuoi, Inglese (Regno Unito)): testi inglesi dalla stessa scheda, grafica `store/feature_graphic_1024x500_en.png`, screenshot `store/screenshots/android_en/`.
 6. *Produzione → Crea nuova release*, carica l'AAB e invia per la revisione (di solito da qualche ora a qualche giorno).
@@ -117,7 +118,8 @@ In *Project → Export → Android → Keystore → Release* inserisci file, ali
 
 1. In Godot sul Mac: export templates come sopra, poi *Project → Tools → AdMob Manager → iOS → Download & Install*. I plugin di condivisione e recensione sono già in `ios/plugins/` e già spuntati nel preset iOS (*Plugins*).
 2. *Project → Export → iOS*: in **App Store Team ID** metti il Team ID (lo trovi in developer.apple.com → Account → Membership).
-3. Su [App Store Connect](https://appstoreconnect.apple.com): *App → + → Nuova app*, piattaforma iOS, nome "One More Tap", lingua italiano, bundle ID `com.sindi98.onemoretap` (se non compare, prima registralo in developer.apple.com → Identifiers), SKU a piacere.
+3. **AIR HOCKEY su iPhone**: il preset ha già la frase per il permesso "Rete locale" che iOS chiede la prima volta. Per far comparire le lobby nell'elenco **LOBBY VICINE** anche su iPhone, Apple richiede l'entitlement *Multicast Networking*: chiedilo da [questo modulo](https://developer.apple.com/contact/request/networking-multicast) (spiega che il gioco annuncia le lobby in broadcast sulla rete locale). Quando arriva, in Xcode aggiungi `com.apple.developer.networking.multicast` al file degli entitlement. Senza, tutto funziona lo stesso: su iPhone si entra nelle lobby con il codice.
+4. Su [App Store Connect](https://appstoreconnect.apple.com): *App → + → Nuova app*, piattaforma iOS, nome "One More Tap", lingua italiano, bundle ID `com.sindi98.onemoretap` (se non compare, prima registralo in developer.apple.com → Identifiers), SKU a piacere.
 
 ### Esportare e caricare
 
@@ -129,6 +131,7 @@ In *Project → Export → Android → Keystore → Release* inserisci file, ali
 ### App Store Connect
 
 - **Privacy dell'app** ("etichette nutrizionali"): dichiara i dati dell'SDK di Google, come da [questa pagina](https://developers.google.com/admob/ios/privacy/data-disclosure): *Posizione approssimativa*, *ID dispositivo*, *Dati pubblicitari*, *Interazione con il prodotto*, *Dati sugli arresti anomali*, *Dati sulle prestazioni*, *Altri dati diagnostici*. Finalità: pubblicità di terze parti e analisi; non collegati all'identità. Questa versione **non** mostra la richiesta di tracciamento di Apple (ATT), quindi l'SDK non accede all'IDFA. Se marchi dei dati come "usati per il tracciamento", Apple pretende il popup ATT (vedi "Più avanti").
+- Il nome di AIR HOCKEY va solo agli altri telefoni della lobby, sulla rete locale, e non arriva a te: vale quanto detto per Google Play.
 - **URL informativa privacy** e **URL di supporto** (la pagina `index.html`).
 - **Classificazione per età**: compila il questionario. Il gioco non ha contenuti sensibili, ma gli annunci di terzi possono alzare la fascia: rispondi in modo coerente. Nel codice gli annunci sono limitati a contenuti per tutti con supervisione (`MAX_AD_CONTENT_RATING_PG`).
 - **Crittografia**: già dichiarata nel preset (`ITSAppUsesNonExemptEncryption = NO`), Xcode non chiede nulla.
@@ -239,6 +242,7 @@ Per gli aggiornamenti ripeti l'export e carica il nuovo zip al posto del vecchio
 - [ ] Informativa online con i tuoi dati, `PRIVACY_URL` corretto
 - [ ] Build di **release** provata su telefono: compare il consenso, il video "Continua" fa ripartire, l'interstitial compare a fine partita, il banner c'è solo nel menu, RICARICA ridà le vite, PRIVACY e CONSENSO si aprono, CONDIVIDI apre il menu di condivisione con l'immagine della partita
 - [ ] Gioco provato con il telefono in inglese (testi inglesi) e in italiano
+- [ ] AIR HOCKEY provato con almeno due telefoni sulla stessa Wi-Fi: la lobby compare nell'elenco (su Android), si entra col codice, 2 contro 2 con la CPU nei posti vuoti, rivincita, e chi esce viene sostituito dalla CPU
 - [ ] Schede degli store compilate in italiano e in inglese
 - [ ] Keystore Android salvato in un posto sicuro
 - [ ] Versione aumentata
