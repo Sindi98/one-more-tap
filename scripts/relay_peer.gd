@@ -12,7 +12,10 @@ signal hosted(code: String)  ## the relay opened our room, with this code
 const PROTOCOL := 1  ## the relay's (server/relay.mjs): bumped together
 const HEADER := 6
 const MAX_PACKET := 4096 - HEADER  ## the relay drops bigger messages
-const CLOSED_BY_HOST := 4000  ## the relay's close code when the host leaves
+const CLOSED_BY_HOST := 4000  ## the relay's close codes: the host left...
+const REFUSED := 4001  ## ...or it said no, with the reason as the close reason
+const REASONS: Array[String] = ["not_found", "full", "playing", "version", "busy", "bad"]
+const HEARTBEAT := 5.0  ## seconds between pings: a connection lost on our side shows up
 
 ## Why the relay let us go: "not_found", "full", "playing", "version", "busy"
 ## or "bad" when it refused, "closed" when the host left, "offline" when the
@@ -75,6 +78,17 @@ static func unframe(bytes: PackedByteArray) -> Dictionary:
 	}
 
 
+## Why the relay closed the connection. A refusal arrives just before its
+## close, but closing empties what was received: the reason travels with the
+## close too.
+static func why_closed(close_code: int, close_reason: String) -> String:
+	if close_code == CLOSED_BY_HOST:
+		return "closed"
+	if close_code == REFUSED and close_reason in REASONS:
+		return close_reason
+	return "offline"
+
+
 ## The transfer mode a header byte stands for; reliable if it's no mode.
 static func mode_of(byte: int) -> MultiplayerPeer.TransferMode:
 	if byte == MultiplayerPeer.TRANSFER_MODE_UNRELIABLE:
@@ -110,7 +124,7 @@ func _poll() -> void:
 				_on_packet(data)
 	elif state == WebSocketPeer.STATE_CLOSED:
 		if reason.is_empty():
-			reason = "closed" if _ws.get_close_code() == CLOSED_BY_HOST else "offline"
+			reason = why_closed(_ws.get_close_code(), _ws.get_close_reason())
 		_lost()
 
 
@@ -213,6 +227,7 @@ func _is_refusing_new_connections() -> bool:
 
 func _open(url: String) -> Error:
 	reason = ""
+	_ws.heartbeat_interval = HEARTBEAT
 	var err := _ws.connect_to_url(url)
 	if err == OK:
 		_status = MultiplayerPeer.CONNECTION_CONNECTING
@@ -257,7 +272,7 @@ func _on_message(text: String) -> void:
 
 func _on_packet(bytes: PackedByteArray) -> void:
 	var packet := unframe(bytes)
-	if packet.is_empty():
+	if packet.is_empty() or packet["data"].is_empty():
 		return
 	var peer: int = packet["peer"]
 	# Guests hear only from the host, the host only from its guests.
@@ -265,10 +280,9 @@ func _on_packet(bytes: PackedByteArray) -> void:
 		_inbox.append(packet)
 
 
-## The relay is gone: so is everyone reached through it.
+## The relay is gone, and everyone reached through it: the multiplayer API
+## lets them all go when it sees the connection closed.
 func _lost() -> void:
 	_status = MultiplayerPeer.CONNECTION_DISCONNECTED
 	_inbox.clear()
-	for id in _guests:
-		peer_disconnected.emit(id)
 	_guests.clear()

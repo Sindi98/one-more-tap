@@ -40,6 +40,14 @@ func _test_frames() -> void:
 	_check(back["data"].get_string_from_utf8() == "abc", "payload back")
 	_check(RelayScript.unframe(PackedByteArray([1, 2, 3])).is_empty(), "too short to be a packet")
 	_check(RelayScript.mode_of(9) == RELIABLE, "an unknown mode is reliable")
+	_check(RelayScript.why_closed(4000, "closed") == "closed", "the host left")
+	_check(RelayScript.why_closed(4001, "full") == "full", "a refusal says why")
+	_check(RelayScript.why_closed(4001, "made up") == "offline", "unknown reasons are not trusted")
+	_check(RelayScript.why_closed(1006, "") == "offline", "the connection was lost")
+	var empty: PackedByteArray = RelayScript.frame(1, 0, RELIABLE, PackedByteArray())
+	var guest = RelayScript.new()
+	guest._on_packet(empty)
+	_check(guest.get_available_packet_count() == 0, "empty packets are dropped")
 
 
 func _test_host_side() -> void:

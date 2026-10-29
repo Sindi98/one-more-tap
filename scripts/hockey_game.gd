@@ -14,6 +14,7 @@ signal changed  ## the player's name changed: save it
 enum Phase { BROWSE, ROOM, PLAY, RESULT }
 
 const SNAPSHOT_EVERY := 1.0 / 30.0  ## seconds between the host's snapshots
+const TARGET_EVERY := 1.0 / 60.0  ## at most this often a guest sends its finger
 const SOUND_GAP := 0.07  ## seconds: one knock per hit, not one per frame of contact
 const LEFT_REASONS := {
 	"closed": "LEFT_CLOSED",
@@ -39,6 +40,7 @@ var _match: Hockey  ## on the table: a real match, or the bots behind the lobby
 var _me := -1  ## our mallet in the match, -1 if none
 var _roster: Array[int] = []  ## the peer playing each mallet, 0 for a bot
 var _snap_in := 0.0
+var _send_in := 0.0
 var _sound_in := 0.0
 var _touch := -1  ## the finger moving our mallet, -1 if none
 var _target := Vector2.INF  ## where our mallet should go
@@ -103,9 +105,12 @@ func tick(delta: float) -> void:
 			if _snap_in <= 0.0:
 				_snap_in = SNAPSHOT_EVERY
 				_net.send_snapshot(_match.snapshot())
-		elif _target.is_finite() and _target != _sent:
-			_sent = _target
-			_net.send_target(_target)
+		else:
+			_send_in -= delta
+			if _send_in <= 0.0 and _target.is_finite() and _target != _sent:
+				_send_in = TARGET_EVERY
+				_sent = _target
+				_net.send_target(_target)
 	_sound_in = maxf(0.0, _sound_in - delta)
 	_view.tick(delta)
 

@@ -26,7 +26,12 @@ function phone(address = url) {
     if (next) next(msg);
     else ws.inbox.push(msg);
   });
-  ws.closed = new Promise((resolve) => ws.on("close", (code) => resolve(code)));
+  ws.closed = new Promise((resolve) =>
+    ws.on("close", (code, reason) => {
+      ws.closeReason = reason.toString();
+      resolve(code);
+    }),
+  );
   return new Promise((resolve, reject) => {
     ws.on("open", () => resolve(ws));
     ws.on("error", reject);
@@ -149,6 +154,8 @@ test("refusals say why", async () => {
     ws.send(JSON.stringify(msg));
     assert.deepEqual(await next(ws), { t: "error", reason });
     assert.equal(await ws.closed, REFUSED);
+    // The game may only get the close: the reason travels with it too.
+    assert.equal(ws.closeReason, reason);
   }
   const junk = await phone();
   junk.send("{{{");
