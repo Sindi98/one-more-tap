@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=12 format=3]
 
 [ext_resource type="Script" path="res://scripts/game.gd" id="1_game"]
 [ext_resource type="Script" path="res://scripts/world_view.gd" id="2_world"]
@@ -10,6 +10,7 @@
 [ext_resource type="Script" path="res://scripts/fx.gd" id="8_fx"]
 [ext_resource type="Script" path="res://scripts/social.gd" id="9_social"]
 [ext_resource type="Script" path="res://scripts/shop.gd" id="10_shop"]
+[ext_resource type="Script" path="res://scripts/music.gd" id="11_music"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_game")
@@ -32,6 +33,9 @@ script = ExtResource("8_fx")
 
 [node name="Sfx" type="Node" parent="."]
 script = ExtResource("3_sfx")
+
+[node name="Music" type="Node" parent="."]
+script = ExtResource("11_music")
 
 [node name="HUD" type="CanvasLayer" parent="."]
 script = ExtResource("4_hud")
