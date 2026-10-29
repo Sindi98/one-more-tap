@@ -2,7 +2,8 @@ class_name ShopPanel
 extends Control
 ## The shop, built in code: tabs of looks and extras, a card for each with its
 ## rarity and price, the big button that buys or puts on the card picked, back
-## and restore. Hud shows it; what is on sale and owned comes from Shop.
+## and restore. Hud shows it; what is on sale and owned comes from Shop. Texts
+## are keys of assets/i18n/strings.csv.
 
 signal closed
 signal look_previewed(id: String)  ## a card was picked: show its look, owned or not
@@ -12,15 +13,15 @@ signal restore_pressed
 
 const CARD_SIZE := Vector2(330, 108)
 const CARD_ROWS := 4  ## the grid keeps the height of the longest tab
-const TABS := {"colors": "COLORI", "ball": "PALLINA", "extra": "EXTRA"}
+const TABS := {"colors": "TAB_COLORS", "ball": "TAB_BALL", "extra": "TAB_EXTRA"}
 ## Extras on their cards: a short name, a line instead of the rarity, and the
 ## colour of the rarity their price matches.
 const EXTRA_CARDS := {
-	"no_ads": ["NO ANNUNCI", "PER SEMPRE", "epic"],
-	"collection": ["COLLEZIONE", "TUTTI GLI STILI", "legendary"],
-	"tokens_10": ["10 GETTONI", "PER CONTINUA", "rare"],
-	"tokens_30": ["30 GETTONI", "PER CONTINUA", "rare"],
-	"tokens_100": ["100 GETTONI", "PER CONTINUA", "rare"],
+	"no_ads": ["CARD_NO_ADS", "TAG_FOREVER", "epic"],
+	"collection": ["CARD_COLLECTION", "TAG_ALL_STYLES", "legendary"],
+	"tokens_10": ["CARD_TOKENS", "TAG_FOR_CONTINUE", "rare"],
+	"tokens_30": ["CARD_TOKENS", "TAG_FOR_CONTINUE", "rare"],
+	"tokens_100": ["CARD_TOKENS", "TAG_FOR_CONTINUE", "rare"],
 }
 
 var box: VBoxContainer  ## the panel's content, placed by Hud under the safe area
@@ -52,7 +53,7 @@ func _init() -> void:
 	add_child(box)
 	box.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
 
-	var title := UiKit.label("STILI", _display, 72, _neon, true)
+	var title := UiKit.label(tr("STYLES"), _display, 72, _neon, true)
 	_neon_labels.append(title)
 	box.add_child(title)
 	_tokens = UiKit.label("", _body_bold, 24, UiKit.MUTED)
@@ -64,7 +65,7 @@ func _init() -> void:
 	box.add_child(tabs)
 	for tab in TABS:
 		var b := Button.new()
-		b.text = TABS[tab]
+		b.text = tr(TABS[tab])
 		b.custom_minimum_size = Vector2(Hud.MODE_BUTTON_W, 72)
 		b.focus_mode = Control.FOCUS_NONE
 		b.action_mode = BaseButton.ACTION_MODE_BUTTON_PRESS
@@ -103,8 +104,8 @@ func _init() -> void:
 
 	# Both leave the shop or open a store sheet: on release, like RIPROVA.
 	bottom = UiKit.bottom_row(self)
-	bottom.add_child(_wide_button("INDIETRO", closed.emit))
-	bottom.add_child(_wide_button("RIPRISTINA", restore_pressed.emit))
+	bottom.add_child(_wide_button(tr("BACK"), closed.emit))
+	bottom.add_child(_wide_button(tr("RESTORE"), restore_pressed.emit))
 
 
 func _process(_delta: float) -> void:
@@ -130,7 +131,7 @@ func open(tab: String, pick := "") -> void:
 func refresh() -> void:
 	if _shop == null:
 		return
-	_tokens.text = "GETTONI: %d" % _shop.inventory.tokens
+	_tokens.text = tr("TOKENS_COUNT") % _shop.inventory.tokens
 	UiKit.style_picker(_tabs, _tab, _display, 26, _neon)
 	for id in _cards:
 		_style_card(id)
@@ -153,24 +154,21 @@ func show_result(product: String, outcome: String) -> void:
 	match outcome:
 		"ok":
 			if product == "restore":
-				text = "Acquisti ripristinati"
+				text = tr("RESTORED")
 			elif Catalog.LOOKS.has(product):
-				text = "%s è tuo!" % Catalog.LOOKS[product]["name"]
+				text = tr("LOOK_BOUGHT") % tr(Catalog.LOOKS[product]["name"])
 			elif product == Catalog.NO_ADS:
-				text = "Annunci rimossi! Hai %d gettoni per CONTINUA" % _shop.inventory.tokens
+				text = tr("NO_ADS_BOUGHT") % _shop.inventory.tokens
 			elif product == Catalog.COLLECTION:
-				text = "Collezione completa: ora è tutto tuo!"
+				text = tr("COLLECTION_BOUGHT")
 			else:
-				text = "+%d gettoni" % int(Catalog.EXTRAS[product]["tokens"])
+				text = tr("TOKENS_BOUGHT") % int(Catalog.EXTRAS[product]["tokens"])
 		"pending":
-			text = "Pagamento in attesa: arriva appena è confermato"
+			text = tr("PAYMENT_PENDING")
 		"nothing":
-			text = "Nessun acquisto da ripristinare"
+			text = tr("NOTHING_TO_RESTORE")
 		"failed":
-			if product == "restore":
-				text = "Ripristino non riuscito, riprova più tardi"
-			else:
-				text = "Acquisto non riuscito, riprova più tardi"
+			text = tr("RESTORE_FAILED") if product == "restore" else tr("PURCHASE_FAILED")
 	_message.text = text
 	refresh()
 
@@ -232,9 +230,13 @@ func _make_card(id: String) -> Button:
 	texts.alignment = BoxContainer.ALIGNMENT_CENTER
 	texts.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(texts)
-	var name_text: String = (
-		Catalog.LOOKS[id]["name"] if Catalog.LOOKS.has(id) else EXTRA_CARDS[id][0]
-	)
+	var name_text: String
+	if Catalog.LOOKS.has(id):
+		name_text = tr(Catalog.LOOKS[id]["name"])
+	elif Catalog.is_consumable(id):
+		name_text = tr(EXTRA_CARDS[id][0]) % int(Catalog.EXTRAS[id]["tokens"])
+	else:
+		name_text = tr(EXTRA_CARDS[id][0])
 	var labels: Array[Label] = [
 		UiKit.label(name_text, _body_bold, 25, UiKit.INK),
 		UiKit.label("", _body_bold, 17, UiKit.MUTED),
@@ -254,10 +256,10 @@ func _style_card(id: String) -> void:
 	var rarity: String
 	if Catalog.LOOKS.has(id):
 		rarity = Catalog.LOOKS[id]["rarity"]
-		labels[1].text = Catalog.RARITIES[rarity]["name"]
+		labels[1].text = tr(Catalog.RARITIES[rarity]["name"])
 	else:
 		rarity = EXTRA_CARDS[id][2]
-		labels[1].text = EXTRA_CARDS[id][1]
+		labels[1].text = tr(EXTRA_CARDS[id][1])
 	var accent: Color = Catalog.RARITIES[rarity]["color"]
 	labels[1].label_settings.font_color = accent
 	var state := _card_state(id)
@@ -281,16 +283,17 @@ func _card_state(id: String) -> Array:
 	var inv := _shop.inventory
 	if Catalog.LOOKS.has(id):
 		if inv.wearing[Catalog.LOOKS[id]["kind"]] == id:
-			return ["IN USO", _neon]
+			return [tr("WEARING"), _neon]
 		if inv.has_look(id, _records):
-			return ["TUO", UiKit.INK]
+			return [tr("OWNED"), UiKit.INK]
 		var unlock: Array = Catalog.LOOKS[id].get("unlock", [])
 		if not unlock.is_empty():
-			return ["%d IN %s" % [unlock[1], Hud.MODE_NAMES[unlock[0]]], UiKit.MUTED]
+			var at := tr("UNLOCK_AT") % [unlock[1], tr(Hud.MODE_NAMES[unlock[0]])]
+			return [at, UiKit.MUTED]
 	elif id == Catalog.NO_ADS and inv.no_ads():
-		return ["ATTIVO", _neon]
+		return [tr("ACTIVE"), _neon]
 	elif id == Catalog.COLLECTION and inv.owned.has(id):
-		return ["TUA", _neon]
+		return [tr("OWNED_COLLECTION"), _neon]
 	var price := _shop.price(id)
 	return [price if price != "" else "—", UiKit.INK]
 
@@ -305,43 +308,43 @@ func _update_action() -> void:
 	_action_kind = ""
 	if Catalog.LOOKS.has(id):
 		var look: Dictionary = Catalog.LOOKS[id]
-		var where := "In tutte le modalità" if look["kind"] == "colors" else "In ZIGZAG e TORRE"
-		about = "%s. %s" % [look["about"], where]
+		var where := tr("EVERY_MODE") if look["kind"] == "colors" else tr("BALL_MODES")
+		about = "%s. %s" % [tr(look["name"] + "_ABOUT"), where]
 		if inv.wearing[look["kind"]] == id:
-			text = "IN USO"
+			text = tr("WEARING")
 		elif inv.has_look(id, _records):
-			text = "USA"
+			text = tr("WEAR")
 			_action_kind = "wear"
 		elif not Catalog.is_product(id):
 			var unlock: Array = look["unlock"]
-			text = "BLOCCATO"
-			about = (
-				"Fai %d punti in %s per sbloccarlo. Il tuo record: %d"
-				% [unlock[1], Hud.MODE_NAMES[unlock[0]], int(_records.get(unlock[0], 0))]
-			)
+			var mode_name := tr(Hud.MODE_NAMES[unlock[0]])
+			text = tr("LOCKED")
+			about = (tr("UNLOCK_HOW") % [unlock[1], mode_name, int(_records.get(unlock[0], 0))])
 		else:
 			for_sale = true
 	elif Catalog.is_consumable(id):
-		about = "Un gettone è un CONTINUA senza video. Ne hai %d" % inv.tokens
+		about = tr("TOKENS_ABOUT") % inv.tokens
 		for_sale = true
 	else:
-		about = Catalog.EXTRAS[id]["about"]
+		about = tr(Catalog.EXTRAS[id]["about"])
 		if id == Catalog.NO_ADS and inv.no_ads():
-			text = "ATTIVO"
+			text = tr("ACTIVE")
 		elif id == Catalog.COLLECTION and inv.owned.has(id):
-			text = "GIÀ TUA"
+			text = tr("ALREADY_YOURS")
 		else:
 			for_sale = true
 	if for_sale:
 		if _shop.busy():
-			text = "ATTENDI…"
+			text = tr("WAIT")
 		elif _shop.can_buy(id):
-			text = "ACQUISTA  " + _shop.price(id)
+			text = tr("BUY") % _shop.price(id)
 			_action_kind = "buy"
 		else:
-			text = "NON DISPONIBILE"
-			if not _shop.available():
-				about += "\nNegozio non raggiungibile: riprova più tardi"
+			text = tr("UNAVAILABLE")
+			if OS.has_feature("web"):
+				about += "\n" + tr("STORE_IN_APP")  # the web version sells nothing
+			elif not _shop.available():
+				about += "\n" + tr("STORE_OFFLINE")
 	_action.text = text
 	_action.disabled = _action_kind.is_empty()
 	UiKit.style_button(_action, _display, 34, UiKit.MUTED if _action.disabled else _neon)

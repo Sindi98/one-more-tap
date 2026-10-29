@@ -1,6 +1,6 @@
 # One More Tap
 
-Gioco arcade verticale a un dito, Godot 4.7 / GDScript. Tre modalità infinite (ZIGZAG, TORRE, DINO), un solo controllo, percorsi generati, game over, record locale per modalità, restart immediato, grafica neon. Gratuito con annunci AdMob e acquisti in-app facoltativi (stili, gettoni, niente annunci), pronto per Google Play e App Store: i passi per pubblicarlo sono in **[PUBBLICAZIONE.md](PUBBLICAZIONE.md)**.
+Gioco arcade verticale a un dito, Godot 4.7 / GDScript. Tre modalità infinite (ZIGZAG, TORRE, DINO), un solo controllo, percorsi generati, game over, record locale per modalità, restart immediato, grafica neon. In italiano e in inglese. Gratuito con annunci AdMob e acquisti in-app facoltativi (stili, gettoni, niente annunci), pronto per Google Play e App Store, con una versione web senza annunci per itch.io: i passi per pubblicarlo sono in **[PUBBLICAZIONE.md](PUBBLICAZIONE.md)**.
 
 ## Aprire e giocare
 
@@ -74,6 +74,22 @@ Plugin [AdMob di Poing Studios](https://github.com/poingstudios/godot-admob-plug
 - **ID**: finché `LIVE_IDS` in `scripts/ads.gd` è vuoto, e sempre nelle build di debug, il gioco usa gli annunci di prova di Google.
 - **Dove compaiono**: su telefono con il plugin nativo; dall'editor (F5) il plugin mostra annunci finti. Su desktop esportato e nei test headless gli annunci sono spenti e il gioco funziona come prima.
 
+## Lingue
+
+Tutti i testi del gioco stanno in `assets/i18n/strings.csv`: una riga per testo, una colonna per lingua (`en`, `it`). Il gioco usa la lingua del telefono (o del browser): italiano per chi ha il telefono in italiano, inglese per tutti gli altri.
+
+- **Cambiare un testo**: modifica la cella nel CSV (anche con un foglio di calcolo, salvando in CSV UTF-8). Godot lo reimporta da solo.
+- **Aggiungere una lingua**: aggiungi una colonna col codice della lingua (per esempio `es`), poi in *Project → Project Settings → Localization → Translations* aggiungi il file `strings.es.translation` che Godot crea accanto al CSV.
+- **Provare l'altra lingua dall'editor**: *Project Settings → Internationalization → Locale → Test*, scrivi `en` o `it`. Vale solo quando avvii il gioco dall'editor.
+
+## Condivisione, recensioni, versione web
+
+- **CONDIVIDI** (nel game over): crea un'immagine 1080 px della partita (il percorso, il punto dell'errore, la modalità, il punteggio, il record e "Riesci a battermi?") e apre il menu di condivisione del telefono, con un testo e il link alla pagina del gioco (`SITE_URL` in `scripts/social.gd`, cioè `docs/index.html` pubblicata con GitHub Pages). Su telefono usa il plugin [Share](https://github.com/godot-mobile-plugins/godot-share) v6.0 (`addons/SharePlugin`, iOS 16 o successivo), sul web il menu di condivisione del browser. Dove non si può condividere, il pulsante non compare.
+- **Recensione**: dopo un nuovo record che batte quello precedente, a gioco fermo, il gioco chiede allo store di mostrare la sua finestra di recensione (plugin [In-App Review](https://github.com/godot-mobile-plugins/godot-inapp-review) v5.3, `addons/InappReviewPlugin`). Solo dopo almeno 15 partite, al massimo 3 volte e a 30 giorni di distanza (`scripts/review_pacing.gd`), mai subito dopo un interstitial e mai se il giocatore ha già ripreso a giocare. Google e Apple decidono poi se mostrarla davvero: la finestra compare solo nelle app scaricate dallo store, non nelle build di prova.
+- **Versione web**: preset *Web* in `export_presets.cfg`, senza annunci e senza vite. Il negozio c'è ma non vende: gli stili gratis e quelli dei record si usano anche lì, gli altri rimandano all'app. Al posto del pulsante CONSENSO c'è SCARICA, che porta alla pagina del gioco. Come caricarla su itch.io: [PUBBLICAZIONE.md](PUBBLICAZIONE.md#8-versione-web-su-itchio).
+
+I due plugin (licenza MIT) sono già nel progetto, con i file nativi per Android e iOS, e già attivi. Su desktop e nei test non vengono caricati.
+
 ## Struttura
 
 | File | Ruolo |
@@ -98,6 +114,10 @@ Plugin [AdMob di Poing Studios](https://github.com/poingstudios/godot-admob-plug
 | `scripts/ad_pacing.gd` | Regole pure su quando mostrare un interstitial |
 | `scripts/lives.gd` | Regole pure delle vite: una a partita, ritorno col tempo, ricarica |
 | `scripts/lives_view.gd` | Cuori disegnati in codice, col tempo che manca alla prossima vita |
+| `scripts/social.gd` | Condivisione (telefono e browser), richiesta di recensione, link alla pagina del gioco |
+| `scripts/share_card.gd` | L'immagine da condividere: il mondo di gioco ridisegnato fuori schermo con punteggio e sfida |
+| `scripts/review_pacing.gd` | Regole pure su quando chiedere una recensione |
+| `assets/i18n/strings.csv` | Tutti i testi, in inglese e italiano |
 | `scripts/catalog.gd` | Cosa c'è nel negozio: stili con rarità, colori di ogni palette, extra, ID dei prodotti, fasce di prezzo |
 | `scripts/inventory.gd` | Regole pure di cosa possiedi e indossi: stili, gettoni, niente annunci, salvataggio |
 | `scripts/streak.gd` | Regole pure dei giorni di fila che aprono DINO |
@@ -108,12 +128,14 @@ Plugin [AdMob di Poing Studios](https://github.com/poingstudios/godot-admob-plug
 | `tests/test_runner.gd` | Test headless delle regole di DINO |
 | `tests/test_ad_pacing.gd` | Test headless della frequenza degli annunci |
 | `tests/test_lives.gd` | Test headless delle vite |
+| `tests/test_review_pacing.gd` | Test headless di quando chiedere una recensione |
 | `tests/test_shop.gd` | Test headless del negozio: catalogo, possesso, gettoni, salvataggio, giorni di fila |
 | `tests/test_iap_backend.gd` | Test headless del collegamento agli store, con un finto plugin (`tests/fake_iap.gd`, `tests/fake_iap_types.gd`) |
 | `tools/make_icons.gd` | Rigenera le icone PNG da `assets/icons/*.svg` |
-| `export_presets.cfg` | Preset Android (AAB) e iOS |
-| `docs/` | Informativa privacy da pubblicare con GitHub Pages |
-| `store/` | Testi, screenshot e grafiche per le schede degli store |
+| `export_presets.cfg` | Preset Android (AAB), iOS e Web |
+| `addons/SharePlugin`, `addons/InappReviewPlugin`, `addons/GMPShared`, `ios/plugins` | Plugin di condivisione e recensione (Android e iOS) |
+| `docs/` | Pagina del gioco e informativa privacy, da pubblicare con GitHub Pages |
+| `store/` | Testi, screenshot (italiano e inglese) e grafiche per le schede degli store |
 
 Renderer **Compatibility** (OpenGL): massima compatibilità con Android economici. Viewport 720×1280 verticale, si estende sui telefoni più lunghi.
 
@@ -125,15 +147,16 @@ godot --headless --path . --script res://tests/test_tower.gd
 godot --headless --path . --script res://tests/test_runner.gd
 godot --headless --path . --script res://tests/test_ad_pacing.gd
 godot --headless --path . --script res://tests/test_lives.gd
+godot --headless --path . --script res://tests/test_review_pacing.gd
 godot --headless --path . --script res://tests/test_shop.gd
 godot --headless --path . --script res://tests/test_iap_backend.gd
 ```
 
-Controllano che un giocatore perfetto sopravviva su 60 percorsi diversi per modalità (in DINO fino alla velocità massima), che gli angoli restino sempre nello schermo, che dopo ogni buco ci sia rampa per reagire, che ogni gruppo di cactus sia superabile con un margine, che "presto/tardi/non saltare" sia corretto, il conteggio dei perfetti e la rampa di difficoltà. Controllano anche che "continua" valga una volta sola, mantenga il punteggio e riparta piano, che gli interstitial rispettino le pause e che le vite si spendano, tornino col tempo senza superare il massimo e non si possano ottenere spostando l'orologio. Per il negozio: che ogni prodotto abbia un ID valido e un prezzo, che gli stili si sblocchino coi record giusti, che i gettoni non si contino due volte e non vadano sotto zero, che i 10 gettoni in regalo arrivino una volta sola, che il salvataggio ignori dati strani, e che DINO si apra al terzo giorno di fila e non prima. Il collegamento agli store è provato contro un finto plugin: prezzi, acquisto, annullato, errore, pagamento approvato dopo, prodotto già posseduto, ripristino. Durano qualche secondo.
+Controllano che un giocatore perfetto sopravviva su 60 percorsi diversi per modalità (in DINO fino alla velocità massima), che gli angoli restino sempre nello schermo, che dopo ogni buco ci sia rampa per reagire, che ogni gruppo di cactus sia superabile con un margine, che "presto/tardi/non saltare" sia corretto, il conteggio dei perfetti e la rampa di difficoltà. Controllano anche che "continua" valga una volta sola, mantenga il punteggio e riparta piano, che gli interstitial rispettino le pause, che le vite si spendano, tornino col tempo senza superare il massimo e non si possano ottenere spostando l'orologio, e che la recensione si chieda solo dopo un record, non nelle prime partite e di rado. Per il negozio: che ogni prodotto abbia un ID valido e un prezzo, che gli stili si sblocchino coi record giusti, che i gettoni non si contino due volte e non vadano sotto zero, che i 10 gettoni in regalo arrivino una volta sola, che il salvataggio ignori dati strani, e che DINO si apra al terzo giorno di fila e non prima. Il collegamento agli store è provato contro un finto plugin: prezzi, acquisto, annullato, errore, pagamento approvato dopo, prodotto già posseduto, ripristino. Durano qualche secondo.
 
 ## Export su telefono
 
-I preset Android (AAB firmato, build Gradle, permessi INTERNET e VIBRATE) e iOS (progetto Xcode, solo iPhone, iOS 17+) sono già in `export_presets.cfg`. Strumenti da installare, chiavi di firma e invio agli store: **[PUBBLICAZIONE.md](PUBBLICAZIONE.md)**.
+I preset Android (AAB firmato, build Gradle, permessi INTERNET e VIBRATE) e iOS (progetto Xcode, solo iPhone, iOS 17+, plugin di condivisione, recensione e acquisti attivi) sono già in `export_presets.cfg`. Strumenti da installare, chiavi di firma e invio agli store: **[PUBBLICAZIONE.md](PUBBLICAZIONE.md)**.
 
 Prova veloce su Android: template di export, JDK 17 e Android SDK installati, *Project → Install Android Build Template*, telefono in debug USB, poi il pulsante Android in alto a destra nell'editor.
 
@@ -142,6 +165,6 @@ Prova veloce su Android: template di export, JDK 17 e Android SDK installati, *P
 1. Playtest su telefono vero: tarare `W_START`, `W_STEP`, `V_START`, `V_STEP`, `PERFECT_FRAC` in `track.gd`, le costanti in cima a `tower.gd` e `runner.gd`, più `REVIVE_SLOW`, la frequenza degli annunci in `ad_pacing.gd` e le vite in `lives.gd` (`MAX`, `REFILL_SECONDS`).
 2. Sfida giornaliera: `Track.new(width, height, seed)` accetta già un seed, basta derivarlo dalla data.
 3. Creare i prodotti negli store e provarli con un account di test ([PUBBLICAZIONE.md](PUBBLICAZIONE.md#7-acquisti-in-app)).
-4. Traduzione inglese; skin del Dino nel negozio.
+4. Skin del Dino nel negozio.
 
 Font: Bungee e Chakra Petch, licenza SIL Open Font License (file in `assets/fonts`).

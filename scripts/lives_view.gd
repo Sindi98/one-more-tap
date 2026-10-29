@@ -27,7 +27,7 @@ func set_lives(left: int, total: int, wait_seconds: int) -> void:
 	var text := ""
 	if wait_seconds > 0:
 		@warning_ignore("integer_division")
-		text = "+1 tra %d:%02d" % [wait_seconds / 60, wait_seconds % 60]
+		text = tr("NEXT_LIFE") % [wait_seconds / 60, wait_seconds % 60]
 	if left == _left and total == _total and text == _text:
 		return
 	_left = left

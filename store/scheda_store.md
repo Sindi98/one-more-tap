@@ -5,13 +5,14 @@ Limiti di lunghezza tra parentesi. Le immagini sono in questa cartella:
 | File | Dove va |
 |---|---|
 | `icon_512.png` | Google Play, icona dell'app (512×512) |
-| `feature_graphic_1024x500.png` | Google Play, grafica in evidenza |
-| `screenshots/android/*.png` | Google Play, screenshot telefono (1080×1920) |
-| `screenshots/iphone/*.png` | App Store, iPhone 6,9" (1320×2868) |
+| `feature_graphic_1024x500.png` | Google Play, grafica in evidenza (italiano) |
+| `feature_graphic_1024x500_en.png` | Google Play, grafica in evidenza (inglese) |
+| `screenshots/android/*.png`, `screenshots/android_en/*.png` | Google Play, screenshot telefono (1080×1920), italiano e inglese |
+| `screenshots/iphone/*.png`, `screenshots/iphone_en/*.png` | App Store, iPhone 6,9" (1320×2868), italiano e inglese |
 
 L'icona dell'App Store (1024×1024) la prende Godot da `assets/icons/icon_1024.png` durante l'export.
 
-Gli screenshot sono catturati dal gioco vero. Se cambi la grafica, rifalli dal telefono o dall'editor.
+Gli screenshot sono catturati dal gioco vero, nelle due lingue dell'interfaccia. Se cambi la grafica, rifalli dal telefono o dall'editor.
 
 ---
 
@@ -48,6 +49,7 @@ Altre due modalità, sempre con un tap: TORRE, dove sali una spirale intorno a u
 • PERFETTO e combo musicali per chi cerca la precisione
 • Grafica neon e suoni sintetizzati
 • Stili da collezionare per i colori e la pallina, dal comune al leggendario: alcuni si sbloccano coi record
+• Condividi i tuoi record e sfida gli amici
 • Funziona offline
 
 Gioco gratuito con pubblicità. Dopo una caduta puoi guardare un breve video per ripartire da dove eri, una volta per partita.
@@ -89,13 +91,12 @@ Two more modes, still one tap: TOWER, where you climb a spiral round a spinning 
 • PERFECT turns and musical combos for precision players
 • Neon visuals and synthesised sounds
 • Collectible styles for the colours and the ball, from common to legendary: some unlock with your best scores
+• Share your best runs and challenge your friends
 • Plays offline
 
 Free to play with ads. After a fall you can watch a short video to carry on from where you were, once per run.
 
 Optional purchases: styles for the colours and the ball, tokens to continue without a video, Remove Ads (no ads and unlimited runs) and the Full Collection with every style. You always buy exactly what you see, no mystery boxes, and nothing you buy helps you win.
-
-Note: the game's interface is in Italian.
 
 ---
 

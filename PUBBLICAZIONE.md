@@ -1,4 +1,4 @@
-# Pubblicare One More Tap su Google Play e App Store
+# Pubblicare One More Tap su Google Play, App Store e itch.io
 
 Il codice è pronto. Quello che resta sono account, chiavi e moduli che solo tu puoi compilare. Segui i passi in ordine: ognuno dice dove cliccare e cosa scrivere.
 
@@ -10,10 +10,11 @@ Il codice è pronto. Quello che resta sono account, chiavi e moduli che solo tu 
 | Annunci: consenso GDPR, interstitial a fine partita, banner nel menu, video "Continua" e "Ricarica", vite | `scripts/ads.gd`, `scripts/admob_backend.gd`, `scripts/ad_pacing.gd` |
 | Negozio: stili con rarità, gettoni, Rimuovi annunci, Collezione completa, ripristino | `scripts/catalog.gd`, `scripts/shop.gd`, `scripts/iap_backend.gd`, `scripts/shop_panel.gd` |
 | Plugin acquisti in-app godot-iap 4.2.0, già attivo | `addons/godot-iap/` |
-| Preset di export Android (AAB firmato) e iOS (progetto Xcode) | `export_presets.cfg` |
+| Plugin di condivisione e recensione in-app (Android e iOS), già attivi | `addons/SharePlugin/`, `addons/InappReviewPlugin/`, `ios/plugins/` |
+| Preset di export Android (AAB firmato), iOS (progetto Xcode) e Web (itch.io) | `export_presets.cfg` |
 | Icone (iOS 1024, Android adattiva e monocromatica) | `assets/icons/` (le rigeneri con `tools/make_icons.gd`) |
-| Informativa privacy (IT + EN), da pubblicare online | `docs/privacy.html` |
-| Testi, screenshot, icona 512 e grafica 1024×500 per gli store | `store/` |
+| Pagina del gioco (dove porta il link condiviso) e informativa privacy (IT + EN), da pubblicare online | `docs/index.html`, `docs/privacy.html` |
+| Testi, screenshot, icona 512 e grafica 1024×500 per gli store, in italiano e inglese | `store/` |
 
 Finché non inserisci i tuoi ID, il gioco mostra **annunci di prova di Google**. Nelle build di debug li mostra sempre, anche dopo. È voluto: toccare i tuoi annunci veri può far sospendere l'account AdMob.
 
@@ -28,6 +29,8 @@ Finché non inserisci i tuoi ID, il gioco mostra **annunci di prova di Google**.
 - **Dal editor (F5)** vedi annunci finti disegnati dal plugin, così puoi provare tutto il giro senza telefono.
 - **Rimuovi annunci** (o la Collezione completa): niente più annunci né banner, e dall'avvio dopo l'SDK di Google non parte nemmeno. Niente vite, si gioca senza limiti. CONTINUA usa i gettoni.
 
+Il gioco è in italiano per chi ha il telefono in italiano e in inglese per tutti gli altri. Per questo le schede degli store vanno compilate in tutte e due le lingue (passi 4 e 5).
+
 ---
 
 ## 1. Decidi l'identificativo dell'app (una volta sola)
@@ -37,14 +40,15 @@ Nei preset è impostato `com.sindi98.onemoretap`. Dopo la prima pubblicazione **
 - Android → *Package → Unique Name*
 - iOS → *Application → Bundle Identifier*
 
-## 2. Informativa privacy online
+## 2. Informativa privacy e pagina del gioco online
 
-Entrambi gli store la chiedono, e il gioco la apre dal pulsante PRIVACY.
+Entrambi gli store chiedono l'informativa, e il gioco la apre dal pulsante PRIVACY. La pagina `index.html` è quella del gioco: ci arriva chi riceve un punteggio condiviso, e ci porta il pulsante SCARICA della versione web.
 
 1. Apri `docs/privacy.html` e `docs/index.html` e sostituisci `[NOME E COGNOME DELLO SVILUPPATORE]`, `[DEVELOPER FULL NAME]`, `[EMAIL DI CONTATTO]` e `[CONTACT EMAIL]`. Ti consiglio un indirizzo dedicato al gioco. È un modello: se hai dubbi legali, fallo controllare.
-2. Su GitHub: *Settings → Pages → Build and deployment → Deploy from a branch → `main` / `/docs`*. Dopo un minuto la pagina è su `https://sindi98.github.io/one-more-tap/privacy.html`.
+2. Su GitHub: *Settings → Pages → Build and deployment → Deploy from a branch → `master` / `/docs`*. Dopo un minuto le pagine sono su `https://sindi98.github.io/one-more-tap/` e `https://sindi98.github.io/one-more-tap/privacy.html`.
    - Con un repository privato, GitHub Pages richiede un piano a pagamento. In alternativa carica i due file su un altro hosting.
-3. Se l'indirizzo è diverso, aggiorna `PRIVACY_URL` in `scripts/ads.gd`.
+3. Se l'indirizzo è diverso, aggiorna `PRIVACY_URL` in `scripts/ads.gd` e `SITE_URL` in `scripts/social.gd`.
+4. Finché l'app non è sugli store, la pagina del gioco dice "In arrivo su Google Play e App Store". I link li aggiungi dopo la pubblicazione (passo 9).
 
 ## 3. AdMob
 
@@ -98,6 +102,7 @@ In *Project → Export → Android → Keystore → Release* inserisci file, ali
    - **Pubblico di destinazione**: scegli solo fasce **13 anni e oltre**. Se includi i minori di 13 anni si applicano le norme Famiglie, con regole molto più rigide sugli annunci.
    - **Sicurezza dei dati**: dichiara quello che raccoglie l'SDK di Google, come indicato in [questa pagina di Google](https://developers.google.com/admob/android/privacy/play-data-disclosure). In pratica: dati raccolti e condivisi, cifrati in transito. Tipi: *Posizione approssimativa* (dall'IP), *ID dispositivo o altri ID*, *Attività nell'app* (interazioni), *Informazioni e prestazioni dell'app* (arresti anomali, diagnostica). Finalità: pubblicità o marketing, analisi, prevenzione delle frodi. Il gioco non ha account, quindi non c'è un meccanismo di cancellazione dati.
 5. *Scheda dello store principale*: testi in `store/scheda_store.md`, icona `store/icon_512.png`, grafica `store/feature_graphic_1024x500.png`, screenshot `store/screenshots/android/`.
+   - Poi *Gestisci traduzioni → Aggiungi traduzioni → Inglese (Stati Uniti)* (e, se vuoi, Inglese (Regno Unito)): testi inglesi dalla stessa scheda, grafica `store/feature_graphic_1024x500_en.png`, screenshot `store/screenshots/android_en/`.
 6. *Produzione → Crea nuova release*, carica l'AAB e invia per la revisione (di solito da qualche ora a qualche giorno).
 7. Torna in AdMob e collega l'app Android alla scheda Play.
 
@@ -110,7 +115,7 @@ In *Project → Export → Android → Keystore → Release* inserisci file, ali
 
 ### Preparare (una volta)
 
-1. In Godot sul Mac: export templates come sopra, poi *Project → Tools → AdMob Manager → iOS → Download & Install*.
+1. In Godot sul Mac: export templates come sopra, poi *Project → Tools → AdMob Manager → iOS → Download & Install*. I plugin di condivisione e recensione sono già in `ios/plugins/` e già spuntati nel preset iOS (*Plugins*).
 2. *Project → Export → iOS*: in **App Store Team ID** metti il Team ID (lo trovi in developer.apple.com → Account → Membership).
 3. Su [App Store Connect](https://appstoreconnect.apple.com): *App → + → Nuova app*, piattaforma iOS, nome "One More Tap", lingua italiano, bundle ID `com.sindi98.onemoretap` (se non compare, prima registralo in developer.apple.com → Identifiers), SKU a piacere.
 
@@ -128,6 +133,7 @@ In *Project → Export → Android → Keystore → Release* inserisci file, ali
 - **Classificazione per età**: compila il questionario. Il gioco non ha contenuti sensibili, ma gli annunci di terzi possono alzare la fascia: rispondi in modo coerente. Nel codice gli annunci sono limitati a contenuti per tutti con supervisione (`MAX_AD_CONTENT_RATING_PG`).
 - **Crittografia**: già dichiarata nel preset (`ITSAppUsesNonExemptEncryption = NO`), Xcode non chiede nulla.
 - **Screenshot**: `store/screenshots/iphone/` (6,9", 1320×2868). L'app è solo per iPhone, quindi non servono quelli per iPad.
+- **Inglese**: in alto a destra nella pagina della versione, *Italiano → Aggiungi lingua → Inglese (USA)*, poi i testi inglesi della scheda e gli screenshot `store/screenshots/iphone_en/`.
 - **Note per la revisione**: c'è un testo pronto in `store/scheda_store.md`.
 - Seleziona la build caricata e *Invia per la revisione*.
 - Dopo la pubblicazione, collega l'app iOS alla scheda in AdMob.
@@ -196,12 +202,44 @@ Con un tester di Play o l'account sandbox di Apple, su una build di release:
 - Rimuovi annunci: niente interstitial né banner, spariscono le vite, CONTINUA usa i gettoni (10 in regalo). Chiudi e riapri il gioco: il modulo del consenso non compare più.
 - Finiti i gettoni, CONTINUA porta al negozio; comprati, si torna al game over e si continua.
 
+## 8. Versione web su itch.io
+
+Una versione da giocare nel browser, gratis e senza annunci: serve a far provare il gioco in un clic e a portare chi si diverte verso gli store (pulsante SCARICA in alto). Non ha vite e non mostra annunci; i record restano nel browser.
+
+### Esportare
+
+1. *Editor → Manage Export Templates*: se hai già scaricato i template per Android/iOS, ci sono anche quelli web.
+2. *Project → Export → Web → Export Project*, togli la spunta "Export With Debug" e salva come `export/web/index.html` (la cartella `export/` non va su git).
+3. Comprimi **il contenuto** della cartella `export/web` in uno zip (`index.html` deve stare alla radice dello zip, non dentro una sottocartella).
+
+Il preset è senza thread: funziona su itch.io e su qualsiasi hosting senza intestazioni speciali, anche su iPhone.
+
+### Caricarla su itch.io
+
+1. Crea l'account su [itch.io](https://itch.io), poi *Dashboard → Create new project*.
+2. **Kind of project**: HTML. Carica lo zip e spunta *This file will be played in the browser*.
+3. **Embed options**: *Click to launch in fullscreen* no; *Viewport dimensions* `405 × 720`; spunta *Mobile friendly* (orientamento *Portrait*) e *Fullscreen button*. Lascia spenta *SharedArrayBuffer support*: non serve.
+4. Titolo, descrizione breve, screenshot (`store/screenshots/android/` o `android_en/`), immagine di copertina (630×500: puoi ritagliare `store/feature_graphic_1024x500.png`), genere *Action*, tag come `arcade`, `one-button`, `casual`, `neon`, `endless`, `mobile`.
+5. Nella descrizione metti i link agli store, quando ci sono.
+6. *Visibility → Public* e salva.
+
+Prova sul telefono: apri la pagina, gioca, poi CONDIVIDI (sul browser del telefono apre il menu di condivisione) e SCARICA.
+
+Per gli aggiornamenti ripeti l'export e carica il nuovo zip al posto del vecchio. Con [butler](https://itch.io/docs/butler/) puoi farlo da riga di comando.
+
+## 9. Dopo la pubblicazione
+
+1. Apri `docs/index.html` e in fondo, in `LINKS`, inserisci i link a Google Play, App Store e alla pagina itch.io (gli esempi sono nel commento sopra). I pulsanti compaiono da soli, con lo store del visitatore per primo.
+2. Su itch.io aggiungi i link agli store nella descrizione.
+
 ## Controllo finale prima di inviare
 
 - [ ] ID app AdMob nelle Project Settings, ID unità in `LIVE_IDS`
 - [ ] Messaggio GDPR pubblicato in AdMob
 - [ ] Informativa online con i tuoi dati, `PRIVACY_URL` corretto
-- [ ] Build di **release** provata su telefono: compare il consenso, il video "Continua" fa ripartire, l'interstitial compare a fine partita, il banner c'è solo nel menu, RICARICA ridà le vite, PRIVACY e CONSENSO si aprono
+- [ ] Build di **release** provata su telefono: compare il consenso, il video "Continua" fa ripartire, l'interstitial compare a fine partita, il banner c'è solo nel menu, RICARICA ridà le vite, PRIVACY e CONSENSO si aprono, CONDIVIDI apre il menu di condivisione con l'immagine della partita
+- [ ] Gioco provato con il telefono in inglese (testi inglesi) e in italiano
+- [ ] Schede degli store compilate in italiano e in inglese
 - [ ] Keystore Android salvato in un posto sicuro
 - [ ] Versione aumentata
 - [ ] Prodotti creati e attivi su entrambi gli store, con gli stessi ID della tabella del passo 7
@@ -210,5 +248,4 @@ Con un tester di Play o l'account sandbox di Apple, su una build di release:
 ## Più avanti (facoltativo)
 
 - **Richiesta di tracciamento iOS (ATT)**: aumenta i ricavi su iPhone. In AdMob crea il messaggio "IDFA" (Privacy e messaggi). Aggiungi al preset iOS, in *Additional Plist Content*, la chiave `NSUserTrackingUsageDescription`, per esempio "Usiamo questo identificatore per mostrarti annunci più pertinenti". Infine collega il framework `AppTrackingTransparency` in Xcode. Il modulo di Google mostra poi il popup al momento giusto.
-- **Traduzione inglese** dell'interfaccia, per allargare il pubblico.
 - **Mediazione** (altre reti pubblicitarie in AdMob), quando hai abbastanza giocatori: si attiva dalle Project Settings del plugin.

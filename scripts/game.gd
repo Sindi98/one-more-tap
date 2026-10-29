@@ -2,7 +2,7 @@ extends Node2D
 ## ONE MORE TAP — game flow: modes, input, states, camera, feedback, saving.
 ## Each mode has its rules (Track, Tower, Runner) and its drawing (WorldView,
 ## TowerView, RunnerView); sparks and labels in Fx, UI in Hud, sounds in Sfx,
-## ads in Ads, purchases in Shop.
+## ads in Ads, purchases in Shop, sharing and store reviews in Social.
 
 ## AD: a full-screen ad is on top. REVIVE: back in the game after a continue,
 ## waiting for a tap. NO_LIVES: a run was asked for, none left. SHOP: the shop
@@ -22,6 +22,7 @@ const SHOP_CAMERA_SHIFT := 0.2  ## shop open: the game behind slides down, below
 const DEATH_PAUSE := 0.6  ## seconds of slow fall before the game over panel
 const RESTART_LOCK := 0.35  ## ignore taps right after game over (no accidental restarts)
 const REVIVE_LOCK := 0.5  ## after the video: time for the camera to settle on the ball
+const REVIEW_DELAY := 1.2  ## the player sees the new record before the review dialog
 const SAVE_PATH := "user://save.cfg"
 
 var mode := "zigzag"
@@ -32,6 +33,7 @@ var muted := false
 var lives := Lives.new()
 var lives_on := false  ## only where ads run: the lost lives come back with a video
 var streak := Streak.new()
+var reviews := ReviewPacing.new()
 
 var _state_time := 0.0
 var _new_record := false  ## the run just lost set a new record
@@ -41,6 +43,7 @@ var _cam := Vector2.ZERO
 var _hue := 0.0
 var _preview := {}  ## kind -> look picked in the shop, shown until it closes
 var _shop_from := State.READY  ## where the shop was opened, to go back there
+var _sharing := false  ## the picture of the run is being drawn
 
 @onready var camera: Camera2D = $Camera2D
 @onready var views := {"zigzag": $World, "tower": $Tower, "runner": $Runner}
@@ -49,6 +52,7 @@ var _shop_from := State.READY  ## where the shop was opened, to go back there
 @onready var hud: Hud = $HUD
 @onready var ads: Ads = $Ads
 @onready var shop: Shop = $Shop
+@onready var social: Social = $Social
 
 
 func _ready() -> void:
@@ -68,6 +72,8 @@ func _ready() -> void:
 	hud.refill_pressed.connect(_on_refill_pressed)
 	hud.privacy_pressed.connect(ads.open_privacy_policy)
 	hud.consent_pressed.connect(ads.show_consent_options)
+	hud.share_pressed.connect(_on_share_pressed)
+	hud.app_pressed.connect(social.open_site)
 	hud.shop_pressed.connect(_on_shop_pressed)
 	hud.shop_panel.closed.connect(_on_shop_closed)
 	hud.shop_panel.look_previewed.connect(_on_look_previewed)
@@ -243,6 +249,7 @@ func _restart() -> void:
 ## may show (when one is due), before the results.
 func _show_over() -> void:
 	_new_record = run.score > best[mode]
+	var beat_record: bool = _new_record and best[mode] > 0  # the first run always sets one
 	_unlocked_looks.clear()
 	if _new_record:
 		for id in Catalog.LOOKS:
@@ -253,10 +260,11 @@ func _show_over() -> void:
 				and best[mode] < unlock[1]
 				and run.score >= unlock[1]
 			):
-				_unlocked_looks.append(Catalog.LOOKS[id]["name"])
+				_unlocked_looks.append(tr(Catalog.LOOKS[id]["name"]))
 		best[mode] = run.score
-		_save()
 		sfx.record()
+	reviews.run_finished()
+	_save()
 	hud.set_best(best[mode])
 	ads.run_finished()
 	if ads.show_interstitial_if_due(_show_over_panel):
@@ -264,6 +272,11 @@ func _show_over() -> void:
 		hud.show_ad()
 		return
 	_show_over_panel()
+	# A record that beats an earlier one is a good moment to ask for a review,
+	# once the panel has been seen. Never right after an interstitial.
+	if social.can_review() and reviews.should_ask(beat_record, _now()):
+		social.prepare_review()
+		get_tree().create_timer(REVIEW_DELAY).timeout.connect(_ask_review)
 
 
 func _show_over_panel() -> void:
@@ -276,20 +289,28 @@ func _show_over_panel() -> void:
 		_stats(),
 		_unlocked_looks,
 		_continue_offer(),
-		shop.inventory.tokens
+		shop.inventory.tokens,
+		social.can_share()
 	)
+
+
+## Only while the results are still on screen: never over a run.
+func _ask_review() -> void:
+	if state == State.OVER and social.launch_review():
+		reviews.asked(_now())
+		_save()
 
 
 ## One line about the run for the game over panel.
 func _stats() -> String:
 	if run is Tower:
 		var t := run as Tower
-		return "%d buchi  ·  %d perfetti  ·  combo max %d" % [t.cleared, t.perfects, t.best_combo]
+		return tr("STATS_TOWER") % [t.cleared, t.perfects, t.best_combo]
 	if run is Runner:
 		var r := run as Runner
-		return "%d ostacoli  ·  %d salti" % [r.cleared, r.jumps]
+		return tr("STATS_RUNNER") % [r.cleared, r.jumps]
 	var k := run as Track
-	return "%d piattaforme  ·  %d perfetti  ·  combo max %d" % [k.seg, k.perfects, k.best_combo]
+	return tr("STATS_ZIGZAG") % [k.seg, k.perfects, k.best_combo]
 
 
 ## One continue per run, for runs worth it. What CONTINUA does: "token"
@@ -348,7 +369,7 @@ func _reward(perfect: bool, combo: int, plain_sound: Callable) -> void:
 		if boost > 2.0:
 			fx.burst(at, 10, Color.WHITE, 1.6)
 			sfx.sparkle()
-		var label := "PERFETTO" if combo < 2 else "PERFETTO ×%d" % combo
+		var label := tr("PERFECT") if combo < 2 else "%s ×%d" % [tr("PERFECT"), combo]
 		fx.float_text(label, at + Vector2(0.0, -26.0 * run.unit), neon)
 		hud.show_combo(combo)
 		sfx.perfect(combo)
@@ -393,12 +414,7 @@ func _on_mode_pressed(m: String) -> void:
 	if state != State.READY or m == mode:
 		return
 	if not _mode_open(m):
-		hud.show_notice(
-			(
-				"DINO si apre dopo %d giorni di fila.\nSei al giorno %d: torna domani!"
-				% [Streak.DAYS_TO_UNLOCK, streak.days]
-			)
-		)
+		hud.show_start(best[mode], tr("DINO_LOCKED") % [Streak.DAYS_TO_UNLOCK, streak.days])
 		return
 	_set_mode(m)
 	_save()
@@ -550,7 +566,20 @@ func _visit_today() -> void:
 	hud.set_mode(mode, _mode_locks())
 	if opened and state == State.READY:
 		sfx.record()
-		hud.show_notice("DINO È APERTO!\nSalta cactus e uccelli: tocca DINO in basso")
+		hud.show_start(best[mode], tr("DINO_OPEN"))
+
+
+## A picture of the run for a friend, with the link to the game.
+func _on_share_pressed() -> void:
+	if state != State.OVER or _sharing:
+		return
+	_sharing = true
+	var image: Image = await hud.share_image(get_viewport().world_2d, camera.position)
+	_sharing = false
+	if state != State.OVER:
+		return  # the player started again meanwhile: no share sheet over a run
+	var text := tr("SHARE_TEXT") % [run.score, tr(Hud.MODE_NAMES[mode]), Social.SITE_URL]
+	social.share(image, text)
 
 
 func _on_mute_pressed() -> void:
@@ -616,6 +645,11 @@ func _load_save() -> void:
 			int(cfg.get_value("lives", "count", Lives.MAX)),
 			float(cfg.get_value("lives", "since", 0.0))
 		)
+		reviews = ReviewPacing.new(
+			int(cfg.get_value("review", "runs", 0)),
+			int(cfg.get_value("review", "asks", 0)),
+			float(cfg.get_value("review", "last_ask", 0.0))
+		)
 		streak.load_from(cfg)
 		shop.inventory.load_from(cfg, best)
 	# Played DINO before it had to be opened: it stays open.
@@ -631,6 +665,9 @@ func _save() -> void:
 	cfg.set_value("settings", "mode", mode)
 	cfg.set_value("lives", "count", lives.count)
 	cfg.set_value("lives", "since", lives.since)
+	cfg.set_value("review", "runs", reviews.runs)
+	cfg.set_value("review", "asks", reviews.asks)
+	cfg.set_value("review", "last_ask", reviews.last_ask)
 	streak.save_to(cfg)
 	shop.inventory.save_to(cfg)
 	cfg.save(SAVE_PATH)

@@ -6,6 +6,7 @@ extends RefCounted
 ## Rarity is a price band and how much a look does, never luck: the player sees
 ## exactly what they buy. Common looks are free, some from the start, some
 ## once a record is reached; every other look is sold once and kept for good.
+## Names and descriptions are keys of assets/i18n/strings.csv.
 
 ## Store product ids are PREFIX + id, the same on Google Play and the App Store.
 const PREFIX := "onemoretap."
@@ -13,67 +14,32 @@ const PREFIX := "onemoretap."
 ## "price": the band each product is set to in the stores. The game shows the
 ## store's own price, in the player's currency; this one only in the editor.
 const RARITIES := {
-	"common": {"name": "COMUNE", "color": Color("aab0d0"), "price": ""},
-	"rare": {"name": "RARO", "color": Color("4da6ff"), "price": "0,99 €"},
-	"epic": {"name": "EPICO", "color": Color("b866ff"), "price": "1,99 €"},
-	"legendary": {"name": "LEGGENDARIO", "color": Color("ffc23d"), "price": "3,99 €"},
+	"common": {"name": "RARITY_COMMON", "color": Color("aab0d0"), "price": ""},
+	"rare": {"name": "RARITY_RARE", "color": Color("4da6ff"), "price": "0,99 €"},
+	"epic": {"name": "RARITY_EPIC", "color": Color("b866ff"), "price": "1,99 €"},
+	"legendary": {"name": "RARITY_LEGENDARY", "color": Color("ffc23d"), "price": "3,99 €"},
 }
 
 ## Looks, in shop order. kind "colors": the neon of every mode; "ball": the ball
 ## of ZIGZAG and TORRE. "unlock": [mode, score] frees a common look once that
-## record is reached; a common look without it is there from the start.
+## record is reached; a common look without it is there from the start. Its
+## description is the name key + "_ABOUT".
 const LOOKS := {
-	"neon": {"kind": "colors", "rarity": "common", "name": "NEON", "about": "I colori di sempre"},
+	"neon": {"kind": "colors", "rarity": "common", "name": "LOOK_NEON"},
 	"ghiaccio":
-	{
-		"kind": "colors",
-		"rarity": "common",
-		"name": "GHIACCIO",
-		"about": "Azzurri e blu freddi",
-		"unlock": ["zigzag", 25],
-	},
+	{"kind": "colors", "rarity": "common", "name": "LOOK_GHIACCIO", "unlock": ["zigzag", 25]},
 	"deserto":
-	{
-		"kind": "colors",
-		"rarity": "common",
-		"name": "DESERTO",
-		"about": "Sabbia, ocra e terra",
-		"unlock": ["runner", 500],
-	},
-	"tramonto":
-	{"kind": "colors", "rarity": "rare", "name": "TRAMONTO", "about": "Rossi, rosa e arancioni"},
-	"acido": {"kind": "colors", "rarity": "rare", "name": "ACIDO", "about": "Lime, giallo e verde"},
-	"oro": {"kind": "colors", "rarity": "epic", "name": "ORO", "about": "Oro che luccica sempre"},
-	"arcobaleno":
-	{
-		"kind": "colors",
-		"rarity": "legendary",
-		"name": "ARCOBALENO",
-		"about": "Tutti i colori, che scorrono senza fermarsi",
-	},
-	"classica":
-	{"kind": "ball", "rarity": "common", "name": "CLASSICA", "about": "La pallina di sempre"},
-	"anello":
-	{
-		"kind": "ball",
-		"rarity": "common",
-		"name": "ANELLO",
-		"about": "Un anello di luce",
-		"unlock": ["tower", 25],
-	},
-	"diamante":
-	{"kind": "ball", "rarity": "rare", "name": "DIAMANTE", "about": "Un diamante che gira"},
-	"pixel":
-	{"kind": "ball", "rarity": "rare", "name": "PIXEL", "about": "Quadrata, scia a gradini"},
-	"cometa":
-	{"kind": "ball", "rarity": "epic", "name": "COMETA", "about": "Lunga coda di luce e scintille"},
-	"supernova":
-	{
-		"kind": "ball",
-		"rarity": "legendary",
-		"name": "SUPERNOVA",
-		"about": "Una stella che pulsa, scia di stelle e PERFETTO che esplodono",
-	},
+	{"kind": "colors", "rarity": "common", "name": "LOOK_DESERTO", "unlock": ["runner", 500]},
+	"tramonto": {"kind": "colors", "rarity": "rare", "name": "LOOK_TRAMONTO"},
+	"acido": {"kind": "colors", "rarity": "rare", "name": "LOOK_ACIDO"},
+	"oro": {"kind": "colors", "rarity": "epic", "name": "LOOK_ORO"},
+	"arcobaleno": {"kind": "colors", "rarity": "legendary", "name": "LOOK_ARCOBALENO"},
+	"classica": {"kind": "ball", "rarity": "common", "name": "LOOK_CLASSICA"},
+	"anello": {"kind": "ball", "rarity": "common", "name": "LOOK_ANELLO", "unlock": ["tower", 25]},
+	"diamante": {"kind": "ball", "rarity": "rare", "name": "LOOK_DIAMANTE"},
+	"pixel": {"kind": "ball", "rarity": "rare", "name": "LOOK_PIXEL"},
+	"cometa": {"kind": "ball", "rarity": "epic", "name": "LOOK_COMETA"},
+	"supernova": {"kind": "ball", "rarity": "legendary", "name": "LOOK_SUPERNOVA"},
 }
 const DEFAULT_LOOKS := {"colors": "neon", "ball": "classica"}
 
@@ -96,21 +62,11 @@ const STARTER_TOKENS := 10  ## given once with the ad-free pass (or the collecti
 
 ## On sale beside the looks. A pack with "tokens" can be bought again and again.
 const EXTRAS := {
-	"no_ads":
-	{
-		"name": "RIMUOVI ANNUNCI",
-		"price": "2,99 €",
-		"about": "Niente annunci. CONTINUA usa i gettoni: i primi 10 sono in regalo",
-	},
-	"collection":
-	{
-		"name": "COLLEZIONE COMPLETA",
-		"price": "9,99 €",
-		"about": "Tutti gli stili, anche quelli che verranno, e niente annunci",
-	},
-	"tokens_10": {"name": "10 GETTONI", "price": "0,99 €", "tokens": 10},
-	"tokens_30": {"name": "30 GETTONI", "price": "1,99 €", "tokens": 30},
-	"tokens_100": {"name": "100 GETTONI", "price": "4,99 €", "tokens": 100},
+	"no_ads": {"price": "2,99 €", "about": "EXTRA_NO_ADS_ABOUT"},
+	"collection": {"price": "9,99 €", "about": "EXTRA_COLLECTION_ABOUT"},
+	"tokens_10": {"price": "0,99 €", "tokens": 10},
+	"tokens_30": {"price": "1,99 €", "tokens": 30},
+	"tokens_100": {"price": "4,99 €", "tokens": 100},
 }
 
 

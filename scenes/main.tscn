@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://scripts/game.gd" id="1_game"]
 [ext_resource type="Script" path="res://scripts/world_view.gd" id="2_world"]
@@ -8,7 +8,8 @@
 [ext_resource type="Script" path="res://scripts/tower_view.gd" id="6_tower"]
 [ext_resource type="Script" path="res://scripts/runner_view.gd" id="7_runner"]
 [ext_resource type="Script" path="res://scripts/fx.gd" id="8_fx"]
-[ext_resource type="Script" path="res://scripts/shop.gd" id="9_shop"]
+[ext_resource type="Script" path="res://scripts/social.gd" id="9_social"]
+[ext_resource type="Script" path="res://scripts/shop.gd" id="10_shop"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_game")
@@ -38,5 +39,8 @@ script = ExtResource("4_hud")
 [node name="Ads" type="Node" parent="."]
 script = ExtResource("5_ads")
 
+[node name="Social" type="Node" parent="."]
+script = ExtResource("9_social")
+
 [node name="Shop" type="Node" parent="."]
-script = ExtResource("9_shop")
+script = ExtResource("10_shop")
