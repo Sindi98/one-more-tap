@@ -4,19 +4,100 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>One More Tap</title>
+<meta name="description" content="Un tap per cambiare direzione. Ogni tap conta. · One tap to change direction. Every tap counts.">
+<meta property="og:title" content="One More Tap">
+<meta property="og:description" content="Un tap per cambiare direzione. Ogni tap conta. · One tap to change direction. Every tap counts.">
+<meta property="og:image" content="https://sindi98.github.io/one-more-tap/screen_en.jpg">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
 <style>
-  body { margin: 0; background: #06060c; color: #eef2ff; font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
-  main { max-width: 720px; margin: 0 auto; padding: 48px 16px; }
-  h1 { color: #3cf2ff; margin: 0 0 8px; }
-  a { color: #3cf2ff; }
+  :root { --bg: #06060c; --ink: #eef2ff; --muted: #8a90b8; --neon: #3cf2ff; --line: #22243a; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 720px; margin: 0 auto; padding: 40px 16px 48px; text-align: center; }
+  .logo { width: 96px; height: 96px; }
+  h1 { font-size: 40px; line-height: 1.1; margin: 16px 0 8px; letter-spacing: .04em; }
+  h1 span { color: var(--neon); text-shadow: 0 0 18px rgba(60, 242, 255, .45); }
+  .tagline { color: var(--muted); font-size: 18px; margin: 0 0 24px; }
+  .links { display: flex; flex-direction: column; gap: 12px; max-width: 320px; margin: 0 auto 32px; }
+  .links a { display: block; padding: 14px 16px; border: 2px solid var(--neon); border-radius: 8px; color: var(--neon); font-weight: 700; text-decoration: none; letter-spacing: .03em; }
+  .links a.first { background: var(--neon); color: var(--bg); }
+  .soon { color: var(--muted); }
+  .shot { width: 100%; max-width: 270px; border: 1px solid var(--line); border-radius: 16px; }
+  footer { margin-top: 32px; color: var(--muted); font-size: 14px; }
+  footer a { color: var(--muted); }
+  [hidden] { display: none !important; }
 </style>
 </head>
 <body>
 <main>
-<h1>One More Tap</h1>
-<p>Un tap per cambiare direzione. Ogni tap conta.</p>
-<p><a href="privacy.html">Informativa sulla privacy · Privacy policy</a></p>
-<p>Contatti: [EMAIL DI CONTATTO]</p>
+<img class="logo" src="icon.svg" alt="">
+<h1>ONE MORE <span>TAP</span></h1>
+
+<div lang="it" data-lang="it">
+  <p class="tagline">Un tap per cambiare direzione. Ogni tap conta.<br>Tre modalità, un dito solo. Gratis.</p>
+  <div class="links">
+    <a data-link="play" href="#" hidden>Scarica da Google Play</a>
+    <a data-link="appstore" href="#" hidden>Scarica dall'App Store</a>
+    <a data-link="web" href="#" hidden>Gioca nel browser</a>
+    <p class="soon" data-soon hidden>In arrivo su Google Play e App Store.</p>
+  </div>
+  <img class="shot" src="screen_it.jpg" alt="Una partita a ZIGZAG">
+</div>
+
+<div lang="en" data-lang="en" hidden>
+  <p class="tagline">One tap to change direction. Every tap counts.<br>Three modes, one finger. Free.</p>
+  <div class="links">
+    <a data-link="play" href="#" hidden>Get it on Google Play</a>
+    <a data-link="appstore" href="#" hidden>Download on the App Store</a>
+    <a data-link="web" href="#" hidden>Play in your browser</a>
+    <p class="soon" data-soon hidden>Coming soon to Google Play and the App Store.</p>
+  </div>
+  <img class="shot" src="screen_en.jpg" alt="A run in ZIGZAG">
+</div>
+
+<footer>
+  <a href="privacy.html">Informativa sulla privacy · Privacy policy</a><br>
+  Contatti · Contact: [EMAIL DI CONTATTO]
+</footer>
 </main>
+<script>
+// Fill these in once the game is out; a button with an empty link stays hidden.
+//   play:     https://play.google.com/store/apps/details?id=com.sindi98.onemoretap
+//   appstore: the link App Store Connect gives you (https://apps.apple.com/app/id...)
+//   web:      the page of the browser version (for example on itch.io)
+const LINKS = {
+  play: "",
+  appstore: "",
+  web: "",
+};
+
+// Italian for Italian browsers, English for everyone else.
+const lang = (navigator.language || "en").toLowerCase().startsWith("it") ? "it" : "en";
+document.documentElement.lang = lang;
+for (const block of document.querySelectorAll("[data-lang]")) {
+  block.hidden = block.dataset.lang !== lang;
+}
+
+// The visitor's own store first.
+const ua = navigator.userAgent;
+const own = /android/i.test(ua) ? "play" : /iphone|ipad|ipod/i.test(ua) ? "appstore" : "";
+for (const box of document.querySelectorAll(".links")) {
+  const shown = [];
+  for (const a of box.querySelectorAll("[data-link]")) {
+    const url = LINKS[a.dataset.link];
+    a.hidden = !url;
+    if (url) {
+      a.href = url;
+      shown.push(a);
+    }
+  }
+  const first = shown.find((a) => a.dataset.link === own) || shown[0];
+  if (first) {
+    first.classList.add("first");
+    box.prepend(first);
+  }
+  box.querySelector("[data-soon]").hidden = LINKS.play !== "" && LINKS.appstore !== "";
+}
+</script>
 </body>
 </html>

@@ -11,3 +11,6 @@
 # Signing keys never go in the repository
 *.keystore
 *.jks
+
+# Built from assets/i18n/strings.csv when Godot imports the project
+*.translation

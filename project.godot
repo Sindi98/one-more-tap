@@ -42,7 +42,11 @@ window/handheld/orientation=1
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/admob/plugin.cfg")
+enabled=PackedStringArray("res://addons/admob/plugin.cfg", "res://addons/InappReviewPlugin/plugin.cfg", "res://addons/SharePlugin/plugin.cfg")
+
+[internationalization]
+
+locale/translations=PackedStringArray("res://assets/i18n/strings.en.translation", "res://assets/i18n/strings.it.translation")
 
 [rendering]
 
