@@ -207,7 +207,7 @@ func _test_snapshot_round_trip() -> void:
 	var host = _open_match(2)
 	host.puck = Vector2(210.0, 333.0)
 	host.puck_vel = Vector2(-400.0, 250.0)
-	host.score = [2, 1]
+	host.score.assign([2, 1])
 	host.mallets[2].pos = Vector2(150.0, 120.0)
 	var guest = HockeyScript.new(2)
 	guest.scoring = false

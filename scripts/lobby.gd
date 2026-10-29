@@ -5,9 +5,11 @@ extends RefCounted
 ## no sockets, testable headless. The host keeps the real one and sends it to
 ## the guests (see Net).
 ##
-## A lobby code is four characters that hold the last two numbers of the
-## host's local address, plus a check against typos: a guest on the same
-## network adds its own first two numbers to reach the host.
+## A lobby code on the local network is four characters that hold the last
+## two numbers of the host's local address, plus a check against typos: a
+## guest on the same network adds its own first two numbers to reach the
+## host. A lobby on the relay (online) has five characters, chosen by the
+## relay, from the same set.
 
 const PROTOCOL := 1  ## bumped when what the phones say to each other changes
 const GAME_ID := "omt-hockey"
@@ -17,10 +19,11 @@ const NAME_MAX := 12
 ## Code characters: no 0/O and 1/I, easy to mix up.
 const CODE_CHARS := "23456789ABCDEFGHJKLMNPQRSTUVWXYZ"
 const CODE_LENGTH := 4
+const ONLINE_CODE_LENGTH := 5
 
 var team_size := 2
 var goals := Hockey.GOALS_TO_WIN
-var code := ""  ## see code_for(): friends type it to come in
+var code := ""  ## friends type it to come in: see code_for(), or given by the relay
 var players := {}  ## peer id -> {"name": String, "team": int}
 var order: Array[int] = []  ## peer ids in the order they came in, the host first
 
@@ -123,7 +126,7 @@ func from_dict(d: Dictionary) -> void:
 	team_size = size if size in SIZES else 1
 	var g := int_of(d, "goals", Hockey.GOALS_TO_WIN)
 	goals = g if g in GOALS else Hockey.GOALS_TO_WIN
-	code = str(d.get("code", "")).to_upper().left(CODE_LENGTH)
+	code = clean_code(str(d.get("code", ""))).left(ONLINE_CODE_LENGTH)
 	players.clear()
 	order.clear()
 	var list: Variant = d.get("players", [])
@@ -138,6 +141,11 @@ func from_dict(d: Dictionary) -> void:
 		var team := clampi(int_of(e, "team", 0), 0, 1)
 		players[id] = {"name": clean_name(str(e.get("name", ""))), "team": team}
 		order.append(id)
+
+
+## A code as typed: in capitals, without spaces.
+static func clean_code(text: String) -> String:
+	return text.strip_edges().to_upper().replace(" ", "")
 
 
 ## Names are short, in capitals, on one line.
@@ -191,7 +199,7 @@ static func code_for(ip: String) -> String:
 ## The address of the lobby whose code is `text`, for a guest at `own_ip`;
 ## "" if the code is mistyped or this phone has no address.
 static func ip_for(text: String, own_ip: String) -> String:
-	var clean := text.strip_edges().to_upper().replace(" ", "")
+	var clean := clean_code(text)
 	var p := own_ip.split(".")
 	if clean.length() != CODE_LENGTH or p.size() != 4:
 		return ""
@@ -222,10 +230,11 @@ static func beacon(
 static func parse_beacon(bytes: PackedByteArray) -> Dictionary:
 	if bytes.size() > 512:
 		return {}
-	var data: Variant = JSON.parse_string(bytes.get_string_from_utf8())
-	if not data is Dictionary:
+	# Other apps broadcast too: what isn't JSON is dropped without a word.
+	var json := JSON.new()
+	if json.parse(bytes.get_string_from_utf8()) != OK or not json.data is Dictionary:
 		return {}
-	var d: Dictionary = data
+	var d: Dictionary = json.data
 	if str(d.get("g", "")) != GAME_ID or int_of(d, "v", -1) != PROTOCOL:
 		return {}
 	return {

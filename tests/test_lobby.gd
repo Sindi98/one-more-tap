@@ -183,6 +183,12 @@ func _test_codes() -> void:
 	_check(LobbyScript.ip_for("26W0", "192.168.1.2") == "", "0 is not a code character")
 	_check(LobbyScript.ip_for(sample, "") == "", "no address of our own")
 	_check(LobbyScript.code_for("not an ip") == "", "no code without an address")
+	_check(LobbyScript.clean_code(" k7q 2m ") == "K7Q2M", "codes in capitals, no spaces")
+	var online = LobbyScript.new()
+	online.code = "K7Q2M"
+	var copy = LobbyScript.new()
+	copy.from_dict(online.to_dict())
+	_check(copy.code == "K7Q2M", "an online code goes over whole")
 
 
 func _test_beacons() -> void:

@@ -1,6 +1,6 @@
 # One More Tap
 
-Gioco arcade verticale a un dito, Godot 4.7 / GDScript. Tre modalità infinite (ZIGZAG, TORRE, DINO), un solo controllo, percorsi generati, game over, record locale per modalità, restart immediato, grafica neon. In più **AIR HOCKEY**, a squadre, con gli amici sulla stessa Wi-Fi, in lobby create da uno di loro. In italiano e in inglese. Gratuito con annunci AdMob e acquisti in-app facoltativi (stili, gettoni, niente annunci), pronto per Google Play e App Store, con una versione web senza annunci per itch.io: i passi per pubblicarlo sono in **[PUBBLICAZIONE.md](PUBBLICAZIONE.md)**.
+Gioco arcade verticale a un dito, Godot 4.7 / GDScript. Tre modalità infinite (ZIGZAG, TORRE, DINO), un solo controllo, percorsi generati, game over, record locale per modalità, restart immediato, grafica neon. In più **AIR HOCKEY**, a squadre, con gli amici sulla stessa Wi-Fi o via Internet, in lobby create da uno di loro. In italiano e in inglese. Gratuito con annunci AdMob e acquisti in-app facoltativi (stili, gettoni, niente annunci), pronto per Google Play e App Store, con una versione web senza annunci per itch.io: i passi per pubblicarlo sono in **[PUBBLICAZIONE.md](PUBBLICAZIONE.md)**.
 
 ## Aprire e giocare
 
@@ -46,15 +46,17 @@ La modalità si sceglie con i pulsanti in basso nella schermata iniziale; dal ga
 
 ### AIR HOCKEY
 
-- Si gioca **in squadra, con altri telefoni sulla stessa Wi-Fi** (o sull'hotspot di uno di voi): niente server, niente account, non serve internet.
-- **Lobby**: uno tocca **CREA LOBBY** e la ospita. Gli altri la trovano in **LOBBY VICINE** e la toccano, oppure scrivono il **codice di 4 caratteri** che compare in alto nella lobby (serve dove la ricerca automatica è bloccata, per esempio su iPhone). Il nome si sceglie nella stessa schermata e resta salvato.
+- Si gioca **in squadra**, in due modi, sempre senza account:
+  - **WI-FI**: con altri telefoni sulla stessa Wi-Fi (o sull'hotspot di uno di voi). Niente server, non serve Internet.
+  - **ONLINE**: con amici ovunque siano, attraverso il [relay](server/README.md), un piccolo server da mettere online una volta (finché non c'è, le build di release mostrano solo WI-FI).
+- **Lobby**: uno sceglie **CREA UNA LOBBY → WI-FI** oppure **→ ONLINE** e la ospita. Una lobby WI-FI gli altri la trovano in **LOBBY VICINE** e la toccano, oppure scrivono il suo **codice di 4 caratteri** (serve dove la ricerca automatica è bloccata, per esempio su iPhone). Una lobby ONLINE ha un **codice di 5 caratteri** da scrivere in **ENTRA**: **COPIA**, accanto al codice, prepara un invito da incollare in chat. Le lobby online non sono elencate da nessuna parte, quindi si gioca solo con chi riceve il codice. Il nome si sceglie nella stessa schermata e resta salvato.
 - **Squadre**: BLU (porta in basso) contro ROSSI (porta in alto), **1 contro 1** o **2 contro 2**. Chi entra va nella squadra con meno giocatori; CAMBIA SQUADRA passa all'altra se c'è posto. Chi ha creato la lobby sceglie il formato e i gol per vincere (3, 5 o 7) e tocca INIZIA. **I posti vuoti li gioca la CPU**: si può giocare anche da soli contro la CPU, o in due contro due CPU.
 - **Partita**: trascina la tua racchetta (quella col pallino bianco) nella tua metà campo. Ognuno vede la propria porta in basso. Dopo un gol il disco va a chi l'ha subito. **Regola dei 7 secondi**, come nel gioco vero: chi tiene il disco nella propria metà per 7 secondi lo cede agli avversari (un arco rosso intorno al disco avvisa). Vince chi arriva prima ai gol scelti; poi si può fare la **RIVINCITA**.
 - Se un giocatore esce durante la partita al suo posto gioca la CPU; se esce chi ha creato la lobby, la lobby si chiude per tutti. Per uscire durante la partita ESCI va toccato due volte.
 - I bot si possono battere: si spostano più piano di un dito (colpiscono forte solo da vicino), decidono qualche volta al secondo e vedono il disco con un attimo di ritardo. Nelle schermate delle lobby giocano tra loro sul tavolo dietro.
-- Niente annunci, vite o record in AIR HOCKEY. Nella versione web non c'è (il browser non apre connessioni in rete locale): il pulsante rimanda all'app.
+- Niente annunci, vite o record in AIR HOCKEY. Nella versione web c'è solo ONLINE (il browser non apre connessioni in rete locale); senza relay il pulsante rimanda all'app.
 
-**Come funziona la rete** (`scripts/net.gd`): chi crea la lobby apre una partita ENet (porta UDP 47610) e ogni secondo la annuncia in broadcast (porta UDP 47611), così gli altri la vedono nell'elenco. Il telefono dell'host fa girare la partita vera e manda 30 aggiornamenti al secondo; gli altri mandano solo dove hanno il dito e intanto simulano la partita da sé, così la propria racchetta e i colpi rispondono subito, e le correzioni dell'host vengono ammorbidite. Il codice della lobby contiene gli ultimi due numeri dell'indirizzo dell'host e un controllo contro gli errori di battitura; i primi due li aggiunge il telefono di chi entra. Su Android il preset ha già il permesso `CHANGE_WIFI_MULTICAST_STATE`, che serve a ricevere gli annunci; su iPhone vedi [PUBBLICAZIONE.md](PUBBLICAZIONE.md#5-app-store-ios). Dimensioni del tavolo, velocità e bot sono costanti in cima a `scripts/hockey.gd`.
+**Come funziona la rete** (`scripts/net.gd`): in WI-FI chi crea la lobby apre una partita ENet (porta UDP 47610) e ogni secondo la annuncia in broadcast (porta UDP 47611), così gli altri la vedono nell'elenco. ONLINE tutti si collegano al relay con un WebSocket (`scripts/relay_peer.gd`), che passa i pacchetti tra l'host e gli ospiti: il resto del codice non vede differenze. In entrambi i casi il telefono dell'host fa girare la partita vera e manda 30 aggiornamenti al secondo; gli altri mandano solo dove hanno il dito e intanto simulano la partita da sé, così la propria racchetta e i colpi rispondono subito, e le correzioni dell'host vengono ammorbidite. Il codice di una lobby WI-FI contiene gli ultimi due numeri dell'indirizzo dell'host e un controllo contro gli errori di battitura; i primi due li aggiunge il telefono di chi entra. Su Android il preset ha già il permesso `CHANGE_WIFI_MULTICAST_STATE`, che serve a ricevere gli annunci; su iPhone vedi [PUBBLICAZIONE.md](PUBBLICAZIONE.md#5-app-store-ios). Dimensioni del tavolo, velocità e bot sono costanti in cima a `scripts/hockey.gd`; l'indirizzo del relay è `RELAY_URL` in cima a `scripts/net.gd` (vuoto: le build di debug usano un relay avviato sul computer con `npm start` in `server/`).
 
 ## Acquisti in-app
 
@@ -138,7 +140,8 @@ I due plugin (licenza MIT) sono già nel progetto, con i file nativi per Android
 | `scripts/runner.gd` | Regole pure di DINO: fisica del salto, ostacoli sempre superabili, distanza |
 | `scripts/hockey.gd` | Regole pure di AIR HOCKEY: tavolo, disco, racchette nella propria metà, gol, servizio, regola dei 7 secondi, bot, snapshot per la rete |
 | `scripts/lobby.gd` | Regole pure delle lobby: squadre, posti, CPU nei posti vuoti, impostazioni, codice della lobby, annuncio in rete |
-| `scripts/net.gd` | Unico file che usa la rete: lobby ENet, ricerca in broadcast, ingresso col codice, aggiornamenti della partita |
+| `scripts/net.gd` | Unico file che apre connessioni: lobby ENet in Wi-Fi, ricerca in broadcast, lobby online sul relay, ingresso col codice, aggiornamenti della partita |
+| `scripts/relay_peer.gd` | Il collegamento al relay: un `MultiplayerPeer` su WebSocket, così le lobby online funzionano come quelle in Wi-Fi |
 | `scripts/hockey_game.gd` | Flusso di AIR HOCKEY: lobby vicine, lobby, partita, risultato, rivincita, input col dito |
 | `scripts/hockey_view.gd` | Disegno di AIR HOCKEY: tavolo neon girato per chi difende la porta in alto, racchette, disco, punteggio |
 | `scripts/lobby_panel.gd` | UI delle lobby: elenco, nome, codice, squadre, impostazioni, risultato |
@@ -173,6 +176,8 @@ I due plugin (licenza MIT) sono già nel progetto, con i file nativi per Android
 | `tests/test_runner.gd` | Test headless delle regole di DINO |
 | `tests/test_hockey.gd` | Test headless delle regole di AIR HOCKEY |
 | `tests/test_lobby.gd` | Test headless delle lobby, dei codici e degli annunci in rete |
+| `tests/test_relay_peer.gd` | Test headless del collegamento al relay; con il relay avviato, anche la prova completa |
+| `server/` | Il relay per AIR HOCKEY via Internet (Node.js), con i suoi test, il Dockerfile e la guida per metterlo online |
 | `tests/test_ad_pacing.gd` | Test headless della frequenza degli annunci |
 | `tests/test_lives.gd` | Test headless delle vite |
 | `tests/test_review_pacing.gd` | Test headless di quando chiedere una recensione |
@@ -194,6 +199,7 @@ godot --headless --path . --script res://tests/test_tower.gd
 godot --headless --path . --script res://tests/test_runner.gd
 godot --headless --path . --script res://tests/test_hockey.gd
 godot --headless --path . --script res://tests/test_lobby.gd
+godot --headless --path . --script res://tests/test_relay_peer.gd
 godot --headless --path . --script res://tests/test_ad_pacing.gd
 godot --headless --path . --script res://tests/test_lives.gd
 godot --headless --path . --script res://tests/test_review_pacing.gd
@@ -201,7 +207,9 @@ godot --headless --path . --script res://tests/test_shop.gd
 godot --headless --path . --script res://tests/test_iap_backend.gd
 ```
 
-Controllano che un giocatore perfetto sopravviva su 60 percorsi diversi per modalità (in DINO fino alla velocità massima), che gli angoli restino sempre nello schermo, che dopo ogni buco ci sia rampa per reagire (anche nelle catene), che in TORRE e in DINO velocità, tempo per reagire e margine per saltare peggiorino sempre senza mai superare i limiti e senza essere mai più facili di prima, che un giocatore perfetto regga 400 secondi in entrambe, che ogni gruppo di cactus sia superabile con un margine, che "presto/tardi/non saltare" sia corretto, il conteggio dei perfetti e la rampa di difficoltà. Controllano anche che "continua" valga una volta sola, mantenga il punteggio e riparta piano, che gli interstitial rispettino le pause, che le vite si spendano, tornino col tempo senza superare il massimo e non si possano ottenere spostando l'orologio, e che la recensione si chieda solo dopo un record, non nelle prime partite e di rado. Per il negozio: che ogni prodotto abbia un ID valido e un prezzo, che gli stili si sblocchino coi record giusti, che i gettoni non si contino due volte e non vadano sotto zero, che i 10 gettoni in regalo arrivino una volta sola, che il salvataggio ignori dati strani, e che DINO si apra al terzo giorno di fila e non prima. Il collegamento agli store è provato contro un finto plugin: prezzi, acquisto, annullato, errore, pagamento approvato dopo, prodotto già posseduto, ripristino. Per AIR HOCKEY: che le racchette non escano dalla propria metà e non vadano più veloci del limite, che un disco a velocità massima non attraversi mai una racchetta, gol, pali e sponde, il servizio a chi ha subito il gol, la regola dei 7 secondi, che i telefoni ospiti lascino gol e servizi all'host, che gli snapshot arrivino interi e quelli rotti siano ignorati, che il bot pari la maggior parte dei tiri forti ma non tutti, e che due bot finiscano sempre una partita senza far uscire il disco dal tavolo. Per le lobby: squadre bilanciate, posti, cambio squadra, CPU nei posti vuoti, dati strani dalla rete scartati, nomi, indirizzo locale, codici (andata e ritorno, errori di battitura) e annunci in rete. Durano qualche secondo (AIR HOCKEY un po' di più: gioca venti partite tra bot).
+Controllano che un giocatore perfetto sopravviva su 60 percorsi diversi per modalità (in DINO fino alla velocità massima), che gli angoli restino sempre nello schermo, che dopo ogni buco ci sia rampa per reagire (anche nelle catene), che in TORRE e in DINO velocità, tempo per reagire e margine per saltare peggiorino sempre senza mai superare i limiti e senza essere mai più facili di prima, che un giocatore perfetto regga 400 secondi in entrambe, che ogni gruppo di cactus sia superabile con un margine, che "presto/tardi/non saltare" sia corretto, il conteggio dei perfetti e la rampa di difficoltà. Controllano anche che "continua" valga una volta sola, mantenga il punteggio e riparta piano, che gli interstitial rispettino le pause, che le vite si spendano, tornino col tempo senza superare il massimo e non si possano ottenere spostando l'orologio, e che la recensione si chieda solo dopo un record, non nelle prime partite e di rado. Per il negozio: che ogni prodotto abbia un ID valido e un prezzo, che gli stili si sblocchino coi record giusti, che i gettoni non si contino due volte e non vadano sotto zero, che i 10 gettoni in regalo arrivino una volta sola, che il salvataggio ignori dati strani, e che DINO si apra al terzo giorno di fila e non prima. Il collegamento agli store è provato contro un finto plugin: prezzi, acquisto, annullato, errore, pagamento approvato dopo, prodotto già posseduto, ripristino. Per AIR HOCKEY: che le racchette non escano dalla propria metà e non vadano più veloci del limite, che un disco a velocità massima non attraversi mai una racchetta, gol, pali e sponde, il servizio a chi ha subito il gol, la regola dei 7 secondi, che i telefoni ospiti lascino gol e servizi all'host, che gli snapshot arrivino interi e quelli rotti siano ignorati, che il bot pari la maggior parte dei tiri forti ma non tutti, e che due bot finiscano sempre una partita senza far uscire il disco dal tavolo. Per le lobby: squadre bilanciate, posti, cambio squadra, CPU nei posti vuoti, dati strani dalla rete scartati, nomi, indirizzo locale, codici (andata e ritorno, errori di battitura) e annunci in rete. Per il collegamento al relay: intestazione dei pacchetti, messaggi del relay, che l'host ascolti solo i suoi ospiti e gli ospiti solo l'host; con il relay avviato (`npm start` in `server/`) anche una prova vera: lobby, ingresso, pacchetti nei due sensi, codice sbagliato, host che esce. Durano qualche secondo (AIR HOCKEY un po' di più: gioca venti partite tra bot).
+
+Il relay ha i suoi test, in Node.js: `npm test` in `server/` (stanze, codici, inoltro, rifiuti, limiti).
 
 ## Export su telefono
 
@@ -215,6 +223,7 @@ Prova veloce su Android: template di export, JDK 17 e Android SDK installati, *P
 2. Sfida giornaliera: `Track.new(width, height, seed)` accetta già un seed, basta derivarlo dalla data.
 3. Creare i prodotti negli store e provarli con un account di test ([PUBBLICAZIONE.md](PUBBLICAZIONE.md#7-acquisti-in-app)).
 4. Skin del Dino nel negozio.
-5. AIR HOCKEY con due o più telefoni veri sulla stessa Wi-Fi: tarare in cima a `hockey.gd` dimensioni, attrito e bot (`BOT_SPEED`, `BOT_STRIKE`, `BOT_THINK`, `BOT_EYES`). Per giocare anche via internet, con amici lontani, servirebbe un piccolo server che faccia da ponte tra i telefoni: `net.gd` è l'unico file da cambiare.
+5. AIR HOCKEY con due o più telefoni veri, in Wi-Fi e online: tarare in cima a `hockey.gd` dimensioni, attrito e bot (`BOT_SPEED`, `BOT_STRIKE`, `BOT_THINK`, `BOT_EYES`).
+6. Mettere online il relay e scriverne l'indirizzo in `RELAY_URL` ([server/README.md](server/README.md)).
 
 Font: Bungee e Chakra Petch, licenza SIL Open Font License (file in `assets/fonts`). Musica: brani di Pixabay, licenza Pixabay Content License (elenco in [Musica](#musica)).

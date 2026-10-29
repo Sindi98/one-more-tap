@@ -1,6 +1,7 @@
 class_name HockeyGame
 extends Node
-## AIR HOCKEY's flow: the lobbies nearby, the lobby, the match and its result.
+## AIR HOCKEY's flow: the lobbies (on the Wi-Fi or online), the lobby, the
+## match and its result.
 ## Net carries the lobby and the match between the phones, Hockey runs the
 ## match (the host's is the real one, guests run a copy kept in step),
 ## HockeyView draws it and LobbyPanel shows the screens around it. Behind the
@@ -20,6 +21,10 @@ const LEFT_REASONS := {
 	"playing": "LEFT_PLAYING",
 	"version": "LEFT_VERSION",
 	"failed": "LEFT_FAILED",
+	"offline": "LEFT_OFFLINE",
+	"not_found": "LEFT_NOT_FOUND",
+	"busy": "LEFT_BUSY",
+	"bad": "LEFT_FAILED",
 }
 
 var player_name := ""  ## saved by Main
@@ -74,7 +79,8 @@ func setup(net: Net, view: HockeyView, panel: LobbyPanel, sfx: Sfx, music: Music
 	_panel.leave_pressed.connect(_on_leave)
 
 
-## Phones only: the web version has no sockets.
+## On this network (not on the web: no sockets there) or online, where a
+## relay is set (see Net.RELAY_URL).
 func available() -> bool:
 	return _net.available()
 
@@ -136,9 +142,10 @@ func handle_input(event: InputEvent) -> void:
 
 func _browse(message := "") -> void:
 	phase = Phase.BROWSE
-	_net.start_browsing()
+	if _net.lan_available():
+		_net.start_browsing()
 	_panel.set_busy(false)
-	_panel.show_browse(player_name, _net.found)
+	_panel.show_browse(player_name, _net.found, _net.lan_available(), _net.online_available())
 	if not message.is_empty():
 		_panel.show_message(message, true)
 	_music.set_mood(Music.Mood.MENU)
@@ -148,7 +155,7 @@ func _browse(message := "") -> void:
 
 func _show_room() -> void:
 	phase = Phase.ROOM
-	_panel.show_room(_net.lobby, _net.my_id(), _net.is_host())
+	_panel.show_room(_net.lobby, _net.my_id(), _net.is_host(), _net.is_online())
 	_music.set_mood(Music.Mood.MENU)
 	if _me >= 0:
 		_demo()
@@ -175,12 +182,12 @@ func _show_match(rules: Hockey, me: int, names: PackedStringArray) -> void:
 
 
 ## Everyone to the table: the setup comes from the host (see Net.start_match).
-func _begin(setup: Dictionary) -> void:
-	var size := Lobby.int_of(setup, "size", 1)
-	var goals := clampi(Lobby.int_of(setup, "goals", Hockey.GOALS_TO_WIN), 1, 9)
+func _begin(config: Dictionary) -> void:
+	var size := Lobby.int_of(config, "size", 1)
+	var goals := clampi(Lobby.int_of(config, "goals", Hockey.GOALS_TO_WIN), 1, 9)
 	var rules := Hockey.new(size, goals)
-	var roster: Variant = setup.get("roster", [])
-	var given: Variant = setup.get("names", [])
+	var roster: Variant = config.get("roster", [])
+	var given: Variant = config.get("names", [])
 	var names := PackedStringArray()
 	_roster.clear()
 	for i in rules.mallets.size():
@@ -228,9 +235,12 @@ func _on_back() -> void:
 	closed.emit()
 
 
-func _on_create() -> void:
+func _on_create(online: bool) -> void:
 	_net.player_name = player_name
-	if not _net.host():
+	if online:
+		_panel.set_busy(true)
+		_panel.show_message(tr("CONNECTING_SERVER"))
+	if not _net.host(online):
 		_panel.show_message(tr("HOST_FAILED"), true)
 
 
@@ -244,7 +254,8 @@ func _on_join(ip: String) -> void:
 func _on_code(text: String) -> void:
 	_net.player_name = player_name
 	_panel.set_busy(true)
-	_panel.show_message(tr("CONNECTING"))
+	var online := Lobby.clean_code(text).length() == Lobby.ONLINE_CODE_LENGTH
+	_panel.show_message(tr("CONNECTING_SERVER") if online else tr("CONNECTING"))
 	if not _net.join_code(text):
 		_panel.set_busy(false)
 		_panel.show_message(tr("BAD_CODE"), true)
