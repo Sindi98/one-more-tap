@@ -5,6 +5,7 @@ extends SceneTree
 
 const RunnerScript := preload("res://scripts/runner.gd")
 const DT := 1.0 / 120.0
+const OLD_V_MAX := 540.0  ## top speed before the endless ramp
 
 var _fails := 0
 
@@ -18,6 +19,9 @@ func _init() -> void:
 	_test_score_and_milestones()
 	_test_revive()
 	_test_revive_slows_then_recovers()
+	_test_never_stops_getting_harder()
+	_test_chains_and_big_groups()
+	_test_late_game_stays_fair()
 	print("all tests passed" if _fails == 0 else "%d failures" % _fails)
 	quit(1 if _fails > 0 else 0)
 
@@ -94,8 +98,8 @@ func _test_good_bot_survives_and_layout() -> void:
 				)
 			)
 			_check(
-				r.speed >= RunnerScript.V_MAX * r.unit - 0.01,
-				"should reach top speed (seed %d)" % sd
+				r.speed > OLD_V_MAX * r.unit,
+				"should run faster than the old top speed (seed %d)" % sd
 			)
 			for i in seen.size():
 				var o = seen[i]
@@ -107,11 +111,8 @@ func _test_good_bot_survives_and_layout() -> void:
 					"bird too early: width %d seed %d at %d points" % [width, sd, points]
 				)
 				if not bird:
-					var v := minf(
-						RunnerScript.V_MAX, RunnerScript.V_START + o.x / r.unit * RunnerScript.ACCEL
-					)
 					_check(
-						r.window(o, v * r.unit) >= RunnerScript.MIN_WINDOW,
+						r.window(o, r.speed_at(o.x)) >= r.min_window_at(o.x) - 0.0001,
 						"cacti too wide: width %d seed %d obstacle %d" % [width, sd, o.index]
 					)
 				if i > 0:
@@ -239,9 +240,110 @@ func _test_revive_slows_then_recovers() -> void:
 	_run(r, bot, 200.0)
 	r.revive()
 	r.update(DT)
-	var full := minf(RunnerScript.V_MAX, RunnerScript.V_START + r.x / r.unit * RunnerScript.ACCEL)
-	_check(r.speed < full * r.unit * 0.5, "revive: dino should start slow")
+	_check(r.speed < r.speed_at(r.x) * 0.5, "revive: dino should start slow")
 	_run(r, _good_bot, RunnerScript.REVIVE_RECOVER + 0.1)
-	full = minf(RunnerScript.V_MAX, RunnerScript.V_START + r.x / r.unit * RunnerScript.ACCEL)
 	# Speed grows with distance: compare loosely, the last step moved the dino on.
-	_check(r.speed > full * r.unit * 0.998, "revive: back to full speed after the recovery time")
+	_check(r.speed > r.speed_at(r.x) * 0.998, "revive: back to full speed after the recovery time")
+
+
+## Points scored at distance `at`.
+func _points(r, at: float) -> float:
+	return at / r.unit * RunnerScript.POINTS_PER_PX
+
+
+func _test_never_stops_getting_harder() -> void:
+	var r = RunnerScript.new(720.0, 1)
+	var step: float = 10.0 / RunnerScript.POINTS_PER_PX * r.unit  # 10 points
+	# Strictly up to 5000 points (a very long run); then within float precision.
+	for i in 1000:
+		var at: float = i * step
+		var strict := i < 500
+		var v0: float = r.speed_at(at)
+		var v1: float = r.speed_at(at + step)
+		_check(v1 > v0 if strict else v1 >= v0, "speed stops growing at %d points" % (i * 10))
+		var a0: float = r.react_at(at)
+		var a1: float = r.react_at(at + step)
+		_check(a1 < a0 if strict else a1 <= a0, "reaction stops shrinking at %d points" % (i * 10))
+		var w0: float = r.min_window_at(at)
+		var w1: float = r.min_window_at(at + step)
+		_check(w1 < w0 if strict else w1 <= w0, "window stops shrinking at %d points" % (i * 10))
+		# Never easier than before the endless ramp: 0.006 px/s more per pixel
+		# up to 540, 0.36 s to react, a 0.12 s window.
+		var old_v := minf(OLD_V_MAX, 230.0 + at / r.unit * 0.006)
+		_check(v0 >= old_v * r.unit - 0.01, "slower than before at %d points" % (i * 10))
+		_check(a0 <= 0.36 and w0 <= 0.12, "more forgiving than before at %d points" % (i * 10))
+	var far: float = 1e9
+	_check(r.speed_at(far) <= RunnerScript.V_END * r.unit, "speed stays below its limit")
+	_check(r.react_at(far) >= RunnerScript.REACT_END, "reaction stays above its limit")
+	_check(r.min_window_at(far) >= RunnerScript.MIN_WINDOW_END, "window stays above its limit")
+
+
+## Obstacles generated far ahead, without running.
+func _layout(sd: int, count: int):
+	var r = RunnerScript.new(720.0, sd)
+	while r.obstacles.size() < count:
+		r.x = r._next_x
+		r._ensure_ahead()
+	return r
+
+
+func _test_chains_and_big_groups() -> void:
+	var chains := 0
+	var fours := 0
+	var early := {"birds": 0, "all": 0}
+	var late := {"birds": 0, "all": 0}
+	for sd in range(1, 11):
+		var r = _layout(sd, 900)
+		var run := 1
+		for o in r.obstacles:
+			var points := _points(r, o.x)
+			var bucket = early if points < 1000.0 else late
+			bucket["all"] += 1
+			if o.kind >= RunnerScript.Kind.BIRD_LOW:
+				bucket["birds"] += 1
+			if o.count == 4:
+				fours += 1
+				_check(points >= RunnerScript.GROUP4_FROM, "four cacti too early (seed %d)" % sd)
+			if o.chained:
+				chains += 1
+				run += 1
+				_check(points >= RunnerScript.CHAIN_FROM, "chain too early (seed %d)" % sd)
+				_check(run <= RunnerScript.CHAIN_MAX, "chain too long (seed %d)" % sd)
+			else:
+				run = 1
+	_check(chains > 300, "chains should be common higher up: %d" % chains)
+	_check(fours > 50, "groups of four should appear: %d" % fours)
+	_check(
+		float(late["birds"]) / late["all"] > float(early["birds"]) / early["all"],
+		"birds should get more frequent"
+	)
+
+
+## A good player far into the run, where every value is near its limit.
+func _test_late_game_stays_fair() -> void:
+	for sd in range(1, 6):
+		var r = RunnerScript.new(720.0, sd)
+		var seen: Array = []
+		var watch := func(rr) -> void:
+			for o in rr.obstacles:
+				if seen.is_empty() or o.index > seen.back().index:
+					seen.append(o)
+			_good_bot(rr)
+		_run(r, watch, 400.0)
+		_check(r.alive, "late game: good bot hit something, seed %d score %d" % [sd, r.score])
+		_check(r.score > 8000, "late game: only %d points (seed %d)" % [r.score, sd])
+		for i in range(1, seen.size()):
+			var prev = seen[i - 1]
+			var o = seen[i]
+			# The gap is fixed when `prev` is placed, at its speed.
+			var v: float = r.speed_at(prev.x)
+			var react: float = RunnerScript.CHAIN_REACT_END if o.chained else RunnerScript.REACT_END
+			_check(
+				o.x - prev.right() >= v * (r.air_time() + react) - 0.01,
+				"no room after landing: seed %d obstacle %d" % [sd, o.index]
+			)
+			if o.kind < RunnerScript.Kind.BIRD_LOW:
+				_check(
+					r.window(o, r.speed_at(o.x)) >= RunnerScript.MIN_WINDOW_END,
+					"cacti too wide late: seed %d obstacle %d" % [sd, o.index]
+				)
