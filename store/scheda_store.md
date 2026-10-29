@@ -40,16 +40,19 @@ Gira dentro l'angolo: troppo presto cadi di lato, troppo tardi voli fuori dalla 
 
 Le piattaforme si stringono, la pallina accelera, i colori cambiano. Quando sbagli vedi subito dove e perché, e riparti con un tap.
 
-Altre due modalità, sempre con un tap: TORRE, dove sali una spirale intorno a una torre che gira e salti i buchi della rampa, e DINO, dove corri e salti cactus e uccelli come nel gioco del browser senza internet.
+Altre due modalità, sempre con un tap: TORRE, dove sali una spirale intorno a una torre che gira e salti i buchi della rampa, e DINO, dove corri e salti cactus e uccelli come nel gioco del browser senza internet. DINO si apre giocando tre giorni di fila.
 
 • Tre modalità di gioco, ognuna col suo record
 • Un dito, zero tutorial: si impara in tre secondi
 • Partite da pochi secondi, perfette per una pausa
 • PERFETTO e combo musicali per chi cerca la precisione
 • Grafica neon e suoni sintetizzati
+• Stili da collezionare per i colori e la pallina, dal comune al leggendario: alcuni si sbloccano coi record
 • Funziona offline
 
 Gioco gratuito con pubblicità. Dopo una caduta puoi guardare un breve video per ripartire da dove eri, una volta per partita.
+
+Acquisti facoltativi: stili per colori e pallina, gettoni per continuare senza video, Rimuovi annunci e la Collezione completa con tutti gli stili. Compri sempre esattamente quello che vedi, niente casse a sorpresa, e nessun acquisto aiuta a vincere.
 
 ---
 
@@ -78,16 +81,19 @@ Turn inside the corner: too early and you fall off the side, too late and you fl
 
 Platforms get narrower, the ball gets faster, colours shift. When you miss, you see exactly where and why, and you're back with one tap.
 
-Two more modes, still one tap: TOWER, where you climb a spiral round a spinning tower and jump the holes in the ramp, and DINO, where you run and jump cacti and birds like in the browser's offline game.
+Two more modes, still one tap: TOWER, where you climb a spiral round a spinning tower and jump the holes in the ramp, and DINO, where you run and jump cacti and birds like in the browser's offline game. DINO opens when you play three days in a row.
 
 • Three game modes, each with its own best score
 • One finger, no tutorial: learn it in three seconds
 • Runs last seconds, perfect for a short break
 • PERFECT turns and musical combos for precision players
 • Neon visuals and synthesised sounds
+• Collectible styles for the colours and the ball, from common to legendary: some unlock with your best scores
 • Plays offline
 
 Free to play with ads. After a fall you can watch a short video to carry on from where you were, once per run.
+
+Optional purchases: styles for the colours and the ball, tokens to continue without a video, Remove Ads and the Full Collection with every style. You always buy exactly what you see, no mystery boxes, and nothing you buy helps you win.
 
 Note: the game's interface is in Italian.
 
@@ -97,7 +103,7 @@ Note: the game's interface is in Italian.
 
 - **Categoria**: Giochi → Arcade (Play) · Giochi → Arcade, secondaria Casual (App Store)
 - **Contiene annunci**: Sì
-- **Acquisti in-app**: No
+- **Acquisti in-app**: Sì, da 0,99 € a 9,99 € (prodotti e ID in `PUBBLICAZIONE.md`, passo 7)
 - **Sito web / email di supporto**: `https://sindi98.github.io/one-more-tap/` · [EMAIL DI CONTATTO]
 - **Informativa privacy**: `https://sindi98.github.io/one-more-tap/privacy.html`
-- **Note per la revisione Apple**: "Free arcade game with AdMob ads. Interstitials appear only between runs (at most every 3 runs and 90 seconds). An optional rewarded video lets the player continue a run once. No login required."
+- **Note per la revisione Apple**: "Free arcade game with AdMob ads. Interstitials appear only between runs (at most every 3 runs and 90 seconds). An optional rewarded video lets the player continue a run once. No login required. In-app purchases are in STILI on the start screen: cosmetic styles (non-consumable), Remove Ads (non-consumable), Full Collection (non-consumable) and token packs (consumable, one token continues a run without a video). RIPRISTINA restores purchases. The third mode, DINO, opens after the game is opened on three days in a row; the other two modes are available at once."

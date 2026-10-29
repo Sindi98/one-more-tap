@@ -1,8 +1,8 @@
 class_name Hud
 extends CanvasLayer
 ## On-screen UI, built in code: score, combo, start / game over / pause / continue
-## panels, the mode picker, the sound toggle and the privacy links. Panels never
-## block taps; only the buttons do.
+## panels, the mode picker, the shop, the sound toggle and the privacy links.
+## Panels never block taps; only the buttons do.
 
 signal retry_pressed
 signal continue_pressed
@@ -11,11 +11,12 @@ signal privacy_pressed
 signal consent_pressed
 signal mode_pressed(mode: String)
 signal menu_pressed  ## back to the start screen, to pick another mode
+signal shop_pressed  ## STILI on the start screen
 
-const INK := Color("eef2ff")
-const MUTED := Color("8a90b8")
-const HOT := Color("ff4d6d")
-const SHADE := Color("06060c")
+const INK := UiKit.INK
+const MUTED := UiKit.MUTED
+const HOT := UiKit.HOT
+const SHADE := UiKit.SHADE
 const BUTTON_W := 380.0
 const BUTTON_PAIR_W := 310.0  ## CONTINUA and RIPROVA side by side
 const MODE_BUTTON_W := 206.0
@@ -61,6 +62,8 @@ const REASONS := {
 	},
 }
 
+var shop_panel: ShopPanel  ## Main listens to it and fills it
+
 var _display: Font
 var _body: Font
 var _body_bold: Font
@@ -83,6 +86,11 @@ var _start_rules: Label
 var _prompt: Label
 var _modes: HBoxContainer
 var _mode_buttons := {}  ## mode -> Button
+var _mode_locks := {}  ## locked mode -> progress shown on its button, e.g. "1/3"
+var _styles_row: HBoxContainer
+var _styles: Button
+var _notice: Label
+var _notice_tween: Tween
 var _over: Control
 var _over_box: VBoxContainer
 var _reason: Label
@@ -90,6 +98,7 @@ var _reason_sub: Label
 var _final: Label
 var _record: Label
 var _stats: Label
+var _unlocked: Label
 var _continue: Button
 var _continue_hint: Label
 var _retry: Button
@@ -108,9 +117,9 @@ var _score_tween: Tween
 
 
 func _ready() -> void:
-	_display = _font("res://assets/fonts/Bungee-Regular.ttf")
-	_body = _font("res://assets/fonts/ChakraPetch-Medium.ttf")
-	_body_bold = _font("res://assets/fonts/ChakraPetch-Bold.ttf")
+	_display = UiKit.load_font(UiKit.DISPLAY_FONT)
+	_body = UiKit.load_font(UiKit.BODY_FONT)
+	_body_bold = UiKit.load_font(UiKit.BODY_BOLD_FONT)
 
 	_root = Control.new()
 	_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -122,6 +131,8 @@ func _ready() -> void:
 	_build_over()
 	_build_pause()
 	_build_revive()
+	shop_panel = ShopPanel.new()
+	_root.add_child(shop_panel)
 	_build_mute()
 	_build_privacy()
 	_apply_safe_area()
@@ -158,9 +169,23 @@ func show_ad() -> void:
 	_top.visible = false
 
 
-## stats: one line about the run, already worded for the mode.
+## tab: "colors", "ball" or "extra"; pick: a card to start on, if not the first.
+func show_shop(tab: String, pick := "") -> void:
+	_set_panel(shop_panel)
+	_top.visible = false
+	shop_panel.open(tab, pick)
+
+
+## stats: one line about the run, already worded for the mode. offer: what
+## CONTINUA does (see set_continue_offer).
 func show_over(
-	score: int, best: int, new_record: bool, reason: String, stats: String, can_continue: bool
+	score: int,
+	best: int,
+	new_record: bool,
+	reason: String,
+	stats: String,
+	offer: String,
+	tokens: int
 ) -> void:
 	var reasons: Dictionary = REASONS[_mode]
 	var r: Array = reasons.get(reason, reasons["late"])
@@ -170,7 +195,8 @@ func show_over(
 	_record.text = "NUOVO RECORD" if new_record else "RECORD  %d" % best
 	_record.label_settings.font_color = _neon if new_record else MUTED
 	_stats.text = stats
-	set_continue_available(can_continue)
+	_unlocked.visible = false
+	set_continue_offer(offer, tokens)
 	_set_panel(_over)
 	_top.visible = false
 	_over_box.modulate.a = 0.0
@@ -222,12 +248,53 @@ func hide_combo() -> void:
 	_combo.modulate.a = 0.0
 
 
-## The continue offer appears only while a rewarded video is ready.
-func set_continue_available(available: bool) -> void:
+## offer: "video" (a rewarded video is ready), "token" (spends one of
+## `tokens`), "shop" (no tokens left and no ads: buy more), "" (no continue).
+func set_continue_offer(offer: String, tokens: int) -> void:
+	var available := offer != ""
+	match offer:
+		"token":
+			_continue_hint.text = "CONTINUA: usa 1 gettone e riparti (ne hai %d)" % tokens
+		"shop":
+			_continue_hint.text = "Gettoni finiti: CONTINUA ti porta al negozio"
+		_:
+			_continue_hint.text = "CONTINUA: guarda un breve video e riparti da qui"
 	_continue.visible = available
 	_continue_hint.visible = available
 	_retry.custom_minimum_size.x = BUTTON_PAIR_W if available else BUTTON_W
 	_tap_hint.text = "tocca lo schermo per riprovare" if available else "oppure tocca lo schermo"
+
+
+## Looks a new record just unlocked, on the game over panel.
+func show_unlocked(names: PackedStringArray) -> void:
+	_unlocked.text = "NUOVO STILE: %s" % ", ".join(names)
+	_unlocked.visible = not names.is_empty()
+
+
+## A mode the player cannot pick yet: progress shows on its button ("" = open).
+func set_mode_lock(mode: String, progress: String) -> void:
+	if progress.is_empty():
+		_mode_locks.erase(mode)
+	else:
+		_mode_locks[mode] = progress
+	_style_mode_buttons()
+
+
+func show_mode_locked(days: int, needed: int) -> void:
+	show_notice(
+		"DINO si apre dopo %d giorni di fila.\nSei al giorno %d: torna domani!" % [needed, days]
+	)
+
+
+## A short message on the start screen that fades away.
+func show_notice(text: String) -> void:
+	_notice.text = text
+	if _notice_tween:
+		_notice_tween.kill()
+	_notice.modulate.a = 1.0
+	_notice_tween = create_tween()
+	_notice_tween.tween_interval(3.5)
+	_notice_tween.tween_property(_notice, "modulate:a", 0.0, 0.6)
 
 
 func set_consent_available(available: bool) -> void:
@@ -249,21 +316,23 @@ func set_hue(hue: float) -> void:
 		l.label_settings.font_color = _neon
 		l.label_settings.shadow_color = Color(_neon, 0.32)
 	_score.label_settings.shadow_color = Color(_neon, 0.4)
-	_style_button(_retry, 40, _neon)
-	_style_button(_continue, 40, _neon)
+	UiKit.style_button(_retry, _display, 40, _neon)
+	UiKit.style_button(_continue, _display, 40, _neon)
+	UiKit.style_button(_styles, _display, 28, _neon)
 	_style_mode_buttons()
+	shop_panel.set_neon(_neon)
 
 
 # --- building --------------------------------------------------------------
 
 
 func _build_top() -> void:
-	_top = _vbox(0)
+	_top = UiKit.vbox(0)
 	_top.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
 	_root.add_child(_top)
-	_score = _label("0", _display, 120, INK, true)
-	_best = _label("", _body, 26, MUTED)
-	_combo = _label("", _display, 30, _neon, true)
+	_score = UiKit.label("0", _display, 120, INK, true)
+	_best = UiKit.label("", _body, 26, MUTED)
+	_combo = UiKit.label("", _display, 30, _neon, true)
 	_combo.modulate.a = 0.0
 	_neon_labels.append(_combo)
 	_top.add_child(_score)
@@ -272,36 +341,53 @@ func _build_top() -> void:
 
 
 func _build_start() -> void:
-	_start = _panel()
-	_start_box = _vbox(4)
+	_start = UiKit.panel(_root)
+	_start_box = UiKit.vbox(4)
 	_start.add_child(_start_box)
 	_start_box.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
 
-	_start_box.add_child(_label("ONE", _display, 104, INK))
-	_start_box.add_child(_label("MORE", _display, 104, INK))
-	var tap := _label("TAP", _display, 104, _neon, true)
+	_start_box.add_child(UiKit.label("ONE", _display, 104, INK))
+	_start_box.add_child(UiKit.label("MORE", _display, 104, INK))
+	var tap := UiKit.label("TAP", _display, 104, _neon, true)
 	_neon_labels.append(tap)
 	_start_box.add_child(tap)
-	_start_box.add_child(_spacer(28))
+	_start_box.add_child(UiKit.spacer(28))
 
-	_start_rules = _label("", _body, 30, MUTED)
+	_start_rules = UiKit.label("", _body, 30, MUTED)
 	_start_box.add_child(_start_rules)
-	_start_box.add_child(_spacer(36))
+	_start_box.add_child(UiKit.spacer(36))
 
-	_prompt = _label("TOCCA PER INIZIARE", _display, 38, _neon, true)
+	_prompt = UiKit.label("TOCCA PER INIZIARE", _display, 38, _neon, true)
 	_neon_labels.append(_prompt)
 	_start_box.add_child(_prompt)
 	var blink := create_tween().set_loops()
 	blink.tween_property(_prompt, "modulate:a", 0.35, 0.7).set_trans(Tween.TRANS_SINE)
 	blink.tween_property(_prompt, "modulate:a", 1.0, 0.7).set_trans(Tween.TRANS_SINE)
 
-	_start_box.add_child(_spacer(16))
-	_start_best = _label("", _body_bold, 28, INK)
+	_start_box.add_child(UiKit.spacer(16))
+	_start_best = UiKit.label("", _body_bold, 28, INK)
 	_start_box.add_child(_start_best)
+	_start_box.add_child(UiKit.spacer(16))
+	_notice = UiKit.label("", _body_bold, 28, _neon, true)
+	_notice.modulate.a = 0.0
+	_neon_labels.append(_notice)
+	_start_box.add_child(_notice)
+
+	# The shop, just above the mode picker. It hides the start screen, so it
+	# acts on release (same reason as RIPROVA).
+	_styles_row = UiKit.bottom_row(_start)
+	_styles = Button.new()
+	_styles.text = "STILI"
+	_styles.custom_minimum_size = Vector2(MODE_BUTTON_W * 1.3, 72)
+	_styles.focus_mode = Control.FOCUS_NONE
+	_styles.action_mode = BaseButton.ACTION_MODE_BUTTON_RELEASE
+	_styles.pressed.connect(func() -> void: shop_pressed.emit())
+	UiKit.style_button(_styles, _display, 28, _neon)
+	_styles_row.add_child(_styles)
 
 	# Mode picker, low on the screen where the thumb is. Switching does not
 	# hide anything, so it can act on press.
-	_modes = _bottom_row(_start)
+	_modes = UiKit.bottom_row(_start)
 	for mode in MODE_NAMES:
 		var b := Button.new()
 		b.text = MODE_NAMES[mode]
@@ -315,24 +401,28 @@ func _build_start() -> void:
 
 
 func _build_over() -> void:
-	_over = _panel()
-	_over_box = _vbox(6)
+	_over = UiKit.panel(_root)
+	_over_box = UiKit.vbox(6)
 	_over.add_child(_over_box)
 	_over_box.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
 
-	_reason = _label("", _display, 44, HOT, true)
+	_reason = UiKit.label("", _display, 44, HOT, true)
 	_reason.label_settings.shadow_color = Color(HOT, 0.3)
-	_reason_sub = _label("", _body, 30, INK)
-	_final = _label("0", _display, 168, INK, true)
-	_record = _label("", _body_bold, 30, MUTED)
-	_stats = _label("", _body, 24, MUTED)
+	_reason_sub = UiKit.label("", _body, 30, INK)
+	_final = UiKit.label("0", _display, 168, INK, true)
+	_record = UiKit.label("", _body_bold, 30, MUTED)
+	_stats = UiKit.label("", _body, 24, MUTED)
 	_over_box.add_child(_reason)
 	_over_box.add_child(_reason_sub)
-	_over_box.add_child(_spacer(12))
+	_over_box.add_child(UiKit.spacer(12))
 	_over_box.add_child(_final)
 	_over_box.add_child(_record)
 	_over_box.add_child(_stats)
-	_over_box.add_child(_spacer(40))
+	_unlocked = UiKit.label("", _body_bold, 26, _neon, true)
+	_unlocked.visible = false
+	_neon_labels.append(_unlocked)
+	_over_box.add_child(_unlocked)
+	_over_box.add_child(UiKit.spacer(40))
 
 	var row := HBoxContainer.new()
 	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -346,7 +436,7 @@ func _build_over() -> void:
 	_continue.focus_mode = Control.FOCUS_NONE
 	_continue.action_mode = BaseButton.ACTION_MODE_BUTTON_RELEASE  # same reason as RIPROVA
 	_continue.pressed.connect(func() -> void: continue_pressed.emit())
-	_style_button(_continue, 40, _neon)
+	UiKit.style_button(_continue, _display, 40, _neon)
 	row.add_child(_continue)
 
 	_retry = Button.new()
@@ -357,44 +447,44 @@ func _build_over() -> void:
 	# matching touch event arrives, and that touch would turn the new ball.
 	_retry.action_mode = BaseButton.ACTION_MODE_BUTTON_RELEASE
 	_retry.pressed.connect(func() -> void: retry_pressed.emit())
-	_style_button(_retry, 40, _neon)
+	UiKit.style_button(_retry, _display, 40, _neon)
 	row.add_child(_retry)
-	_over_box.add_child(_spacer(6))
-	_continue_hint = _label("CONTINUA: guarda un breve video e riparti da qui", _body, 24, INK)
+	_over_box.add_child(UiKit.spacer(6))
+	_continue_hint = UiKit.label("CONTINUA: guarda un breve video e riparti da qui", _body, 24, INK)
 	_over_box.add_child(_continue_hint)
-	_tap_hint = _label("oppure tocca lo schermo", _body, 24, MUTED)
+	_tap_hint = UiKit.label("oppure tocca lo schermo", _body, 24, MUTED)
 	_over_box.add_child(_tap_hint)
 
-	_menu_row = _bottom_row(_over)
+	_menu_row = UiKit.bottom_row(_over)
 	_menu = Button.new()
 	_menu.text = "MODALITÀ"
 	_menu.custom_minimum_size = Vector2(MODE_BUTTON_W * 1.3, 72)
 	_menu.focus_mode = Control.FOCUS_NONE
 	_menu.action_mode = BaseButton.ACTION_MODE_BUTTON_RELEASE  # same reason as RIPROVA
 	_menu.pressed.connect(func() -> void: menu_pressed.emit())
-	_style_button(_menu, 26, MUTED)
+	UiKit.style_button(_menu, _display, 26, MUTED)
 	_menu_row.add_child(_menu)
 
 
 func _build_pause() -> void:
-	_pause = _panel()
-	_pause_box = _vbox(10)
+	_pause = UiKit.panel(_root)
+	_pause_box = UiKit.vbox(10)
 	_pause.add_child(_pause_box)
 	_pause_box.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
-	_pause_box.add_child(_label("PAUSA", _display, 88, INK, true))
-	_pause_box.add_child(_label("Tocca per riprendere", _body, 30, MUTED))
+	_pause_box.add_child(UiKit.label("PAUSA", _display, 88, INK, true))
+	_pause_box.add_child(UiKit.label("Tocca per riprendere", _body, 30, MUTED))
 
 
 func _build_revive() -> void:
-	_revive = _panel()
-	_revive_box = _vbox(10)
+	_revive = UiKit.panel(_root)
+	_revive_box = UiKit.vbox(10)
 	_revive.add_child(_revive_box)
 	_revive_box.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
-	var title := _label("ANCORA UNA", _display, 72, _neon, true)
+	var title := UiKit.label("ANCORA UNA", _display, 72, _neon, true)
 	_neon_labels.append(title)
 	_revive_box.add_child(title)
-	_revive_box.add_child(_label("Tocca quando sei pronto", _body, 30, INK))
-	_revive_box.add_child(_label("la pallina riparte piano", _body, 26, MUTED))
+	_revive_box.add_child(UiKit.label("Tocca quando sei pronto", _body, 30, INK))
+	_revive_box.add_child(UiKit.label("la pallina riparte piano", _body, 26, MUTED))
 
 
 func _build_mute() -> void:
@@ -403,7 +493,7 @@ func _build_mute() -> void:
 	_mute.focus_mode = Control.FOCUS_NONE
 	_mute.action_mode = BaseButton.ACTION_MODE_BUTTON_PRESS
 	_mute.pressed.connect(func() -> void: mute_pressed.emit())
-	_style_button(_mute, 20, MUTED)
+	UiKit.style_button(_mute, _display, 20, MUTED)
 	_root.add_child(_mute)
 	_mute.set_anchors_preset(Control.PRESET_TOP_RIGHT)
 
@@ -424,8 +514,11 @@ func _apply_safe_area() -> void:
 	_place_top(_over_box, 120.0 + inset.y)
 	_place_top(_pause_box, 320.0 + inset.y)
 	_place_top(_revive_box, 320.0 + inset.y)
+	_place_top(shop_panel.box, 96.0 + inset.y)
 	_place_bottom(_modes, 44.0 + inset.w)
+	_place_bottom(_styles_row, 44.0 + 84.0 + 22.0 + inset.w)
 	_place_bottom(_menu_row, 44.0 + inset.w)
+	_place_bottom(shop_panel.bottom, 44.0 + inset.w)
 	var w := 190.0
 	var h := 60.0
 	_mute.offset_right = -20.0 - inset.x
@@ -472,36 +565,13 @@ func _safe_insets() -> Vector4:
 
 
 func _set_panel(panel: Control) -> void:
-	for p in [_start, _over, _pause, _revive]:
+	for p in [_start, _over, _pause, _revive, shop_panel]:
 		p.visible = p == panel
 	_privacy.visible = panel == _start or panel == _over or panel == _pause
 	_consent.visible = _consent_available and _privacy.visible
 
 
 # --- helpers ---------------------------------------------------------------
-
-
-func _font(path: String) -> Font:
-	var f: Font = load(path)
-	return f if f else ThemeDB.fallback_font
-
-
-func _label(text: String, font: Font, size: int, color: Color, glow := false) -> Label:
-	var l := Label.new()
-	l.text = text
-	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var ls := LabelSettings.new()
-	ls.font = font
-	ls.font_size = size
-	ls.font_color = color
-	ls.line_spacing = 2.0
-	if glow:
-		ls.shadow_size = 18
-		ls.shadow_color = Color(color, 0.32)
-		ls.shadow_offset = Vector2.ZERO
-	l.label_settings = ls
-	return l
 
 
 ## Small corner button, styled like the sound toggle.
@@ -511,101 +581,22 @@ func _small_button(text: String, on_press: Callable) -> Button:
 	b.focus_mode = Control.FOCUS_NONE
 	b.action_mode = BaseButton.ACTION_MODE_BUTTON_RELEASE  # it opens a page on top
 	b.pressed.connect(on_press)
-	_style_button(b, 20, MUTED)
+	UiKit.style_button(b, _display, 20, MUTED)
 	_root.add_child(b)
 	b.set_anchors_preset(Control.PRESET_TOP_LEFT)
 	return b
 
 
-## A centred row of buttons along the bottom of a panel.
-func _bottom_row(panel: Control) -> HBoxContainer:
-	var row := HBoxContainer.new()
-	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	row.alignment = BoxContainer.ALIGNMENT_CENTER
-	row.add_theme_constant_override("separation", 14)
-	panel.add_child(row)
-	row.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
-	return row
-
-
-## The chosen mode is a filled button, the others are outlined.
+## The chosen mode is a filled button, the others are outlined. A locked mode
+## shows how far the player is.
 func _style_mode_buttons() -> void:
 	for mode in _mode_buttons:
 		var b: Button = _mode_buttons[mode]
-		if mode == _mode:
-			_style_button(b, 30, _neon)
-			var on := b.get_theme_stylebox("normal").duplicate() as StyleBoxFlat
-			on.bg_color = _neon
-			for state in ["normal", "hover", "focus", "pressed", "disabled"]:
-				b.add_theme_stylebox_override(state, on)
-			for state in [
-				"font_color", "font_hover_color", "font_focus_color", "font_pressed_color"
-			]:
-				b.add_theme_color_override(state, SHADE)
-		else:
-			_style_button(b, 30, MUTED)
+		b.text = MODE_NAMES[mode]
+		if _mode_locks.has(mode):
+			b.text += " " + _mode_locks[mode]
+	UiKit.style_picker(_mode_buttons, _mode, _display, 30, _neon)
 
 
 func _format(score: int) -> String:
 	return str(score).pad_zeros(_digits)
-
-
-func _vbox(separation: int) -> VBoxContainer:
-	var b := VBoxContainer.new()
-	b.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	b.add_theme_constant_override("separation", separation)
-	return b
-
-
-func _spacer(height: float) -> Control:
-	var c := Control.new()
-	c.custom_minimum_size = Vector2(0, height)
-	c.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	return c
-
-
-## Full-screen panel with a shade that is dark at the top and clear at the
-## bottom, so the ball and the miss marker stay visible under the text.
-func _panel() -> Control:
-	var panel := Control.new()
-	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	panel.visible = false
-	_root.add_child(panel)
-	panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-
-	var g := Gradient.new()
-	g.offsets = PackedFloat32Array([0.0, 0.45, 0.66])
-	g.colors = PackedColorArray([Color(SHADE, 0.94), Color(SHADE, 0.8), Color(SHADE, 0.0)])
-	var tex := GradientTexture2D.new()
-	tex.gradient = g
-	tex.fill_from = Vector2(0, 0)
-	tex.fill_to = Vector2(0, 1)
-	tex.width = 4
-	tex.height = 256
-	var shade := TextureRect.new()
-	shade.texture = tex
-	shade.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	shade.stretch_mode = TextureRect.STRETCH_SCALE
-	shade.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	panel.add_child(shade)
-	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	return panel
-
-
-func _style_button(b: Button, font_size: int, accent: Color) -> void:
-	var normal := StyleBoxFlat.new()
-	normal.bg_color = Color(SHADE, 0.7)
-	normal.border_color = accent
-	normal.set_border_width_all(3)
-	normal.set_corner_radius_all(8)
-	normal.set_content_margin_all(14)
-	var pressed := normal.duplicate() as StyleBoxFlat
-	pressed.bg_color = Color(accent, 0.28)
-	for state in ["normal", "hover", "focus", "disabled"]:
-		b.add_theme_stylebox_override(state, normal)
-	b.add_theme_stylebox_override("pressed", pressed)
-	b.add_theme_font_override("font", _display)
-	b.add_theme_font_size_override("font_size", font_size)
-	for state in ["font_color", "font_hover_color", "font_focus_color"]:
-		b.add_theme_color_override(state, accent)
-	b.add_theme_color_override("font_pressed_color", INK)

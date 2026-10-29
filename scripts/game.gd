@@ -2,11 +2,12 @@ extends Node2D
 ## ONE MORE TAP — game flow: modes, input, states, camera, feedback, saving.
 ## Each mode has its rules (Track, Tower, Runner) and its drawing (WorldView,
 ## TowerView, RunnerView); sparks and labels in Fx, UI in Hud, sounds in Sfx,
-## ads in Ads.
+## ads in Ads, purchases in Shop.
 
-## AD: a full-screen ad is on top. REVIVE: back in the game after the
-## "continue" video, waiting for a tap.
-enum State { READY, PLAYING, DYING, OVER, PAUSED, AD, REVIVE }
+## AD: a full-screen ad is on top. REVIVE: back in the game after a continue,
+## waiting for a tap. SHOP: the shop is open, from the start screen or the
+## game over panel.
+enum State { READY, PLAYING, DYING, OVER, PAUSED, AD, REVIVE, SHOP }
 
 ## Per mode: points between colour changes, and the score that makes a run
 ## worth a "continue" video.
@@ -15,8 +16,9 @@ const MODES := {
 	"tower": {"theme_every": 12, "continue_min": 5},
 	"runner": {"theme_every": 100, "continue_min": 150},
 }
+const LOCKED_MODE := "runner"  ## DINO opens after days in a row (see Streak)
 const PLAYFIELD_WIDTH := 720.0
-const THEME_HUES := [188.0, 318.0, 42.0, 268.0, 150.0, 8.0]
+const SHOP_CAMERA_SHIFT := 0.2  ## shop open: the game behind slides down, below the cards
 const DEATH_PAUSE := 0.6  ## seconds of slow fall before the game over panel
 const RESTART_LOCK := 0.35  ## ignore taps right after game over (no accidental restarts)
 const REVIVE_LOCK := 0.5  ## after the video: time for the camera to settle on the ball
@@ -27,12 +29,15 @@ var run: RunRules
 var state := State.READY
 var best := {"zigzag": 0, "tower": 0, "runner": 0}
 var muted := false
+var streak := Streak.new()
 
 var _state_time := 0.0
 var _new_record := false  ## the run just lost set a new record
 var _shake := 0.0
 var _cam := Vector2.ZERO
-var _hue: float = THEME_HUES[0]
+var _hue := 0.0
+var _preview := {}  ## kind -> look picked in the shop, shown until it closes
+var _shop_from := State.READY  ## where the shop was opened, to go back there
 
 @onready var camera: Camera2D = $Camera2D
 @onready var views := {"zigzag": $World, "tower": $Tower, "runner": $Runner}
@@ -40,6 +45,7 @@ var _hue: float = THEME_HUES[0]
 @onready var sfx: Sfx = $Sfx
 @onready var hud: Hud = $HUD
 @onready var ads: Ads = $Ads
+@onready var shop: Shop = $Shop
 
 
 func _ready() -> void:
@@ -47,6 +53,8 @@ func _ready() -> void:
 	_load_save()
 	sfx.muted = muted
 	hud.set_muted(muted)
+	hud.shop_panel.setup(shop, best)
+	_hue = Catalog.theme_hue(_look("colors"), 0, 1, _now())
 	for m in views:
 		views[m].fx = fx
 	hud.retry_pressed.connect(_on_retry_pressed)
@@ -56,8 +64,20 @@ func _ready() -> void:
 	hud.menu_pressed.connect(_on_menu_pressed)
 	hud.privacy_pressed.connect(ads.open_privacy_policy)
 	hud.consent_pressed.connect(ads.show_consent_options)
+	hud.shop_pressed.connect(_on_shop_pressed)
+	hud.shop_panel.closed.connect(_on_shop_closed)
+	hud.shop_panel.look_previewed.connect(_on_look_previewed)
+	hud.shop_panel.wear_pressed.connect(_on_wear_pressed)
+	hud.shop_panel.buy_pressed.connect(shop.buy)
+	hud.shop_panel.restore_pressed.connect(shop.restore)
 	ads.changed.connect(_on_ads_changed)
+	shop.changed.connect(_on_shop_changed)
+	shop.finished.connect(_on_shop_finished)
+	shop.start()
+	if not shop.inventory.no_ads():
+		ads.start()
 	_set_mode(mode)
+	_visit_today()
 
 
 func _process(delta: float) -> void:
@@ -73,11 +93,21 @@ func _process(delta: float) -> void:
 
 	var view: ModeView = views[mode]
 	var size := get_viewport_rect().size
-	var target := view.camera_target(size, state == State.DYING or state == State.OVER)
+	var after_fall := (
+		state in [State.DYING, State.OVER] or (state == State.SHOP and _shop_from == State.OVER)
+	)
+	var target := view.camera_target(size, after_fall)
+	if state == State.SHOP:
+		target.y -= size.y * SHOP_CAMERA_SHIFT
 	match state:
 		State.PLAYING, State.READY:
-			_cam = target  # the views ask for a target that moves smoothly: hard follow
-		State.DYING, State.OVER:
+			# The views ask for a target that moves smoothly: hard follow. Back
+			# from the shop, glide there first.
+			if state == State.READY and _state_time < 0.5:
+				_cam = _cam.lerp(target, minf(1.0, delta * 10.0))
+			else:
+				_cam = target
+		State.DYING, State.OVER, State.SHOP:
 			_cam = _cam.lerp(target, minf(1.0, delta * 5.0))
 		State.REVIVE:
 			_cam = _cam.lerp(target, minf(1.0, delta * 10.0))
@@ -91,10 +121,10 @@ func _process(delta: float) -> void:
 	camera.offset = shake_offset
 
 	var every: int = MODES[mode]["theme_every"]
-	@warning_ignore("integer_division")
-	var band: int = (run.score / every) % THEME_HUES.size()
-	_hue = _lerp_hue(_hue, THEME_HUES[band], minf(1.0, delta * 3.0))
+	var theme := Catalog.theme_hue(_look("colors"), run.score, every, _now())
+	_hue = _lerp_hue(_hue, theme, minf(1.0, delta * 3.0))
 	view.hue = _hue
+	view.ball_look = _look("ball")
 	hud.set_hue(_hue)
 
 	view.view_rect = Rect2(camera.position + shake_offset - size * 0.5, size)
@@ -115,6 +145,9 @@ func _notification(what: int) -> void:
 		if state == State.PLAYING:
 			_set_state(State.PAUSED)
 			hud.show_pause()
+	# Back after midnight, with the game left open: that is another day too.
+	if what == NOTIFICATION_APPLICATION_RESUMED and is_node_ready():
+		_visit_today()
 
 
 # --- flow ------------------------------------------------------------------
@@ -140,6 +173,8 @@ func _press() -> void:
 
 ## Shows the mode's start screen with a fresh run behind it.
 func _set_mode(m: String) -> void:
+	if not _mode_open(m):
+		m = "zigzag"
 	mode = m
 	for k in views:
 		views[k].visible = k == mode
@@ -200,17 +235,36 @@ func _on_interstitial_closed() -> void:
 
 func _show_over() -> void:
 	_new_record = run.score > best[mode]
+	var unlocked := PackedStringArray()
 	if _new_record:
+		for id in Catalog.LOOKS:
+			var unlock: Array = Catalog.LOOKS[id].get("unlock", [])
+			if (
+				not unlock.is_empty()
+				and unlock[0] == mode
+				and best[mode] < unlock[1]
+				and run.score >= unlock[1]
+			):
+				unlocked.append(Catalog.LOOKS[id]["name"])
 		best[mode] = run.score
 		_save()
 		sfx.record()
 	hud.set_best(best[mode])
 	_show_over_panel()
+	hud.show_unlocked(unlocked)
 
 
 func _show_over_panel() -> void:
 	_set_state(State.OVER)
-	hud.show_over(run.score, best[mode], _new_record, run.reason, _stats(), _can_continue())
+	hud.show_over(
+		run.score,
+		best[mode],
+		_new_record,
+		run.reason,
+		_stats(),
+		_continue_offer(),
+		shop.inventory.tokens
+	)
 
 
 ## One line about the run for the game over panel.
@@ -225,11 +279,17 @@ func _stats() -> String:
 	return "%d piattaforme  ·  %d perfetti  ·  combo max %d" % [k.seg, k.perfects, k.best_combo]
 
 
-## One continue per run, for runs worth it, when a rewarded video is ready.
-func _can_continue() -> bool:
-	return (
-		run.can_revive() and run.score >= int(MODES[mode]["continue_min"]) and ads.rewarded_ready()
-	)
+## One continue per run, for runs worth it. What CONTINUA does: "token"
+## (spends one, no video), "video", "shop" (an ad-free player out of tokens
+## buys more), or "" (no continue).
+func _continue_offer() -> String:
+	if not run.can_revive() or run.score < int(MODES[mode]["continue_min"]):
+		return ""
+	if shop.inventory.tokens > 0:
+		return "token"
+	if shop.inventory.no_ads():
+		return "shop"
+	return "video" if ads.rewarded_ready() else ""
 
 
 func _set_state(s: State) -> void:
@@ -260,7 +320,11 @@ func _reward(perfect: bool, combo: int, plain_sound: Callable) -> void:
 	var neon := Color.from_hsv(_hue / 360.0, 0.78, 1.0)
 	var at: Vector2 = views[mode].ball_position()
 	if perfect:
-		fx.burst(at, 12, neon, 1.0)
+		var boost := BallLook.perfect_boost(_look("ball"))
+		fx.burst(at, int(12 * boost), neon, boost)
+		if boost > 2.0:
+			fx.burst(at, 10, Color.WHITE, 1.6)
+			sfx.sparkle()
 		var label := "PERFETTO" if combo < 2 else "PERFETTO ×%d" % combo
 		fx.float_text(label, at + Vector2(0.0, -26.0 * run.unit), neon)
 		hud.show_combo(combo)
@@ -305,6 +369,9 @@ func _on_retry_pressed() -> void:
 func _on_mode_pressed(m: String) -> void:
 	if state != State.READY or m == mode:
 		return
+	if not _mode_open(m):
+		hud.show_mode_locked(streak.days, Streak.DAYS_TO_UNLOCK)
+		return
 	_set_mode(m)
 	_save()
 
@@ -317,17 +384,29 @@ func _on_menu_pressed() -> void:
 
 
 func _on_continue_pressed() -> void:
-	if state != State.OVER or not _can_continue():
+	if state != State.OVER:
 		return
-	_set_state(State.AD)
-	hud.show_ad()
-	ads.show_rewarded(_on_rewarded_closed)
+	match _continue_offer():
+		"token":
+			if run.revive() and shop.inventory.spend_token():
+				_save()
+				_revived()
+		"video":
+			_set_state(State.AD)
+			hud.show_ad()
+			ads.show_rewarded(_on_rewarded_closed)
+		"shop":
+			_open_shop("extra", "tokens_10")
 
 
 func _on_rewarded_closed(earned: bool) -> void:
 	if not earned or not run.revive():
 		_show_over_panel()  # closed early: no reward, back to the game over panel
 		return
+	_revived()
+
+
+func _revived() -> void:
 	views[mode].revive()
 	_vibrate(20)
 	_set_state(State.REVIVE)
@@ -337,7 +416,85 @@ func _on_rewarded_closed(earned: bool) -> void:
 func _on_ads_changed() -> void:
 	hud.set_consent_available(ads.consent_options_required())
 	if state == State.OVER:
-		hud.set_continue_available(_can_continue())
+		hud.set_continue_offer(_continue_offer(), shop.inventory.tokens)
+
+
+# --- shop ------------------------------------------------------------------
+
+
+func _on_shop_pressed() -> void:
+	if state == State.READY:
+		_open_shop("colors")
+
+
+func _open_shop(tab: String, pick := "") -> void:
+	_shop_from = state
+	_set_state(State.SHOP)
+	shop.refresh()
+	hud.show_shop(tab, pick)
+
+
+func _on_shop_closed() -> void:
+	if state != State.SHOP:
+		return
+	_preview.clear()
+	if _shop_from == State.OVER:
+		_show_over_panel()
+	else:
+		_set_state(State.READY)
+		hud.show_start(best[mode])
+
+
+## A card was picked: its look shows on the game behind, owned or not.
+func _on_look_previewed(id: String) -> void:
+	if Catalog.LOOKS.has(id):
+		_preview[Catalog.LOOKS[id]["kind"]] = id
+
+
+func _on_wear_pressed(id: String) -> void:
+	if shop.inventory.wear(id, best):
+		sfx.buy()
+		_save()
+		hud.shop_panel.refresh()
+
+
+func _on_shop_changed() -> void:
+	_save()
+	if shop.inventory.no_ads():
+		ads.turn_off()
+	match state:
+		State.SHOP:
+			hud.shop_panel.refresh()
+		State.OVER:
+			hud.set_continue_offer(_continue_offer(), shop.inventory.tokens)
+
+
+func _on_shop_finished(id: String, outcome: String) -> void:
+	if outcome == "ok" and id != "restore":
+		sfx.buy()
+		if Catalog.LOOKS.has(id) and shop.inventory.wear(id, best):
+			_preview.erase(Catalog.LOOKS[id]["kind"])
+			_save()
+	if state == State.SHOP:
+		hud.shop_panel.show_result(id, outcome)
+
+
+# --- days in a row ---------------------------------------------------------
+
+
+func _mode_open(m: String) -> bool:
+	return m != LOCKED_MODE or streak.unlocked
+
+
+func _visit_today() -> void:
+	var opened := streak.visit(Streak.day_number(Time.get_date_dict_from_system()))
+	_save()
+	hud.set_mode_lock(
+		LOCKED_MODE, "" if streak.unlocked else "%d/%d" % [streak.days, Streak.DAYS_TO_UNLOCK]
+	)
+	if opened and state == State.READY:
+		sfx.record()
+		hud.show_notice("DINO È APERTO!\nSalta cactus e uccelli: tocca DINO in basso")
 
 
 func _on_mute_pressed() -> void:
@@ -371,6 +528,15 @@ func _vibrate(ms: int) -> void:
 		Input.vibrate_handheld(ms)
 
 
+## The look shown for a kind: the one picked in the shop, or the one worn.
+func _look(kind: String) -> String:
+	return _preview.get(kind, shop.inventory.wearing[kind])
+
+
+func _now() -> float:
+	return Time.get_ticks_msec() / 1000.0
+
+
 func _lerp_hue(from: float, to: float, t: float) -> float:
 	var d := fposmod(to - from + 180.0, 360.0) - 180.0
 	return fposmod(from + d * t, 360.0)
@@ -390,6 +556,11 @@ func _load_save() -> void:
 		var saved := str(cfg.get_value("settings", "mode", mode))
 		if MODES.has(saved):
 			mode = saved
+		streak.load_from(cfg)
+		shop.inventory.load_from(cfg, best)
+	# Played DINO before it had to be opened: it stays open.
+	if best[LOCKED_MODE] > 0:
+		streak.unlocked = true
 
 
 func _save() -> void:
@@ -398,4 +569,6 @@ func _save() -> void:
 		cfg.set_value("score", _best_key(m), best[m])
 	cfg.set_value("settings", "muted", muted)
 	cfg.set_value("settings", "mode", mode)
+	streak.save_to(cfg)
+	shop.inventory.save_to(cfg)
 	cfg.save(SAVE_PATH)

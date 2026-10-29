@@ -3,7 +3,8 @@ extends Node
 ## What the game knows about ads: "can the player continue?", "show the video",
 ## "a run ended: interstitial if it is time" and the privacy entry points.
 ## Ads are optional: where the AdMob plugin cannot run (desktop builds, headless
-## tests) every call is a no-op and the game plays as if ads did not exist.
+## tests), and for players who bought the ad-free pass, every call is a no-op
+## and the game plays as if ads did not exist.
 
 signal changed  ## an ad became ready or was used, or consent options changed
 
@@ -38,11 +39,17 @@ var pacing: AdPacing
 ## desktop and test runs never load the plugin's scripts.
 var _backend: Node
 var _showing := false
+var _off := false  ## the ad-free pass was bought
 
 
 func _ready() -> void:
 	pacing = AdPacing.new(_now())
-	if not _plugin_can_run():
+
+
+## Called once the save is loaded, unless the player has the ad-free pass: then
+## the ad SDK never starts (no consent form, nothing sent to Google).
+func start() -> void:
+	if _backend != null or _off or not _plugin_can_run():
 		return
 	_backend = (load(BACKEND_PATH) as GDScript).new()
 	add_child(_backend)
@@ -50,8 +57,16 @@ func _ready() -> void:
 	_backend.call("start", _unit_ids())
 
 
+## The ad-free pass was bought: no ad shows from now on, in this session too.
+func turn_off() -> void:
+	if _off:
+		return
+	_off = true
+	changed.emit()
+
+
 func rewarded_ready() -> bool:
-	return _backend != null and not _showing and _backend.call("rewarded_ready")
+	return _backend != null and not _off and not _showing and _backend.call("rewarded_ready")
 
 
 ## Plays the rewarded video. done.call(earned: bool) when it is closed.
@@ -76,7 +91,7 @@ func run_finished() -> void:
 ## Shows an interstitial if one is due and loaded, and returns true; done.call()
 ## runs when it is closed. Returns false (and does nothing) otherwise.
 func show_interstitial_if_due(done: Callable) -> bool:
-	if _backend == null or _showing or not pacing.should_show_interstitial(_now()):
+	if _backend == null or _off or _showing or not pacing.should_show_interstitial(_now()):
 		return false
 	if not _backend.call("interstitial_ready"):
 		return false
