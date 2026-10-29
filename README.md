@@ -182,6 +182,8 @@ Controllano che un giocatore perfetto sopravviva su 60 percorsi diversi per moda
 
 I preset Android (AAB firmato, build Gradle, permessi INTERNET e VIBRATE) e iOS (progetto Xcode, solo iPhone, iOS 17+, plugin di condivisione, recensione e acquisti attivi) sono già in `export_presets.cfg`. Strumenti da installare, chiavi di firma e invio agli store: **[PUBBLICAZIONE.md](PUBBLICAZIONE.md)**.
 
+Senza Mac né Android Studio: il workflow *Build Android e iOS* (`.github/workflows/mobile.yml`, da lanciare a mano in *Actions*) lancia i test qui sopra, esporta AAB e IPA firmati e può caricarli nel test interno di Google Play e su TestFlight. Secret e configurazione: [PUBBLICAZIONE.md, passo 10](PUBBLICAZIONE.md#10-build-automatiche-su-github-senza-mac-e-senza-android-studio).
+
 Prova veloce su Android: template di export, JDK 17 e Android SDK installati, *Project → Install Android Build Template*, telefono in debug USB, poi il pulsante Android in alto a destra nell'editor.
 
 ## Prossimi passi

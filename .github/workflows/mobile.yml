@@ -1,0 +1,223 @@
+# Builds the signed Android App Bundle and the iOS .ipa on GitHub's machines,
+# so neither Android Studio nor a Mac is needed. Optionally uploads them to
+# Google Play (internal testing, as a draft) and TestFlight.
+# Secrets and first-time setup: PUBBLICAZIONE.md, step 10.
+name: Build Android e iOS
+
+on:
+  workflow_dispatch:
+    inputs:
+      piattaforma:
+        description: Cosa costruire
+        type: choice
+        options:
+          - android e ios
+          - android
+          - ios
+        default: android e ios
+      carica:
+        description: Carica sugli store (Google Play test interno, TestFlight)
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+env:
+  GODOT_VERSION: "4.7"
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Controlla gli ID AdMob
+        run: |
+          if grep -q '"interstitial": ""' scripts/ads.gd; then
+            echo "::warning::LIVE_IDS in scripts/ads.gd è vuoto: le build mostrano gli annunci di prova di Google (PUBBLICAZIONE.md, passo 3)"
+          fi
+          if grep -q '3940256099942544~' project.godot || ! grep -q '^general/android/app_id=' project.godot; then
+            echo "::warning::Gli ID app AdMob nelle Project Settings sono quelli di prova (PUBBLICAZIONE.md, passo 3)"
+          fi
+
+      - name: Godot
+        run: tools/ci/install_godot.sh
+
+      - name: Test
+        run: |
+          "$GODOT" --headless --path . --import
+          for test in tests/test_*.gd; do
+            echo "::group::$test"
+            "$GODOT" --headless --path . --script "res://$test"
+            echo "::endgroup::"
+          done
+
+  android:
+    name: Android (AAB)
+    needs: test
+    if: inputs.piattaforma != 'ios'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Controlla i secret
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+        run: >-
+          tools/ci/require_secrets.sh ANDROID_KEYSTORE_BASE64 ANDROID_KEYSTORE_PASSWORD
+          ${{ inputs.carica && 'PLAY_SERVICE_ACCOUNT_JSON' || '' }}
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Android SDK
+        run: |
+          sdkmanager="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$sdkmanager" --licenses > /dev/null || true
+          "$sdkmanager" "platforms;android-36" "build-tools;36.1.0" "ndk;29.0.14206865" > /dev/null
+
+      - name: Godot e plugin AdMob
+        run: |
+          tools/ci/install_godot.sh templates
+          tools/ci/install_admob.sh android
+
+      - name: Esporta l'AAB firmato
+        id: export
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          GODOT_ANDROID_KEYSTORE_RELEASE_USER: upload
+          GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        run: |
+          export GODOT_ANDROID_KEYSTORE_RELEASE_PATH="$RUNNER_TEMP/upload.p12"
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode --ignore-garbage > "$GODOT_ANDROID_KEYSTORE_RELEASE_PATH"
+          # Every run gets a higher version code: Google Play refuses one already used.
+          sed -i "s/^version\/code=.*/version\/code=$GITHUB_RUN_NUMBER/" export_presets.cfg
+          mkdir -p "$RUNNER_TEMP/android"
+          "$GODOT" --headless --path . --import
+          "$GODOT" --headless --path . --install-android-build-template \
+            --export-release Android "$RUNNER_TEMP/android/one-more-tap.aab"
+          test -f "$RUNNER_TEMP/android/one-more-tap.aab"
+          echo "package=$(sed -n 's/^package\/unique_name="\(.*\)"/\1/p' export_presets.cfg)" >> "$GITHUB_OUTPUT"
+          echo "AAB con version code $GITHUB_RUN_NUMBER" >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: one-more-tap-android-${{ github.run_number }}
+          path: ${{ runner.temp }}/android/one-more-tap.aab
+          if-no-files-found: error
+
+      - name: Carica su Google Play (test interno, in bozza)
+        if: inputs.carica
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: ${{ steps.export.outputs.package }}
+          releaseFiles: ${{ runner.temp }}/android/one-more-tap.aab
+          track: internal
+          status: draft
+
+  ios:
+    name: iOS (IPA)
+    needs: test
+    if: inputs.piattaforma != 'android'
+    # App Store Connect only accepts builds made with Xcode 26 or later.
+    runs-on: macos-26
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Controlla i secret
+        env:
+          IOS_CERTIFICATE_P12_BASE64: ${{ secrets.IOS_CERTIFICATE_P12_BASE64 }}
+          IOS_CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+          IOS_PROFILE_BASE64: ${{ secrets.IOS_PROFILE_BASE64 }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+        run: >-
+          tools/ci/require_secrets.sh IOS_CERTIFICATE_P12_BASE64 IOS_CERTIFICATE_PASSWORD IOS_PROFILE_BASE64
+          ${{ inputs.carica && 'ASC_KEY_ID ASC_ISSUER_ID ASC_KEY_P8' || '' }}
+
+      - name: Xcode
+        run: |
+          xcodebuild -version
+          if [ "$(xcodebuild -version | awk 'NR == 1 { split($2, v, "."); print v[1] }')" -lt 26 ]; then
+            echo "::error::App Store Connect accetta solo build fatte con Xcode 26 o successivo"
+            exit 1
+          fi
+
+      - name: Godot e plugin AdMob
+        run: |
+          tools/ci/install_godot.sh templates
+          tools/ci/install_admob.sh ios
+
+      - name: Certificato e profilo
+        env:
+          IOS_CERTIFICATE_P12_BASE64: ${{ secrets.IOS_CERTIFICATE_P12_BASE64 }}
+          IOS_CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+          IOS_PROFILE_BASE64: ${{ secrets.IOS_PROFILE_BASE64 }}
+        run: tools/ci/install_ios_signing.sh
+
+      - name: Esporta il progetto Xcode
+        run: |
+          # Team from the profile; every run gets a higher build number, as App Store Connect requires.
+          sed -i.orig \
+            -e "s/^application\/app_store_team_id=.*/application\/app_store_team_id=\"$TEAM_ID\"/" \
+            -e "s/^application\/version=.*/application\/version=\"$GITHUB_RUN_NUMBER\"/" \
+            export_presets.cfg
+          rm export_presets.cfg.orig
+          mkdir -p "$RUNNER_TEMP/xcode"
+          "$GODOT" --headless --path . --import
+          GODOT_APPLE_PLATFORM_PROFILE_SPECIFIER_RELEASE="$PROFILE_NAME" \
+            "$GODOT" --headless --path . --export-release iOS "$RUNNER_TEMP/xcode/OneMoreTap.ipa"
+          "$GODOT" --headless --path . --script res://tools/ci/link_admob_spm.gd -- \
+            "$RUNNER_TEMP/xcode/OneMoreTap.xcodeproj/project.pbxproj"
+          IOS_EXPORT_DIR="$RUNNER_TEMP/xcode" addons/godot-iap/scripts/fix_ios_embed.sh
+
+      - name: Archivia e firma
+        run: |
+          xcodebuild -project "$RUNNER_TEMP/xcode/OneMoreTap.xcodeproj" -scheme OneMoreTap \
+            -configuration Release -destination "generic/platform=iOS" \
+            -archivePath "$RUNNER_TEMP/OneMoreTap.xcarchive" -quiet archive
+          xcodebuild -exportArchive -archivePath "$RUNNER_TEMP/OneMoreTap.xcarchive" \
+            -exportOptionsPlist "$RUNNER_TEMP/signing/export-options.plist" \
+            -exportPath "$RUNNER_TEMP/ipa"
+          ls "$RUNNER_TEMP/ipa"/*.ipa
+          echo "IPA con build number $GITHUB_RUN_NUMBER" >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: one-more-tap-ios-${{ github.run_number }}
+          path: ${{ runner.temp }}/ipa/*.ipa
+          if-no-files-found: error
+
+      - name: Carica su TestFlight
+        if: inputs.carica
+        shell: bash
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+        run: |
+          printf '%s\n' "$ASC_KEY_P8" > "$RUNNER_TEMP/signing/AuthKey.p8"
+          xcodebuild -exportArchive -archivePath "$RUNNER_TEMP/OneMoreTap.xcarchive" \
+            -exportOptionsPlist "$RUNNER_TEMP/signing/upload-options.plist" \
+            -exportPath "$RUNNER_TEMP/upload" -allowProvisioningUpdates \
+            -authenticationKeyPath "$RUNNER_TEMP/signing/AuthKey.p8" \
+            -authenticationKeyID "$ASC_KEY_ID" -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
+            | tee "$RUNNER_TEMP/upload.log"
+          grep -q "EXPORT SUCCEEDED" "$RUNNER_TEMP/upload.log"
+
+      - name: Pulizia
+        if: always()
+        run: |
+          [ -z "${KEYCHAIN:-}" ] || security delete-keychain "$KEYCHAIN" || true
+          rm -rf "$RUNNER_TEMP/signing"

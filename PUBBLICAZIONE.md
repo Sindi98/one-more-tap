@@ -2,6 +2,21 @@
 
 Il codice è pronto. Quello che resta sono account, chiavi e moduli che solo tu puoi compilare. Segui i passi in ordine: ognuno dice dove cliccare e cosa scrivere.
 
+## Cosa ti serve
+
+| Cosa | Costo | A cosa serve |
+|---|---|---|
+| Account [Google Play Console](https://play.google.com/console) | 25 $ una volta sola, più verifica dell'identità | Pubblicare su Android |
+| [Apple Developer Program](https://developer.apple.com/programs/) | 99 € all'anno | Pubblicare su iPhone |
+| Account [AdMob](https://admob.google.com) | Gratis | Gli annunci (e i ricavi) |
+| Un indirizzo email per il gioco e il tuo nome | — | Informativa privacy e contatti nelle schede degli store |
+| Un telefono Android e un iPhone (anche di amici) | — | Provare le build prima di pubblicarle |
+| Godot 4.7 sul tuo computer | Gratis | Inserire gli ID AdMob e provare il gioco |
+
+**Non servono un Mac né Android Studio**: le build firmate per i due store le fa GitHub sui suoi computer (passo 10). Su un repository pubblico è gratis; su uno privato usa i minuti gratuiti del piano (2.000 al mese, e i minuti sui Mac contano 10 volte: lancia la build iOS solo quando serve).
+
+Se invece hai un Mac con Xcode e preferisci fare tutto a mano dall'editor, i passi 4 e 5 spiegano anche quella strada.
+
 ## Cosa c'è già nel progetto
 
 | Cosa | Dove |
@@ -12,6 +27,8 @@ Il codice è pronto. Quello che resta sono account, chiavi e moduli che solo tu 
 | Plugin acquisti in-app godot-iap 4.2.0, già attivo | `addons/godot-iap/` |
 | Plugin di condivisione e recensione in-app (Android e iOS), già attivi | `addons/SharePlugin/`, `addons/InappReviewPlugin/`, `ios/plugins/` |
 | Preset di export Android (AAB firmato), iOS (progetto Xcode) e Web (itch.io) | `export_presets.cfg` |
+| Build automatiche su GitHub: test, AAB firmato, IPA firmata, caricamento su Google Play e TestFlight | `.github/workflows/mobile.yml`, `tools/ci/` |
+| Script per creare la chiave Android e il certificato Apple senza Mac | `tools/make_android_keystore.sh`, `tools/make_ios_certificate.sh` |
 | Icone (iOS 1024, Android adattiva e monocromatica) | `assets/icons/` (le rigeneri con `tools/make_icons.gd`) |
 | Pagina del gioco (dove porta il link condiviso) e informativa privacy (IT + EN), da pubblicare online | `docs/index.html`, `docs/privacy.html` |
 | Testi, screenshot, icona 512 e grafica 1024×500 per gli store, in italiano e inglese | `store/` |
@@ -66,6 +83,8 @@ Entrambi gli store chiedono l'informativa, e il gioco la apre dal pulsante PRIVA
 
 ## 4. Google Play (Android)
 
+**Con le build su GitHub** (passo 10) salta *Preparare Godot*, *Chiave di firma* ed *Esportare*: la chiave la crei con lo script del passo 10 e l'AAB lo trovi già firmato tra i risultati della build. Riprendi da *Play Console*.
+
 ### Preparare Godot (una volta)
 
 1. *Editor → Manage Export Templates → Download and Install* (4.7).
@@ -78,6 +97,8 @@ Entrambi gli store chiedono l'informativa, e il gioco la apre dal pulsante PRIVA
 ```bash
 keytool -genkeypair -v -keystore one-more-tap-upload.keystore -alias upload -keyalg RSA -keysize 2048 -validity 10000
 ```
+
+(Senza Java va bene anche `tools/make_android_keystore.sh`, che usa solo openssl: è la stessa chiave che userà GitHub, passo 10.)
 
 Tienila **fuori dal repository**, con la password, in un posto sicuro (gestore di password più backup). Se la perdi, Google può reimpostarla ma ci vogliono giorni.
 
@@ -93,6 +114,7 @@ In *Project → Export → Android → Keystore → Release* inserisci file, ali
 1. Registrati su [play.google.com/console](https://play.google.com/console): 25 $ una tantum, più verifica dell'identità.
 2. *Crea app*: nome "One More Tap", lingua predefinita italiano, Gioco, Gratuito.
 3. **Account personali nuovi**: prima della produzione Google chiede un **test chiuso con almeno 12 tester per 14 giorni di fila**. Carica l'AAB in *Test → Test chiuso*, invita amici e familiari (email o Google Group) e aspetta i 14 giorni. Poi chiedi l'accesso alla produzione.
+   - Il **primo** AAB va caricato a mano dalla Play Console (anche quello fatto da GitHub): è così che Google registra il nome del pacchetto. Dopo, la build su GitHub può caricare da sola le versioni successive nel test interno (passo 10).
 4. *Contenuti dell'app* (menu Policy):
    - **Norme sulla privacy**: l'URL del passo 2.
    - **Annunci**: Sì, l'app contiene annunci.
@@ -110,8 +132,8 @@ In *Project → Export → Android → Keystore → Release* inserisci file, ali
 
 ### Cosa serve
 
-- Un **Mac** con l'ultima versione di **Xcode**. L'export iOS di Godot produce un progetto Xcode, e il caricamento si fa da lì.
 - **Apple Developer Program**: 99 € all'anno, su [developer.apple.com/programs](https://developer.apple.com/programs/).
+- **Oppure** un Mac con **Xcode 26 o successivo** (dall'aprile 2026 App Store Connect rifiuta le build fatte con versioni precedenti), **oppure** le build su GitHub del passo 10, che girano su un Mac di GitHub con Xcode 26: in quel caso fai qui solo il punto 3 di *Preparare*, salta *Esportare e caricare* e riprendi da *App Store Connect*.
 
 ### Preparare (una volta)
 
@@ -131,7 +153,7 @@ In *Project → Export → Android → Keystore → Release* inserisci file, ali
 - **Privacy dell'app** ("etichette nutrizionali"): dichiara i dati dell'SDK di Google, come da [questa pagina](https://developers.google.com/admob/ios/privacy/data-disclosure): *Posizione approssimativa*, *ID dispositivo*, *Dati pubblicitari*, *Interazione con il prodotto*, *Dati sugli arresti anomali*, *Dati sulle prestazioni*, *Altri dati diagnostici*. Finalità: pubblicità di terze parti e analisi; non collegati all'identità. Questa versione **non** mostra la richiesta di tracciamento di Apple (ATT), quindi l'SDK non accede all'IDFA. Se marchi dei dati come "usati per il tracciamento", Apple pretende il popup ATT (vedi "Più avanti").
 - **URL informativa privacy** e **URL di supporto** (la pagina `index.html`).
 - **Classificazione per età**: compila il questionario. Il gioco non ha contenuti sensibili, ma gli annunci di terzi possono alzare la fascia: rispondi in modo coerente. Nel codice gli annunci sono limitati a contenuti per tutti con supervisione (`MAX_AD_CONTENT_RATING_PG`).
-- **Crittografia**: già dichiarata nel preset (`ITSAppUsesNonExemptEncryption = NO`), Xcode non chiede nulla.
+- **Crittografia**: già dichiarata (`ITSAppUsesNonExemptEncryption = NO`, la scrive Godot nell'Info.plist), App Store Connect non chiede nulla.
 - **Screenshot**: `store/screenshots/iphone/` (6,9", 1320×2868). L'app è solo per iPhone, quindi non servono quelli per iPad.
 - **Inglese**: in alto a destra nella pagina della versione, *Italiano → Aggiungi lingua → Inglese (USA)*, poi i testi inglesi della scheda e gli screenshot `store/screenshots/iphone_en/`.
 - **Note per la revisione**: c'è un testo pronto in `store/scheda_store.md`.
@@ -144,6 +166,8 @@ In *Project → Export → Android → Keystore → Release* inserisci file, ali
 2. Android: in *Export → Android* aumenta **Version → Code** di 1. Play rifiuta un codice già usato.
 3. iOS: lo stesso numero di versione non si può caricare due volte. Alza la versione oppure imposta *Application → Version* (il numero di build) a `1.0.1.1`, `1.0.1.2`, …
 4. Lancia i test (vedi README) e prova sul telefono prima di caricare.
+
+Con le build su GitHub (passo 10) i punti 2 e 3 li fa la build: version code Android e numero di build iOS sono il numero della build, che cresce sempre. Basta il punto 1, poi un commit e una nuova build; i test li lancia lei.
 
 ## 7. Acquisti in-app
 
@@ -232,6 +256,101 @@ Per gli aggiornamenti ripeti l'export e carica il nuovo zip al posto del vecchio
 1. Apri `docs/index.html` e in fondo, in `LINKS`, inserisci i link a Google Play, App Store e alla pagina itch.io (gli esempi sono nel commento sopra). I pulsanti compaiono da soli, con lo store del visitatore per primo.
 2. Su itch.io aggiungi i link agli store nella descrizione.
 
+## 10. Build automatiche su GitHub (senza Mac e senza Android Studio)
+
+Il workflow `.github/workflows/mobile.yml` fa sui computer di GitHub (Linux per Android, un Mac con Xcode 26 per iOS) quello che altrimenti faresti con Android Studio e Xcode: lancia i test, esporta l'**AAB firmato** per Google Play e l'**IPA firmata** per l'App Store e, se vuoi, li carica nel **test interno di Google Play** e su **TestFlight**.
+
+Le chiavi stanno nei **secret** di GitHub: cifrati, nessuno li può rileggere, nemmeno tu. Si creano nel repository in *Settings → Secrets and variables → Actions → New repository secret*, con il nome scritto esattamente come nelle tabelle qui sotto.
+
+Gli script si lanciano dalla cartella del progetto, in un terminale: Linux, macOS o *Git Bash* su Windows (arriva con [Git per Windows](https://git-scm.com/download/win)). Usano solo `openssl` e mettono i file nella tua cartella home, mai nel repository.
+
+### 10.1 Android
+
+1. Crea la chiave di caricamento (una volta sola, poi custodiscila):
+
+   ```bash
+   tools/make_android_keystore.sh
+   ```
+
+   Crea `~/one-more-tap-upload.p12` e il file `.base64.txt` da incollare nel secret. Se hai già una chiave fatta con `keytool` (passo 4, alias `upload`), usa quella: `base64 < one-more-tap-upload.keystore | tr -d '\n' > ~/chiave.base64.txt`.
+
+2. I secret:
+
+   | Secret | Cosa metterci |
+   |---|---|
+   | `ANDROID_KEYSTORE_BASE64` | il contenuto del file `.base64.txt` |
+   | `ANDROID_KEYSTORE_PASSWORD` | la password della chiave |
+
+3. (Facoltativo) Caricamento automatico su Google Play:
+   1. Su [Google Cloud Console](https://console.cloud.google.com) crea un progetto (per esempio "one-more-tap"), poi *API e servizi → Libreria → Google Play Android Developer API → Abilita*.
+   2. *IAM e amministrazione → Account di servizio → Crea account di servizio*, nome "github-play", nessun ruolo. Aprilo, *Chiavi → Aggiungi chiave → Crea nuova chiave → JSON*: si scarica un file `.json`.
+   3. Nella Play Console, *Utenti e autorizzazioni → Invita nuovi utenti*: l'email dell'account di servizio (finisce con `iam.gserviceaccount.com`), poi *Autorizzazioni app → One More Tap* con il permesso di rilasciare nei canali di test. Invia l'invito.
+   4. Secret `PLAY_SERVICE_ACCOUNT_JSON`: tutto il contenuto del file `.json`.
+   5. Il **primo** AAB va comunque caricato a mano dalla Play Console (passo 4): scaricalo dagli *Artifacts* di una build (10.3).
+
+### 10.2 iOS
+
+Tutto dal browser, su [developer.apple.com/account](https://developer.apple.com/account) → *Certificates, IDs & Profiles*.
+
+1. **Identificativo dell'app**: *Identifiers → +* → *App IDs* → *App* → descrizione "One More Tap", *Explicit* `com.sindi98.onemoretap`. Non serve spuntare niente: gli acquisti in-app sono già attivi.
+2. **Certificato di distribuzione** (dura un anno):
+
+   ```bash
+   tools/make_ios_certificate.sh csr
+   ```
+
+   Chiede email e nome e crea la richiesta in `~/one-more-tap-ios`. Poi *Certificates → +* → **Apple Distribution** → carica `ios_distribution.csr` → scarica `distribution.cer`, e:
+
+   ```bash
+   tools/make_ios_certificate.sh p12 ~/Downloads/distribution.cer
+   ```
+
+3. **Profilo di distribuzione**: *Profiles → +* → *Distribution* → **App Store Connect** → l'App ID del punto 1 → il certificato del punto 2 → nome `One More Tap App Store` (solo lettere, numeri e spazi) → *Generate* → scarica il file `.mobileprovision`, e:
+
+   ```bash
+   tools/make_ios_certificate.sh profile ~/Downloads/One_More_Tap_App_Store.mobileprovision
+   ```
+
+4. **L'app su App Store Connect**: passo 5, *Preparare*, punto 3. Senza, TestFlight rifiuta il caricamento.
+5. (Per il caricamento su TestFlight) **Chiave API**: su [App Store Connect](https://appstoreconnect.apple.com), *Utenti e accesso → Integrazioni → API di App Store Connect → Chiavi del team → +*, nome "GitHub", accesso **App Manager**. Scarica il file `AuthKey_….p8`: si può scaricare **una volta sola**. La prima volta il titolare dell'account deve chiedere l'accesso alle API, sulla stessa pagina.
+
+I secret:
+
+| Secret | Cosa metterci |
+|---|---|
+| `IOS_CERTIFICATE_P12_BASE64` | il contenuto di `~/one-more-tap-ios/ios_distribution.p12.base64.txt` |
+| `IOS_CERTIFICATE_PASSWORD` | la password scelta al passo `p12` |
+| `IOS_PROFILE_BASE64` | il contenuto di `~/one-more-tap-ios/profile.base64.txt` |
+| `ASC_KEY_ID` | l'ID della chiave API (10 caratteri, nella tabella delle chiavi) |
+| `ASC_ISSUER_ID` | l'Issuer ID (sopra la tabella delle chiavi) |
+| `ASC_KEY_P8` | tutto il contenuto del file `.p8`, comprese le righe `BEGIN` ed `END` |
+
+Il Team ID non serve: la build lo legge dal profilo. Conserva la cartella `~/one-more-tap-ios` in un posto sicuro e cancella i file `.base64.txt` dopo averli incollati.
+
+Ogni anno, quando il certificato scade (Apple ti avvisa per email), rifai i punti 2 e 3 e aggiorna i tre secret `IOS_…`. Le versioni già pubblicate non ne risentono.
+
+### 10.3 Lanciare una build
+
+1. Su GitHub: *Actions → Build Android e iOS → Run workflow*.
+2. Scegli cosa costruire. Con **Carica sugli store** spuntato:
+   - l'AAB va nel **test interno** di Google Play come bozza: lo pubblichi ai tester dalla Play Console (*Test interno → Modifica release → Avvia implementazione*);
+   - l'IPA va su App Store Connect: dopo qualche minuto di elaborazione la trovi in *TestFlight*, pronta per i tester e da scegliere al momento di inviare la versione in revisione.
+3. A fine build, in fondo alla pagina, sotto *Artifacts*, ci sono `one-more-tap-android-N` (l'AAB) e `one-more-tap-ios-N` (l'IPA), per caricarli a mano se preferisci.
+
+Cosa sapere:
+
+- Il **version code** Android e il **numero di build** iOS sono il numero della build su GitHub (`N`), che cresce sempre. Se carichi anche a mano dall'editor, usa un numero più alto dell'ultima build.
+- Se manca un secret, la build si ferma subito e dice quale. Se gli ID AdMob sono ancora quelli di prova, la build va avanti ma lo segnala tra gli avvisi: per i tester va benissimo, per la produzione no (passo 3).
+- Le librerie native del plugin AdMob (non sono nel repository) le scarica la build da sola, nella stessa versione del plugin.
+
+Se qualcosa va storto:
+
+- **Android, password o chiave non valida**: controlla `ANDROID_KEYSTORE_PASSWORD` e che l'alias della chiave sia `upload`.
+- **Google Play, app non trovata o permesso negato**: il primo AAB va caricato a mano; l'account di servizio deve essere invitato nella Play Console con i permessi su One More Tap.
+- **iOS, "Il profilo … è per …"** oppure **"è di sviluppo o Ad Hoc"**: rifai il profilo del punto 3 con l'App ID giusto e il tipo *App Store Connect*.
+- **iOS, "Nel certificato non c'è un'identità Apple Distribution valida"**: il certificato è scaduto, revocato o di tipo *Development*: rifai il punto 2.
+- **iOS, "doesn't include signing certificate" durante *Archivia e firma***: il profilo è stato creato con un altro certificato: rifallo scegliendo quello attuale e aggiorna `IOS_PROFILE_BASE64`.
+
 ## Controllo finale prima di inviare
 
 - [ ] ID app AdMob nelle Project Settings, ID unità in `LIVE_IDS`
@@ -240,7 +359,8 @@ Per gli aggiornamenti ripeti l'export e carica il nuovo zip al posto del vecchio
 - [ ] Build di **release** provata su telefono: compare il consenso, il video "Continua" fa ripartire, l'interstitial compare a fine partita, il banner c'è solo nel menu, RICARICA ridà le vite, PRIVACY e CONSENSO si aprono, CONDIVIDI apre il menu di condivisione con l'immagine della partita
 - [ ] Gioco provato con il telefono in inglese (testi inglesi) e in italiano
 - [ ] Schede degli store compilate in italiano e in inglese
-- [ ] Keystore Android salvato in un posto sicuro
+- [ ] Chiave Android (e, per le build su GitHub, la cartella `~/one-more-tap-ios`) salvate in un posto sicuro
+- [ ] (Build su GitHub) Secret creati e una build con *Carica sugli store* arrivata nel test interno di Google Play e su TestFlight
 - [ ] Versione aumentata
 - [ ] Prodotti creati e attivi su entrambi gli store, con gli stessi ID della tabella del passo 7
 - [ ] Acquisto, ripristino e Rimuovi annunci provati con un account di test

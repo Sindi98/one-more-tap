@@ -8,9 +8,16 @@
 # Android build template: reinstall with Project → Install Android Build Template
 /android/
 
+# Zips the AdMob plugin downloads before installing its native libraries
+/addons/admob/downloads/
+
 # Signing keys never go in the repository
 *.keystore
 *.jks
+*.p12
+*.p8
+*.mobileprovision
+*.base64.txt
 
 # Built from assets/i18n/strings.csv when Godot imports the project
 *.translation
