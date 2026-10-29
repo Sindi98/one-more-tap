@@ -9,12 +9,12 @@ extends Node2D
 ## is open, from the start screen or the game over panel.
 enum State { READY, PLAYING, DYING, OVER, PAUSED, AD, REVIVE, NO_LIVES, SHOP }
 
-## Per mode: points between colour changes, and the score that makes a run
-## worth a "continue" video.
+## Per mode: points between colour changes, the score that makes a run worth
+## a "continue" video, and the playlist (see Music).
 const MODES := {
-	"zigzag": {"theme_every": 12, "continue_min": 5},
-	"tower": {"theme_every": 12, "continue_min": 5},
-	"runner": {"theme_every": 100, "continue_min": 150},
+	"zigzag": {"theme_every": 12, "continue_min": 5, "music": "neon"},
+	"tower": {"theme_every": 12, "continue_min": 5, "music": "neon"},
+	"runner": {"theme_every": 100, "continue_min": 150, "music": "retro"},
 }
 const LOCKED_MODE := "runner"  ## DINO opens after days in a row (see Streak)
 const PLAYFIELD_WIDTH := 720.0
@@ -196,6 +196,7 @@ func _set_mode(m: String) -> void:
 	if not _mode_open(m):
 		m = "zigzag"
 	mode = m
+	music.set_playlist(MODES[mode]["music"])
 	for k in views:
 		views[k].visible = k == mode
 	hud.set_mode(mode, _mode_locks())

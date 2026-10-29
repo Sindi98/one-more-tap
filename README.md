@@ -84,10 +84,25 @@ Tutti i testi del gioco stanno in `assets/i18n/strings.csv`: una riga per testo,
 
 ## Musica
 
-Un brano in loop, `assets/music/music.mp3`, da [Pixabay Music](https://pixabay.com/music/). Volume pieno durante la partita, più basso nella schermata iniziale e nei pannelli, in pausa durante gli annunci e quando il gioco va in background. Il pulsante SUONO spegne anche la musica. Senza il file il gioco funziona lo stesso, senza musica.
+Brani da [Pixabay Music](https://pixabay.com/music/) in `assets/music`, uno dopo l'altro. ZIGZAG e TORRE (neon) suonano i brani con i bassi, DINO (pixel art) quelli 8-bit; ogni lista parte da un brano a caso, e passando tra ZIGZAG e TORRE il brano continua. Volume pieno durante la partita, più basso nella schermata iniziale e nei pannelli, in pausa durante gli annunci e quando il gioco va in background. Il pulsante SUONO spegne anche la musica.
 
-- **Licenza**: [Pixabay Content License](https://pixabay.com/service/license-summary/): gratis anche per uso commerciale e dentro un gioco, senza dover citare l'autore. Non si può rivendere o distribuire il brano da solo.
-- **Cambiarlo**: scarica l'MP3 da Pixabay, chiamalo `music.mp3` e mettilo in `assets/music` al posto del vecchio. Il loop lo imposta il codice; i volumi sono `RUN_DB` e `MENU_DB` in cima a `scripts/music.gd`.
+| Brano | Autore | File | Modalità |
+|---|---|---|---|
+| [Speed Racing Bass Music](https://pixabay.com/music/future-bass-speed-racing-bass-music-561880/) | GR0ZA | `speed_racing_bass.ogg` | ZIGZAG, TORRE |
+| [Bass Heavy Deep Drop](https://pixabay.com/music/future-bass-bass-heavy-deep-drop-573882/) | alex-morgan | `bass_heavy_deep_drop.ogg` | ZIGZAG, TORRE |
+| [Electronic Future Beats](https://pixabay.com/music/future-bass-electronic-future-beats-fadeout-117997/) | QubeSounds | `electronic_future_beats.ogg` | ZIGZAG, TORRE |
+| [Arcade Game](https://pixabay.com/music/electronic-arcade-game-617542/) | AtlasAudio | `arcade_game.ogg` | ZIGZAG, TORRE |
+| [Spaceship. Arcade Shooter Game Background Soundtrack](https://pixabay.com/music/video-games-spaceship-arcade-shooter-game-background-soundtrack-318508/) | Serhii_Kliets | `spaceship_arcade_shooter.ogg` | ZIGZAG, TORRE |
+| [Short 8 bit background music for video mobile game. Old school](https://pixabay.com/music/video-games-short-8-bit-background-music-for-video-mobile-game-old-school-37sec-164704/) | White_Records | `retro_old_school.ogg` | DINO |
+| [Background music for mobile casual video game](https://pixabay.com/music/video-games-background-music-for-mobile-casual-video-game-short-8-bit-music-164703/) | White_Records | `retro_casual.ogg` | DINO |
+
+- **Licenza**: [Pixabay Content License](https://pixabay.com/service/license-summary/): gratis anche per uso commerciale e dentro un gioco, senza dover citare l'autore. Non si può rivendere o distribuire un brano da solo.
+- **File**: gli MP3 di Pixabay (256 kbps, 22 MB in tutto) convertiti in OGG Vorbis (qualità 2, 8 MB), senza il silenzio all'inizio e alla fine e portati tutti allo stesso volume (-14 LUFS), così passando da un brano all'altro il volume non salta:
+  ```
+  ffmpeg -i brano.mp3 -map_metadata -1 -af "silenceremove=start_periods=1:start_threshold=-70dB,areverse,silenceremove=start_periods=1:start_threshold=-70dB,areverse,volume=XdB" -ar 44100 -c:a libvorbis -q:a 2 nome.ogg
+  ```
+  con X = -14 meno la loudness del brano (`ffmpeg -i brano.mp3 -af ebur128 -f null -`, riga "I:").
+- **Aggiungere o togliere un brano**: il file in `assets/music` e il suo nome in `PLAYLISTS` in cima a `scripts/music.gd`. Sul web la musica usa la riproduzione *Stream* (impostata nel codice), gli effetti restano *Sample*. Quale lista suona ogni modalità è in `MODES` in `scripts/game.gd`; i volumi sono `RUN_DB` e `MENU_DB` in `scripts/music.gd`.
 - **Video promozionali**: alcuni brani di Pixabay sono registrati su Content ID, quindi un trailer su YouTube con la musica del gioco può ricevere una segnalazione di copyright. Si contesta mostrando la licenza Pixabay; nel gioco non succede niente.
 
 ## Condivisione, recensioni, versione web
@@ -117,7 +132,7 @@ I due plugin (licenza MIT) sono già nel progetto, con i file nativi per Android
 | `scripts/ui_kit.gd` | Mattoncini comuni della UI: colori, font, scritte, pulsanti, pannelli |
 | `scripts/ball_look.gd` | Disegno degli stili della pallina (scia e pallina), in ZIGZAG, TORRE e nel negozio |
 | `scripts/sfx.gd` | Suoni sintetizzati all'avvio, nessun file audio |
-| `scripts/music.gd` | Musica di sottofondo in loop: piena in partita, più bassa nei menu, in pausa durante gli annunci |
+| `scripts/music.gd` | Musica di sottofondo: una lista di brani per modalità, piena in partita, più bassa nei menu, in pausa durante gli annunci |
 | `scripts/ads.gd` | Quello che il gioco sa degli annunci: ID, "c'è un video pronto?", interstitial quando è il momento, banner del menu |
 | `scripts/admob_backend.gd` | Unico file che usa il plugin AdMob: consenso, avvio SDK, caricamento e visualizzazione |
 | `scripts/ad_pacing.gd` | Regole pure su quando mostrare un interstitial |
@@ -176,4 +191,4 @@ Prova veloce su Android: template di export, JDK 17 e Android SDK installati, *P
 3. Creare i prodotti negli store e provarli con un account di test ([PUBBLICAZIONE.md](PUBBLICAZIONE.md#7-acquisti-in-app)).
 4. Skin del Dino nel negozio.
 
-Font: Bungee e Chakra Petch, licenza SIL Open Font License (file in `assets/fonts`).
+Font: Bungee e Chakra Petch, licenza SIL Open Font License (file in `assets/fonts`). Musica: brani di Pixabay, licenza Pixabay Content License (elenco in [Musica](#musica)).
