@@ -55,3 +55,83 @@ STATS_RUNNER,%d obstacles  ·  %d jumps,%d ostacoli  ·  %d salti
 CARD_CHALLENGE,CAN YOU BEAT ME?,RIESCI A BATTERMI?
 CARD_FREE,Free on Google Play and the App Store,Gratis su Google Play e App Store
 SHARE_TEXT,I scored %d in %s on One More Tap. Can you beat me? %s,Ho fatto %d a %s su One More Tap. Riesci a battermi? %s
+STYLES,STYLES,STILI
+NEW_STYLE,NEW STYLE: %s,NUOVO STILE: %s
+CONTINUE_TOKEN,CONTINUE: use 1 token and carry on (you have %d),CONTINUA: usa 1 gettone e riparti (ne hai %d)
+CONTINUE_SHOP,Out of tokens: CONTINUE takes you to the shop,Gettoni finiti: CONTINUA ti porta al negozio
+DINO_LOCKED,"DINO opens after %d days in a row.
+You're on day %d: come back tomorrow!","DINO si apre dopo %d giorni di fila.
+Sei al giorno %d: torna domani!"
+DINO_OPEN,"DINO IS OPEN!
+Jump cacti and birds: tap DINO below","DINO È APERTO!
+Salta cactus e uccelli: tocca DINO in basso"
+TOKENS_COUNT,TOKENS: %d,GETTONI: %d
+TAB_COLORS,COLOURS,COLORI
+TAB_BALL,BALL,PALLINA
+TAB_EXTRA,EXTRA,EXTRA
+BACK,BACK,INDIETRO
+RESTORE,RESTORE,RIPRISTINA
+RARITY_COMMON,COMMON,COMUNE
+RARITY_RARE,RARE,RARO
+RARITY_EPIC,EPIC,EPICO
+RARITY_LEGENDARY,LEGENDARY,LEGGENDARIO
+LOOK_NEON,NEON,NEON
+LOOK_NEON_ABOUT,The colours you know,I colori di sempre
+LOOK_GHIACCIO,ICE,GHIACCIO
+LOOK_GHIACCIO_ABOUT,Cold blues and cyans,Azzurri e blu freddi
+LOOK_DESERTO,DESERT,DESERTO
+LOOK_DESERTO_ABOUT,"Sand, ochre and earth","Sabbia, ocra e terra"
+LOOK_TRAMONTO,SUNSET,TRAMONTO
+LOOK_TRAMONTO_ABOUT,"Reds, pinks and oranges","Rossi, rosa e arancioni"
+LOOK_ACIDO,ACID,ACIDO
+LOOK_ACIDO_ABOUT,"Lime, yellow and green","Lime, giallo e verde"
+LOOK_ORO,GOLD,ORO
+LOOK_ORO_ABOUT,Gold that keeps shimmering,Oro che luccica sempre
+LOOK_ARCOBALENO,RAINBOW,ARCOBALENO
+LOOK_ARCOBALENO_ABOUT,"Every colour, flowing without a stop","Tutti i colori, che scorrono senza fermarsi"
+LOOK_CLASSICA,CLASSIC,CLASSICA
+LOOK_CLASSICA_ABOUT,The ball you know,La pallina di sempre
+LOOK_ANELLO,RING,ANELLO
+LOOK_ANELLO_ABOUT,A ring of light,Un anello di luce
+LOOK_DIAMANTE,DIAMOND,DIAMANTE
+LOOK_DIAMANTE_ABOUT,A spinning diamond,Un diamante che gira
+LOOK_PIXEL,PIXEL,PIXEL
+LOOK_PIXEL_ABOUT,"Square, with a stepped trail","Quadrata, scia a gradini"
+LOOK_COMETA,COMET,COMETA
+LOOK_COMETA_ABOUT,A long tail of light and sparks,Lunga coda di luce e scintille
+LOOK_SUPERNOVA,SUPERNOVA,SUPERNOVA
+LOOK_SUPERNOVA_ABOUT,"A pulsing star, a trail of stars and PERFECTs that burst","Una stella che pulsa, scia di stelle e PERFETTO che esplodono"
+EVERY_MODE,In every mode,In tutte le modalità
+BALL_MODES,In ZIGZAG and TOWER,In ZIGZAG e TORRE
+CARD_NO_ADS,NO ADS,NO ANNUNCI
+CARD_COLLECTION,COLLECTION,COLLEZIONE
+CARD_TOKENS,%d TOKENS,%d GETTONI
+TAG_FOREVER,FOREVER,PER SEMPRE
+TAG_ALL_STYLES,EVERY STYLE,TUTTI GLI STILI
+TAG_FOR_CONTINUE,FOR CONTINUE,PER CONTINUA
+EXTRA_NO_ADS_ABOUT,No ads. CONTINUE uses tokens: the first 10 are free,Niente annunci. CONTINUA usa i gettoni: i primi 10 sono in regalo
+EXTRA_COLLECTION_ABOUT,"Every style, those still to come too, and no ads","Tutti gli stili, anche quelli che verranno, e niente annunci"
+TOKENS_ABOUT,One token is one CONTINUE without a video. You have %d,Un gettone è un CONTINUA senza video. Ne hai %d
+UNLOCK_AT,%d IN %s,%d IN %s
+UNLOCK_HOW,Score %d in %s to unlock it. Your best: %d,Fai %d punti in %s per sbloccarlo. Il tuo record: %d
+WEARING,IN USE,IN USO
+OWNED,YOURS,TUO
+OWNED_COLLECTION,YOURS,TUA
+ACTIVE,ACTIVE,ATTIVO
+WEAR,USE,USA
+LOCKED,LOCKED,BLOCCATO
+ALREADY_YOURS,ALREADY YOURS,GIÀ TUA
+WAIT,WAIT…,ATTENDI…
+BUY,BUY  %s,ACQUISTA  %s
+UNAVAILABLE,NOT AVAILABLE,NON DISPONIBILE
+STORE_OFFLINE,Store not reachable: try again later,Negozio non raggiungibile: riprova più tardi
+RESTORED,Purchases restored,Acquisti ripristinati
+LOOK_BOUGHT,%s is yours!,%s è tuo!
+NO_ADS_BOUGHT,Ads removed! You have %d tokens for CONTINUE,Annunci rimossi! Hai %d gettoni per CONTINUA
+COLLECTION_BOUGHT,Full collection: it's all yours now!,Collezione completa: ora è tutto tuo!
+TOKENS_BOUGHT,+%d tokens,+%d gettoni
+PAYMENT_PENDING,Payment pending: it arrives once confirmed,Pagamento in attesa: arriva appena è confermato
+NOTHING_TO_RESTORE,Nothing to restore,Nessun acquisto da ripristinare
+RESTORE_FAILED,"Restore failed, try again later","Ripristino non riuscito, riprova più tardi"
+PURCHASE_FAILED,"Purchase failed, try again later","Acquisto non riuscito, riprova più tardi"
+STORE_IN_APP,In the app on Google Play and the App Store,Nell'app su Google Play e App Store

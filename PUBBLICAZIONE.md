@@ -8,6 +8,8 @@ Il codice è pronto. Quello che resta sono account, chiavi e moduli che solo tu 
 |---|---|
 | Plugin AdMob (Poing Studios v5.1.0), già attivo | `addons/admob/` |
 | Annunci: consenso GDPR, interstitial a fine partita, banner nel menu, video "Continua" e "Ricarica", vite | `scripts/ads.gd`, `scripts/admob_backend.gd`, `scripts/ad_pacing.gd` |
+| Negozio: stili con rarità, gettoni, Rimuovi annunci, Collezione completa, ripristino | `scripts/catalog.gd`, `scripts/shop.gd`, `scripts/iap_backend.gd`, `scripts/shop_panel.gd` |
+| Plugin acquisti in-app godot-iap 4.2.0, già attivo | `addons/godot-iap/` |
 | Plugin di condivisione e recensione in-app (Android e iOS), già attivi | `addons/SharePlugin/`, `addons/InappReviewPlugin/`, `ios/plugins/` |
 | Preset di export Android (AAB firmato), iOS (progetto Xcode) e Web (itch.io) | `export_presets.cfg` |
 | Icone (iOS 1024, Android adattiva e monocromatica) | `assets/icons/` (le rigeneri con `tools/make_icons.gd`) |
@@ -25,6 +27,7 @@ Finché non inserisci i tuoi ID, il gioco mostra **annunci di prova di Google**.
 - **Mai durante una partita.**
 - **Consenso**: al primo avvio, in UE, Regno Unito e Svizzera, compare il modulo di Google. Il pulsante CONSENSO nei menu lo riapre (è obbligatorio). PRIVACY apre l'informativa.
 - **Dal editor (F5)** vedi annunci finti disegnati dal plugin, così puoi provare tutto il giro senza telefono.
+- **Rimuovi annunci** (o la Collezione completa): niente più annunci né banner, e dall'avvio dopo l'SDK di Google non parte nemmeno. Niente vite, si gioca senza limiti. CONTINUA usa i gettoni.
 
 Il gioco è in italiano per chi ha il telefono in italiano e in inglese per tutti gli altri. Per questo le schede degli store vanno compilate in tutte e due le lingue (passi 4 e 5).
 
@@ -45,7 +48,7 @@ Entrambi gli store chiedono l'informativa, e il gioco la apre dal pulsante PRIVA
 2. Su GitHub: *Settings → Pages → Build and deployment → Deploy from a branch → `master` / `/docs`*. Dopo un minuto le pagine sono su `https://sindi98.github.io/one-more-tap/` e `https://sindi98.github.io/one-more-tap/privacy.html`.
    - Con un repository privato, GitHub Pages richiede un piano a pagamento. In alternativa carica i due file su un altro hosting.
 3. Se l'indirizzo è diverso, aggiorna `PRIVACY_URL` in `scripts/ads.gd` e `SITE_URL` in `scripts/social.gd`.
-4. Finché l'app non è sugli store, la pagina del gioco dice "In arrivo su Google Play e App Store". I link li aggiungi dopo la pubblicazione (passo 8).
+4. Finché l'app non è sugli store, la pagina del gioco dice "In arrivo su Google Play e App Store". I link li aggiungi dopo la pubblicazione (passo 9).
 
 ## 3. AdMob
 
@@ -95,7 +98,7 @@ In *Project → Export → Android → Keystore → Release* inserisci file, ali
    - **Annunci**: Sì, l'app contiene annunci.
    - **Accesso all'app**: tutte le funzionalità sono disponibili senza restrizioni.
    - **ID pubblicità**: Sì, lo usa (AdMob), per Pubblicità, Analisi e Prevenzione frodi. Il permesso `AD_ID` lo aggiunge già l'SDK.
-   - **Classificazione dei contenuti**: questionario IARC, categoria Gioco. Nessuna violenza, nessuna interazione tra utenti, nessun acquisto.
+   - **Classificazione dei contenuti**: questionario IARC, categoria Gioco. Nessuna violenza, nessuna interazione tra utenti. Acquisti digitali: **sì**; oggetti casuali a pagamento (loot box): **no**.
    - **Pubblico di destinazione**: scegli solo fasce **13 anni e oltre**. Se includi i minori di 13 anni si applicano le norme Famiglie, con regole molto più rigide sugli annunci.
    - **Sicurezza dei dati**: dichiara quello che raccoglie l'SDK di Google, come indicato in [questa pagina di Google](https://developers.google.com/admob/android/privacy/play-data-disclosure). In pratica: dati raccolti e condivisi, cifrati in transito. Tipi: *Posizione approssimativa* (dall'IP), *ID dispositivo o altri ID*, *Attività nell'app* (interazioni), *Informazioni e prestazioni dell'app* (arresti anomali, diagnostica). Finalità: pubblicità o marketing, analisi, prevenzione delle frodi. Il gioco non ha account, quindi non c'è un meccanismo di cancellazione dati.
 5. *Scheda dello store principale*: testi in `store/scheda_store.md`, icona `store/icon_512.png`, grafica `store/feature_graphic_1024x500.png`, screenshot `store/screenshots/android/`.
@@ -142,7 +145,64 @@ In *Project → Export → Android → Keystore → Release* inserisci file, ali
 3. iOS: lo stesso numero di versione non si può caricare due volte. Alza la versione oppure imposta *Application → Version* (il numero di build) a `1.0.1.1`, `1.0.1.2`, …
 4. Lancia i test (vedi README) e prova sul telefono prima di caricare.
 
-## 7. Versione web su itch.io
+## 7. Acquisti in-app
+
+Il negozio nel gioco è pronto (regole e prezzi nel [README](README.md#acquisti-in-app)) e il plugin è già nel progetto. Mancano i prodotti negli store e una prova con un account di test.
+
+### Il plugin (già installato)
+
+[godot-iap](https://github.com/hyodotdev/openiap/tree/main/libraries/godot-iap) 4.2.0 (OpenIAP, licenza MIT) in `addons/godot-iap`, dallo zip ufficiale della release: Google Play Billing su Android, StoreKit 2 su iOS, una sola API. È già attivo, con l'autoload `GodotIapPlugin` che il gioco cerca all'avvio. Nei preset sono già impostati iOS minimo **17.0** (i framework del plugin lo richiedono: iPhone XS/XR e successivi) e, per Android, lo store `play` ed esclusi i file iOS del plugin.
+
+- **Nell'editor e su desktop** l'Output mostra all'avvio tre righe rosse "No GDExtension library found… godot_iap.gdextension": è normale, il plugin ha codice nativo solo per iOS e Android. Il gioco funziona, con gli acquisti finti.
+- **Android**: il plugin vuole AGP 8.9.1+, Gradle 8.11.1+, Android SDK 36 e JDK 17. Durante l'export aggiorna il template da solo; se si ferma, il messaggio dice quale versione di Gradle serve.
+- **iOS**: se Xcode all'avvio dice `Library not loaded: @rpath/GodotIap.framework`, dalla cartella del progetto lancia `IOS_EXPORT_DIR=~/Build/OneMoreTap ./addons/godot-iap/scripts/fix_ios_embed.sh` (o la cartella dove hai esportato).
+- **Aggiornarlo**: scarica lo zip di una release più nuova da [GitHub](https://github.com/hyodotdev/openiap/releases?q=godot-iap), sostituisci la cartella `addons/godot-iap` e lancia i test (`tests/test_iap_backend.gd` controlla il collegamento).
+
+### I prodotti
+
+Stessi ID su Google Play e su App Store. Il prezzo che vede il giocatore lo prende il gioco dallo store, nella sua valuta: imposta la fascia indicata e lascia che lo store converta le altre valute.
+
+| ID prodotto | Cosa | Tipo su App Store | Prezzo |
+|---|---|---|---|
+| `onemoretap.no_ads` | Rimuovi annunci (+10 gettoni in regalo) | Non consumabile | 2,99 € |
+| `onemoretap.collection` | Collezione completa: tutti gli stili, anche futuri, e niente annunci | Non consumabile | 9,99 € |
+| `onemoretap.tokens_10` | 10 gettoni | Consumabile | 0,99 € |
+| `onemoretap.tokens_30` | 30 gettoni | Consumabile | 1,99 € |
+| `onemoretap.tokens_100` | 100 gettoni | Consumabile | 4,99 € |
+| `onemoretap.tramonto`, `onemoretap.acido` | Colori rari | Non consumabile | 0,99 € |
+| `onemoretap.diamante`, `onemoretap.pixel` | Palline rare | Non consumabile | 0,99 € |
+| `onemoretap.oro`, `onemoretap.cometa` | Colori e pallina epici | Non consumabile | 1,99 € |
+| `onemoretap.arcobaleno`, `onemoretap.supernova` | Colori e pallina leggendari | Non consumabile | 3,99 € |
+
+Gli ID non si possono più riusare dopo averli creati, nemmeno cancellando il prodotto: copiali esattamente. Uno stile nuovo in futuro = una riga in `LOOKS` di `scripts/catalog.gd` + un prodotto con lo stesso ID negli store. Chi ha la Collezione lo riceve senza fare niente.
+
+### Google Play
+
+1. *Impostazioni → Profilo pagamenti*: crea il profilo commerciante (serve per vendere, una volta per account).
+2. Carica in un test (per esempio il test chiuso del passo 4) una build **con il plugin**: Play permette di creare prodotti solo dopo aver visto un'app che usa la fatturazione.
+3. *Monetizza con Play → Prodotti → Prodotti in-app* (prodotti una tantum): per ogni riga della tabella **Crea prodotto** con ID, nome, descrizione e prezzo, poi **Attiva**. Su Play non si sceglie se è consumabile: lo decide il gioco.
+4. *Impostazioni → Test delle licenze*: aggiungi i Gmail tuoi e dei tester. Comprano con carte di prova e non pagano nulla.
+5. La scheda dello store mostra da sola "Acquisti in-app". Nella *Sicurezza dei dati* non c'è niente da aggiungere: il gioco non manda gli acquisti a nessun server, li gestisce Google Play.
+
+### App Store
+
+1. *Accordi, imposte e banche*: firma l'accordo **App a pagamento**, inserisci conto bancario e moduli fiscali. Senza, i prodotti restano "in attesa".
+2. *App → Monetizzazione → Acquisti in-app → +*, per ogni riga della tabella: tipo (Consumabile o Non consumabile), nome di riferimento, ID prodotto, fascia di prezzo, nome e descrizione in italiano (e inglese), **screenshot per la revisione** (uno del negozio con quella scheda scelta, dall'editor va benissimo) e una nota se serve.
+3. Al primo invio, nella pagina della versione, sezione *Acquisti in-app e abbonamenti*, seleziona tutti i prodotti: vengono rivisti insieme alla build.
+4. *Utenti e accesso → Sandbox → Tester*: crea un account di prova. Su iPhone, *Impostazioni → App Store → Account sandbox*, accedi con quello e compra senza pagare.
+5. **Privacy dell'app**: come per Play, il gioco non raccoglie gli acquisti (non li manda a un server): non va aggiunto "Acquisti". Se un giorno aggiungerai un server per verificarli, andrà dichiarato.
+6. **Classificazione per età**: rispondi che ci sono acquisti in-app; casse o oggetti casuali: no.
+
+### Prova sul telefono
+
+Con un tester di Play o l'account sandbox di Apple, su una build di release:
+
+- I prezzi compaiono sulle schede (al posto di "—"). Se restano "—", di solito il prodotto non è attivo o l'ID è scritto diverso.
+- Uno stile comprato si indossa subito; disinstalla, reinstalla, apri il negozio: è ancora tuo (su iPhone, se non torna da solo, tocca RIPRISTINA).
+- Rimuovi annunci: niente interstitial né banner, spariscono le vite, CONTINUA usa i gettoni (10 in regalo). Chiudi e riapri il gioco: il modulo del consenso non compare più.
+- Finiti i gettoni, CONTINUA porta al negozio; comprati, si torna al game over e si continua.
+
+## 8. Versione web su itch.io
 
 Una versione da giocare nel browser, gratis e senza annunci: serve a far provare il gioco in un clic e a portare chi si diverte verso gli store (pulsante SCARICA in alto). Non ha vite e non mostra annunci; i record restano nel browser.
 
@@ -167,7 +227,7 @@ Prova sul telefono: apri la pagina, gioca, poi CONDIVIDI (sul browser del telefo
 
 Per gli aggiornamenti ripeti l'export e carica il nuovo zip al posto del vecchio. Con [butler](https://itch.io/docs/butler/) puoi farlo da riga di comando.
 
-## 8. Dopo la pubblicazione
+## 9. Dopo la pubblicazione
 
 1. Apri `docs/index.html` e in fondo, in `LINKS`, inserisci i link a Google Play, App Store e alla pagina itch.io (gli esempi sono nel commento sopra). I pulsanti compaiono da soli, con lo store del visitatore per primo.
 2. Su itch.io aggiungi i link agli store nella descrizione.
@@ -182,9 +242,10 @@ Per gli aggiornamenti ripeti l'export e carica il nuovo zip al posto del vecchio
 - [ ] Schede degli store compilate in italiano e in inglese
 - [ ] Keystore Android salvato in un posto sicuro
 - [ ] Versione aumentata
+- [ ] Prodotti creati e attivi su entrambi gli store, con gli stessi ID della tabella del passo 7
+- [ ] Acquisto, ripristino e Rimuovi annunci provati con un account di test
 
 ## Più avanti (facoltativo)
 
 - **Richiesta di tracciamento iOS (ATT)**: aumenta i ricavi su iPhone. In AdMob crea il messaggio "IDFA" (Privacy e messaggi). Aggiungi al preset iOS, in *Additional Plist Content*, la chiave `NSUserTrackingUsageDescription`, per esempio "Usiamo questo identificatore per mostrarti annunci più pertinenti". Infine collega il framework `AppTrackingTransparency` in Xcode. Il modulo di Google mostra poi il popup al momento giusto.
-- **"Rimuovi annunci" a pagamento**: un acquisto in-app che disattiva gli interstitial. Richiede i plugin di fatturazione di Google Play e StoreKit.
 - **Mediazione** (altre reti pubblicitarie in AdMob), quando hai abbastanza giocatori: si attiva dalle Project Settings del plugin.

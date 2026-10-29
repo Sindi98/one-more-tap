@@ -182,10 +182,7 @@ func _draw_ball(neon: Color) -> void:
 	var trail_alpha := 1.0
 	if _dying:
 		trail_alpha = clampf(1.0 - _death_t * 2.5, 0.0, 1.0)
-	var n := _trail.size()
-	for i in n:
-		var k := float(i + 1) / n
-		draw_circle(_trail[i], r * (0.25 + 0.6 * k), Color(neon, 0.35 * k * trail_alpha))
+	BallLook.draw_trail(self, ball_look, _trail, r, neon, 0.35 * trail_alpha)
 
 	var pos := track.ball + _ball_offset
 	var alpha := 1.0
@@ -194,10 +191,7 @@ func _draw_ball(neon: Color) -> void:
 		var t := clampf(_death_t / 0.5, 0.0, 1.0)
 		r *= 1.0 - t * 0.85  # falling off the track: shrink away
 		alpha = 1.0 - t * 0.6
-	draw_circle(pos, r * 3.0, Color(neon, 0.07 * alpha))
-	draw_circle(pos, r * 2.0, Color(neon, 0.16 * alpha))
-	draw_circle(pos, r * 1.35, Color(neon, 0.45 * alpha))
-	draw_circle(pos, r, Color(1, 1, 1, alpha))
+	BallLook.draw_ball(self, ball_look, pos, r, neon, alpha)
 
 
 ## Ring on the corner where the player should have turned, plus an arrow showing

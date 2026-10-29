@@ -285,11 +285,10 @@ func _draw_ball(neon: Color) -> void:
 			draw_set_transform(_at(tower.pos, _rc), 0.0, Vector2(1.0, 0.4))
 			draw_circle(Vector2.ZERO, r * 1.2 * k, Color(0.0, 0.0, 0.0, 0.45))
 			draw_set_transform(Vector2.ZERO)
-		var n := _trail.size()
-		for i in n:
-			var k := float(i + 1) / n
-			var tp := _at(_trail[i].x, _rc, _trail[i].y + r)
-			draw_circle(tp, r * (0.25 + 0.6 * k), Color(neon, 0.3 * k))
+		var trail := PackedVector2Array()
+		for p in _trail:
+			trail.append(_at(p.x, _rc, p.y + r))
+		BallLook.draw_trail(self, ball_look, trail, r, neon, 0.3)
 
 	var pos := ball_position()
 	var alpha := 1.0
@@ -298,10 +297,7 @@ func _draw_ball(neon: Color) -> void:
 		var t := clampf(_death_t / 0.7, 0.0, 1.0)
 		r *= 1.0 - t * 0.4
 		alpha = 1.0 - t * 0.8
-	draw_circle(pos, r * 3.0, Color(neon, 0.07 * alpha))
-	draw_circle(pos, r * 2.0, Color(neon, 0.16 * alpha))
-	draw_circle(pos, r * 1.35, Color(neon, 0.45 * alpha))
-	draw_circle(pos, r, Color(1, 1, 1, alpha))
+	BallLook.draw_ball(self, ball_look, pos, r, neon, alpha)
 
 
 ## The missed hole's edges in red, a ring where the ball should have taken off

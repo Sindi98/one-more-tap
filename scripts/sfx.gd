@@ -16,6 +16,8 @@ var _die: AudioStreamWAV
 var _record: AudioStreamWAV
 var _jump: AudioStreamWAV
 var _milestone: AudioStreamWAV
+var _sparkle: AudioStreamWAV
+var _buy: AudioStreamWAV
 var _perfect: Array[AudioStreamWAV] = []
 
 
@@ -31,6 +33,8 @@ func _ready() -> void:
 	)
 	_jump = _make([[392.0, 0.07]], "square", 0.13, 1.7)
 	_milestone = _make([[C5 * 1.5, 0.07], [C5 * 2.0, 0.13]], "square", 0.14)
+	_sparkle = _make([[C5 * 4.0, 0.04], [C5 * 3.0, 0.04], [C5 * 4.0, 0.09]], "triangle", 0.16)
+	_buy = _make([[C5 * 2.0, 0.06], [C5 * 3.0, 0.16]], "triangle", 0.26)
 	for n in PENTATONIC:
 		_perfect.append(_make([[C5 * pow(2.0, n / 12.0), 0.13]], "triangle", 0.34))
 
@@ -50,6 +54,16 @@ func jump() -> void:
 ## Every 100 points in DINO.
 func milestone() -> void:
 	_play(_milestone)
+
+
+## On top of a PERFETTO, with a legendary ball.
+func sparkle() -> void:
+	_play(_sparkle)
+
+
+## Something new in the shop: bought, put on, unlocked.
+func buy() -> void:
+	_play(_buy)
 
 
 func die() -> void:

@@ -7,6 +7,7 @@ extends Node2D
 const HOT := Color(1.0, 0.3, 0.42)
 
 var hue := 188.0
+var ball_look := "classica"  ## the look the player wears (ZIGZAG and TORRE)
 var view_rect := Rect2()  ## visible world area, set by Main every frame
 var fx: Fx  ## sparks and labels, set by Main
 
