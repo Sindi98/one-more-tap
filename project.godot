@@ -10,10 +10,8 @@ config_version=5
 
 [admob]
 
-general/android/enabled=true
-general/android/app_id="ca-app-pub-3940256099942544~3347511713"
-general/ios/enabled=true
-general/ios/app_id="ca-app-pub-3940256099942544~1458002511"
+general/android/app_id=""
+general/ios/app_id=""
 
 [animation]
 
