@@ -24,6 +24,7 @@ const PLAYLISTS := {
 const RUN_DB := -6.0  ## the files are levelled to -14 LUFS: under the sound effects
 const MENU_DB := -12.0
 const FADE := 0.5  ## seconds to move between the two volumes
+const QUIT_DELAY := 0.1  ## seconds between stopping the music and quitting
 
 var muted := false:
 	set(value):
@@ -47,6 +48,7 @@ func _ready() -> void:
 	add_child(_player)
 	for list in PLAYLISTS:
 		_next[list] = randi() % PLAYLISTS[list].size()
+	get_tree().auto_accept_quit = false  # closing the window goes through _quit()
 
 
 func _notification(what: int) -> void:
@@ -57,6 +59,8 @@ func _notification(what: int) -> void:
 		NOTIFICATION_APPLICATION_FOCUS_IN, NOTIFICATION_APPLICATION_RESUMED:
 			_away = false
 			_apply()
+		NOTIFICATION_WM_CLOSE_REQUEST:
+			_quit()
 
 
 ## A mode with the same playlist lets the track go on.
@@ -92,3 +96,12 @@ func _apply() -> void:
 		_fade.kill()
 	_fade = create_tween()
 	_fade.tween_property(_player, "volume_db", RUN_DB if _mood == Mood.RUN else MENU_DB, FADE)
+
+
+## The audio server frees a stopped track over the next frames, and leaves a
+## playing one behind when the game quits (a leak warning in the terminal):
+## stop first, quit a moment later.
+func _quit() -> void:
+	_player.stop()
+	await get_tree().create_timer(QUIT_DELAY).timeout
+	get_tree().quit()
