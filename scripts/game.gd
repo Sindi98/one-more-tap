@@ -3,7 +3,8 @@ extends Node2D
 ## Each mode has its rules (Track, Tower, Runner) and its drawing (WorldView,
 ## TowerView, RunnerView); sparks and labels in Fx, UI in Hud, sounds in Sfx
 ## and Music, ads in Ads, purchases in Shop, sharing and store reviews in Social.
-## AIR HOCKEY, played in teams on the local network, runs in HockeyGame.
+## AIR HOCKEY, played in teams on the local network, runs in HockeyGame. The
+## daily challenge (Daily) plays any mode on the track of the day.
 
 ## AD: a full-screen ad is on top. REVIVE: back in the game after a continue,
 ## waiting for a tap. NO_LIVES: a run was asked for, none left. SHOP: the shop
@@ -36,6 +37,8 @@ var lives := Lives.new()
 var lives_on := false  ## only where ads run: the lost lives come back with a video
 var streak := Streak.new()
 var reviews := ReviewPacing.new()
+var daily := Daily.new()
+var daily_on := false  ## the start screen plays the daily challenge, not a random track
 
 var _state_time := 0.0
 var _new_record := false  ## the run just lost set a new record
@@ -46,6 +49,7 @@ var _hue := 0.0
 var _preview := {}  ## kind -> look picked in the shop, shown until it closes
 var _shop_from := State.READY  ## where the shop was opened, to go back there
 var _sharing := false  ## the picture of the run is being drawn
+var _run_day := -1  ## the day of the daily challenge the run plays, -1 for a random track
 
 @onready var camera: Camera2D = $Camera2D
 @onready var views := {"zigzag": $World, "tower": $Tower, "runner": $Runner}
@@ -85,6 +89,7 @@ func _ready() -> void:
 	hud.app_pressed.connect(social.open_site)
 	hud.shop_pressed.connect(_on_shop_pressed)
 	hud.hockey_pressed.connect(_on_hockey_pressed)
+	hud.daily_pressed.connect(_on_daily_pressed)
 	hockey.closed.connect(_on_hockey_closed)
 	hockey.changed.connect(_save)
 	hud.shop_panel.closed.connect(_on_shop_closed)
@@ -120,7 +125,7 @@ func _process(delta: float) -> void:
 			lives.update(_now())
 			if lives.count > 0 or not lives_on:
 				_set_state(State.READY)  # one came back while waiting, or ads were removed
-				hud.show_start(best[mode])
+				hud.show_start(_shown_best())
 	if state in [State.READY, State.OVER, State.NO_LIVES]:
 		_show_lives()
 
@@ -215,27 +220,29 @@ func _set_mode(m: String) -> void:
 	music.set_playlist(MODES[mode]["music"])
 	for k in views:
 		views[k].visible = k == mode
-	hud.set_mode(mode, _mode_locks())
-	hud.set_best(best[mode])
+	hud.set_mode(mode, _mode_locks(), _daily_number())
+	hud.set_best(_shown_best())
 	_new_run()
 	_set_state(State.READY)
-	hud.show_start(best[mode])
+	hud.show_start(_shown_best())
 
 
 func _new_run() -> void:
 	var size := get_viewport_rect().size
+	_run_day = daily.day if daily_on else -1
+	var run_seed := Daily.seed_for(mode, _run_day) if daily_on else 0  # 0: a random track
 	match mode:
 		"tower":
-			var tower := Tower.new(PLAYFIELD_WIDTH, 0)
+			var tower := Tower.new(PLAYFIELD_WIDTH, run_seed)
 			tower.jumped.connect(_on_jumped)
 			run = tower
 		"runner":
-			var runner := Runner.new(PLAYFIELD_WIDTH, 0)
+			var runner := Runner.new(PLAYFIELD_WIDTH, run_seed)
 			runner.jumped.connect(_on_runner_jumped)
 			runner.milestone.connect(_on_milestone)
 			run = runner
 		_:
-			var track := Track.new(PLAYFIELD_WIDTH, size.y, 0)
+			var track := Track.new(PLAYFIELD_WIDTH, size.y, run_seed)
 			track.turned.connect(_on_turned)
 			run = track
 	run.scored.connect(_on_scored)
@@ -267,24 +274,31 @@ func _restart() -> void:
 ## The run has ended and the game is still: the only moment an interstitial
 ## may show (when one is due), before the results.
 func _show_over() -> void:
-	_new_record = run.score > best[mode]
-	var beat_record: bool = _new_record and best[mode] > 0  # the first run always sets one
+	var beat_record := false
 	_unlocked_looks.clear()
+	if _run_day >= 0:
+		# The daily challenge has a best of the day of its own: the records,
+		# and the looks they unlock, are for random tracks.
+		_new_record = daily.record(mode, _run_day, run.score)
+	else:
+		_new_record = run.score > best[mode]
+		beat_record = _new_record and best[mode] > 0  # the first run always sets one
+		if _new_record:
+			for id in Catalog.LOOKS:
+				var unlock: Array = Catalog.LOOKS[id].get("unlock", [])
+				if (
+					not unlock.is_empty()
+					and unlock[0] == mode
+					and best[mode] < unlock[1]
+					and run.score >= unlock[1]
+				):
+					_unlocked_looks.append(tr(Catalog.LOOKS[id]["name"]))
+			best[mode] = run.score
 	if _new_record:
-		for id in Catalog.LOOKS:
-			var unlock: Array = Catalog.LOOKS[id].get("unlock", [])
-			if (
-				not unlock.is_empty()
-				and unlock[0] == mode
-				and best[mode] < unlock[1]
-				and run.score >= unlock[1]
-			):
-				_unlocked_looks.append(tr(Catalog.LOOKS[id]["name"]))
-		best[mode] = run.score
 		sfx.record()
 	reviews.run_finished()
 	_save()
-	hud.set_best(best[mode])
+	hud.set_best(_shown_best())
 	ads.run_finished()
 	if ads.show_interstitial_if_due(_show_over_panel):
 		_set_state(State.AD)
@@ -302,7 +316,7 @@ func _show_over_panel() -> void:
 	_set_state(State.OVER)
 	hud.show_over(
 		run.score,
-		best[mode],
+		_shown_best(),
 		_new_record,
 		run.reason,
 		_stats(),
@@ -332,11 +346,11 @@ func _stats() -> String:
 	return tr("STATS_ZIGZAG") % [k.seg, k.perfects, k.best_combo]
 
 
-## One continue per run, for runs worth it. What CONTINUA does: "token"
-## (spends one, no video), "video", "shop" (an ad-free player out of tokens
-## buys more), or "" (no continue).
+## One continue per run, for runs worth it, never in the daily challenge.
+## What CONTINUA does: "token" (spends one, no video), "video", "shop" (an
+## ad-free player out of tokens buys more), or "" (no continue).
 func _continue_offer() -> String:
-	if not run.can_revive() or run.score < int(MODES[mode]["continue_min"]):
+	if _run_day >= 0 or not run.can_revive() or run.score < int(MODES[mode]["continue_min"]):
 		return ""
 	if shop.inventory.tokens > 0:
 		return "token"
@@ -441,7 +455,7 @@ func _on_mode_pressed(m: String) -> void:
 	if state != State.READY or m == mode:
 		return
 	if not _mode_open(m):
-		hud.show_start(best[mode], tr("DINO_LOCKED") % [Streak.DAYS_TO_UNLOCK, streak.days])
+		hud.show_start(_shown_best(), tr("DINO_LOCKED") % [Streak.DAYS_TO_UNLOCK, streak.days])
 		return
 	_set_mode(m)
 	_save()
@@ -500,7 +514,7 @@ func _on_refill_closed(earned: bool) -> void:
 	_save()
 	_vibrate(20)
 	_set_state(State.READY)  # the run behind the panel is fresh: start when ready
-	hud.show_start(best[mode])
+	hud.show_start(_shown_best())
 
 
 func _on_ads_changed() -> void:
@@ -536,7 +550,7 @@ func _on_shop_closed() -> void:
 		_show_over_panel()
 	else:
 		_set_state(State.READY)
-		hud.show_start(best[mode])
+		hud.show_start(_shown_best())
 
 
 ## A card was picked: its look shows on the game behind, owned or not.
@@ -581,7 +595,7 @@ func _on_hockey_pressed() -> void:
 	if state != State.READY:
 		return
 	if not hockey.available():
-		hud.show_start(best[mode], tr("HOCKEY_WEB"))
+		hud.show_start(_shown_best(), tr("HOCKEY_WEB"))
 		return
 	_set_state(State.HOCKEY)
 	for k in views:
@@ -607,6 +621,30 @@ func _process_hockey(delta: float) -> void:
 	fx.tick(delta)
 
 
+# --- daily challenge -------------------------------------------------------
+
+
+## DAILY CHALLENGE on the start screen: the same track for everyone today, or
+## back to random tracks.
+func _on_daily_pressed() -> void:
+	if state != State.READY:
+		return
+	daily_on = not daily_on
+	_set_mode(mode)
+	if daily_on:
+		hud.show_start(_shown_best(), tr("DAILY_ON"))
+
+
+## The record shown with the mode: the best of today in the daily challenge.
+func _shown_best() -> int:
+	return daily.best_of(mode) if daily_on else best[mode]
+
+
+## Today's challenge number for the start screen, 0 when it is off.
+func _daily_number() -> int:
+	return Daily.number(daily.day) if daily_on else 0
+
+
 # --- days in a row ---------------------------------------------------------
 
 
@@ -622,12 +660,15 @@ func _mode_locks() -> Dictionary:
 
 
 func _visit_today() -> void:
-	var opened := streak.visit(Streak.day_number(Time.get_date_dict_from_system()))
+	var today := Streak.day_number(Time.get_date_dict_from_system())
+	var opened := streak.visit(today)
+	if daily.visit(today) and daily_on and state == State.READY:
+		_set_mode(mode)  # the track behind the start screen is today's
 	_save()
-	hud.set_mode(mode, _mode_locks())
+	hud.set_mode(mode, _mode_locks(), _daily_number())
 	if opened and state == State.READY:
 		sfx.record()
-		hud.show_start(best[mode], tr("DINO_OPEN"))
+		hud.show_start(_shown_best(), tr("DINO_OPEN"))
 
 
 ## A picture of the run for a friend, with the link to the game.
@@ -639,7 +680,11 @@ func _on_share_pressed() -> void:
 	_sharing = false
 	if state != State.OVER:
 		return  # the player started again meanwhile: no share sheet over a run
-	var text := tr("SHARE_TEXT") % [run.score, tr(Hud.MODE_NAMES[mode]), Social.SITE_URL]
+	var mode_name := tr(Hud.MODE_NAMES[mode])
+	var text := tr("SHARE_TEXT") % [run.score, mode_name, Social.SITE_URL]
+	if _run_day >= 0:
+		var number := Daily.number(_run_day)
+		text = tr("DAILY_SHARE_TEXT") % [number, run.score, mode_name, Social.SITE_URL]
 	social.share(image, text)
 
 
@@ -713,6 +758,7 @@ func _load_save() -> void:
 			float(cfg.get_value("review", "last_ask", 0.0))
 		)
 		streak.load_from(cfg)
+		daily.load_from(cfg, MODES.keys())
 		shop.inventory.load_from(cfg, best)
 		var player_name := str(cfg.get_value("hockey", "name", ""))
 		if not player_name.is_empty():
@@ -734,6 +780,7 @@ func _save() -> void:
 	cfg.set_value("review", "asks", reviews.asks)
 	cfg.set_value("review", "last_ask", reviews.last_ask)
 	streak.save_to(cfg)
+	daily.save_to(cfg)
 	shop.inventory.save_to(cfg)
 	cfg.set_value("hockey", "name", hockey.player_name)
 	cfg.save(SAVE_PATH)

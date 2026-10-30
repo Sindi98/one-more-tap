@@ -251,6 +251,7 @@ Con il piano gratuito di Render il server si addormenta dopo un po' senza traffi
 ## Controllo finale prima di inviare
 
 - [ ] ID app AdMob nelle Project Settings, ID unità in `LIVE_IDS`
+- [ ] `FIRST_DAY` in cima a `scripts/daily.gd` impostato al giorno del lancio, così la prima sfida del giorno che vedono i giocatori è la #1 (il numero del giorno si calcola con `python3 -c "from datetime import date; print((date(2026,11,15)-date(1970,1,1)).days)"`, con la tua data). Dopo il lancio non va più cambiato: chi ha aggiornato e chi no vedrebbe numeri diversi per la stessa sfida
 - [ ] Messaggio GDPR pubblicato in AdMob
 - [ ] Informativa online con i tuoi dati, `PRIVACY_URL` corretto
 - [ ] Build di **release** provata su telefono: compare il consenso, il video "Continua" fa ripartire, l'interstitial compare a fine partita, il banner c'è solo nel menu, RICARICA ridà le vite, PRIVACY e CONSENSO si aprono, CONDIVIDI apre il menu di condivisione con l'immagine della partita

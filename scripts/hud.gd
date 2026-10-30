@@ -1,9 +1,10 @@
 class_name Hud
 extends CanvasLayer
 ## On-screen UI, built in code: score, combo, start / game over / pause / continue
-## / no lives panels, the mode picker, the lives, the shop, the AIR HOCKEY
-## lobbies, the sound toggle, the share button, the privacy links and, on the
-## web version, the link to the app. Panels never block taps; only the buttons do.
+## / no lives panels, the mode picker, the daily challenge, the lives, the shop,
+## the AIR HOCKEY lobbies, the sound toggle, the share button, the privacy links
+## and, on the web version, the link to the app. Panels never block taps; only
+## the buttons do.
 
 signal retry_pressed
 signal continue_pressed
@@ -17,6 +18,7 @@ signal share_pressed  ## game over: send a picture of the run to a friend
 signal app_pressed  ## web version: go to the page with the store links
 signal shop_pressed  ## STILI on the start screen
 signal hockey_pressed  ## AIR HOCKEY on the start screen: its lobbies
+signal daily_pressed  ## DAILY on the start screen: today's track, or back to random ones
 
 const INK := UiKit.INK
 const MUTED := UiKit.MUTED
@@ -83,9 +85,11 @@ var _prompt: Label
 var _modes: HBoxContainer
 var _mode_buttons := {}  ## mode -> Button
 var _mode_locks := {}  ## locked mode -> progress shown on its button, e.g. "1/3"
+var _daily := 0  ## number of the daily challenge being played, 0 for random tracks
 var _lives_views: Array[LivesView] = []  ## start, game over and no lives panels
 var _styles_row: HBoxContainer
 var _styles: Button
+var _daily_button: Button
 var _hockey: Button
 var _notice_tween: Tween
 var _over: Control
@@ -154,7 +158,8 @@ func _ready() -> void:
 
 ## notice: a short message shown for a few seconds in place of the rules.
 func show_start(best: int, notice := "") -> void:
-	_start_best.text = "%s  %d" % [tr("BEST"), best] if best > 0 else tr("FIRST_RECORD")
+	var first := tr("DAILY_FIRST") if _daily > 0 else tr("FIRST_RECORD")
+	_start_best.text = "%s  %d" % [tr(_best_key()), best] if best > 0 else first
 	_set_panel(_start)
 	_top.visible = false
 	if not notice.is_empty():
@@ -230,7 +235,8 @@ func show_over(
 	_reason.text = tr(r[0])
 	_reason_sub.text = tr(r[1])
 	_final.text = _format(score)
-	_record.text = tr("NEW_RECORD") if new_record else "%s  %d" % [tr("BEST"), best]
+	var new_key := "DAILY_NEW_RECORD" if _daily > 0 else "NEW_RECORD"
+	_record.text = tr(new_key) if new_record else "%s  %d" % [tr(_best_key()), best]
 	_record.label_settings.font_color = _neon if new_record else MUTED
 	_new_record = new_record
 	_stats.text = stats
@@ -247,9 +253,13 @@ func show_over(
 ## Rules on the start screen, reasons on the game over panel, score digits and
 ## the highlighted button of the picker all follow the mode. locked: the modes
 ## not open yet, with the progress shown on their button, e.g. {"runner": "1/3"}.
-func set_mode(mode: String, locked := {}) -> void:
+## daily: the number of today's challenge when it is on (the records shown are
+## today's), 0 for random tracks.
+func set_mode(mode: String, locked := {}, daily := 0) -> void:
 	_mode = mode
 	_mode_locks = locked
+	_daily = daily
+	_style_daily()
 	if _notice_tween:
 		_notice_tween.kill()  # the rules come back at once
 	_start_rules.text = _rules_text()
@@ -279,7 +289,7 @@ func set_score(score: int, pop := false) -> void:
 
 
 func set_best(best: int) -> void:
-	_best.text = "%s %d" % [tr("BEST"), best] if best > 0 else ""
+	_best.text = "%s %d" % [tr(_best_key()), best] if best > 0 else ""
 
 
 func show_combo(combo: int) -> void:
@@ -344,6 +354,8 @@ func set_consent_available(available: bool) -> void:
 func share_image(world: World2D, center: Vector2) -> Image:
 	var view := get_viewport().get_visible_rect().size
 	var mode_name := tr(MODE_NAMES[_mode])
+	if _daily > 0:
+		mode_name = tr("DAILY_CARD") % [_daily, mode_name]
 	return await _card.render(
 		world, center, view, _neon, mode_name, _final.text, _record.text, _new_record
 	)
@@ -368,6 +380,7 @@ func set_hue(hue: float) -> void:
 	UiKit.style_button(_refill, _display, 40, _neon)
 	UiKit.style_button(_styles, _display, 28, _neon)
 	UiKit.style_button(_hockey, _display, 28, _neon)
+	_style_daily()
 	_style_mode_buttons()
 	for v in _lives_views:
 		v.color = _neon
@@ -423,20 +436,29 @@ func _build_start() -> void:
 	_start_box.add_child(UiKit.spacer(10))
 	_start_box.add_child(_lives_view())
 
-	# The shop and AIR HOCKEY, just above the mode picker. They hide the start
-	# screen, so they act on release (same reason as RIPROVA).
+	# The shop, the daily challenge and AIR HOCKEY, just above the mode picker
+	# and as wide as its buttons. The shop and AIR HOCKEY hide the start screen,
+	# so they act on release (same reason as RIPROVA); the daily challenge only
+	# changes the track behind, like the picker, so it acts on press.
 	_styles_row = UiKit.bottom_row(_start)
 	_styles = Button.new()
 	_styles.text = tr("STYLES")
-	_styles.custom_minimum_size = Vector2(MODE_BUTTON_W * 1.3, 72)
+	_styles.custom_minimum_size = Vector2(MODE_BUTTON_W, 72)
 	_styles.focus_mode = Control.FOCUS_NONE
 	_styles.action_mode = BaseButton.ACTION_MODE_BUTTON_RELEASE
 	_styles.pressed.connect(func() -> void: shop_pressed.emit())
 	UiKit.style_button(_styles, _display, 28, _neon)
 	_styles_row.add_child(_styles)
+	_daily_button = Button.new()
+	_daily_button.custom_minimum_size = Vector2(MODE_BUTTON_W, 72)
+	_daily_button.focus_mode = Control.FOCUS_NONE
+	_daily_button.action_mode = BaseButton.ACTION_MODE_BUTTON_PRESS
+	_daily_button.pressed.connect(func() -> void: daily_pressed.emit())
+	_style_daily()
+	_styles_row.add_child(_daily_button)
 	_hockey = Button.new()
 	_hockey.text = tr("MODE_HOCKEY")
-	_hockey.custom_minimum_size = Vector2(MODE_BUTTON_W * 1.3, 72)
+	_hockey.custom_minimum_size = Vector2(MODE_BUTTON_W, 72)
 	_hockey.focus_mode = Control.FOCUS_NONE
 	_hockey.action_mode = BaseButton.ACTION_MODE_BUTTON_RELEASE
 	_hockey.pressed.connect(func() -> void: hockey_pressed.emit())
@@ -713,6 +735,15 @@ func _style_mode_buttons() -> void:
 	UiKit.style_picker(_mode_buttons, _mode, _display, 30, _neon)
 
 
+## DAILY is outlined; while it is on it is filled and shows today's number.
+func _style_daily() -> void:
+	_daily_button.text = tr("DAILY_NUMBER") % _daily if _daily > 0 else tr("DAILY")
+	if _daily > 0:
+		UiKit.style_picker({"daily": _daily_button}, "daily", _display, 28, _neon)
+	else:
+		UiKit.style_button(_daily_button, _display, 28, _neon)
+
+
 func _lives_view() -> LivesView:
 	var v := LivesView.new()
 	v.font = _body_bold
@@ -728,6 +759,11 @@ func _rules_text() -> String:
 	for key in RULES[_mode]:
 		rules.append(tr(key))
 	return "\n".join(rules)
+
+
+## The record shown with the score: today's in the daily challenge.
+func _best_key() -> String:
+	return "DAILY_BEST" if _daily > 0 else "BEST"
 
 
 func _format(score: int) -> String:
