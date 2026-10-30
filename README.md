@@ -1,6 +1,6 @@
 # One More Tap
 
-Gioco arcade verticale a un dito, Godot 4.7 / GDScript. Tre modalità infinite (ZIGZAG, TORRE, DINO), un solo controllo, percorsi generati, game over, record locale per modalità, restart immediato, grafica neon. Ogni giorno una **SFIDA**: lo stesso percorso per tutti, da confrontare con gli amici. In più **AIR HOCKEY**, a squadre, con gli amici sulla stessa Wi-Fi o via Internet, in lobby create da uno di loro. In italiano e in inglese. Gratuito con annunci AdMob e acquisti in-app facoltativi (stili, gettoni, niente annunci), pronto per Google Play e App Store, con una versione web senza annunci per itch.io: i passi per pubblicarlo sono in **[PUBBLICAZIONE.md](PUBBLICAZIONE.md)**.
+Gioco arcade verticale a un dito, Godot 4.7 / GDScript. Tre modalità infinite (ZIGZAG, TORRE, DINO), un solo controllo, percorsi generati, game over, record locale per modalità, restart immediato, grafica neon. Ogni giorno una **SFIDA**: lo stesso percorso per tutti, da confrontare con gli amici. In più **AIR HOCKEY**, a squadre, con gli amici sulla stessa Wi-Fi o via Internet, in lobby create da uno di loro. In italiano, inglese, spagnolo, portoghese, tedesco e francese. Gratuito con annunci AdMob e acquisti in-app facoltativi (stili, gettoni, niente annunci), pronto per Google Play e App Store, con una versione web senza annunci per itch.io: i passi per pubblicarlo sono in **[PUBBLICAZIONE.md](PUBBLICAZIONE.md)**.
 
 ## Aprire e giocare
 
@@ -102,7 +102,7 @@ Plugin [AdMob di Poing Studios](https://github.com/poingstudios/godot-admob-plug
 
 ## Lingue
 
-Tutti i testi del gioco stanno in `assets/i18n/strings.csv`: una riga per testo, una colonna per lingua (`en`, `it`). Il gioco usa la lingua del telefono (o del browser): italiano per chi ha il telefono in italiano, inglese per tutti gli altri.
+Tutti i testi del gioco stanno in `assets/i18n/strings.csv`: una riga per testo, una colonna per lingua (`en`, `it`, `es`, `pt`, `de`, `fr`). Il gioco usa la lingua del telefono (o del browser) se è una di queste, altrimenti l'inglese. Il portoghese è quello del Brasile, lo spagnolo è neutro (va bene anche per l'America Latina). Le scritte in maiuscolo usano il font Bungee: in tedesco niente `ß`, si scrive `SS`. I pulsanti hanno una larghezza fissa: una traduzione nuova va tenuta lunga circa come quella italiana o inglese.
 
 - **Cambiare un testo**: modifica la cella nel CSV (anche con un foglio di calcolo, salvando in CSV UTF-8). Godot lo reimporta da solo.
 - **Aggiungere una lingua**: aggiungi una colonna col codice della lingua (per esempio `es`), poi in *Project → Project Settings → Localization → Translations* aggiungi il file `strings.es.translation` che Godot crea accanto al CSV.

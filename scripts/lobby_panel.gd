@@ -331,7 +331,7 @@ func _build_result() -> void:
 	_result = UiKit.vbox(10)
 	box.add_child(_result)
 	_result.add_child(UiKit.spacer(60))
-	_result_title = UiKit.label("", _display, 80, UiKit.INK, true)
+	_result_title = UiKit.label("", _display, 72, UiKit.INK, true)  # "VINCONO I ROSSI" fits the screen
 	_result.add_child(_result_title)
 	_result_score = UiKit.label("", _display, 40, UiKit.INK)
 	_result.add_child(_result_score)

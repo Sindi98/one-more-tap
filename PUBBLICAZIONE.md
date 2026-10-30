@@ -31,7 +31,7 @@ Finché non inserisci i tuoi ID, il gioco mostra **annunci di prova di Google**.
 - **Dal editor (F5)** vedi annunci finti disegnati dal plugin, così puoi provare tutto il giro senza telefono.
 - **Rimuovi annunci** (o la Collezione completa): niente più annunci né banner, e dall'avvio dopo l'SDK di Google non parte nemmeno. Niente vite, si gioca senza limiti. CONTINUA usa i gettoni.
 
-Il gioco è in italiano per chi ha il telefono in italiano e in inglese per tutti gli altri. Per questo le schede degli store vanno compilate in tutte e due le lingue (passi 4 e 5).
+Il gioco è in italiano, inglese, spagnolo, portoghese, tedesco e francese, secondo la lingua del telefono (inglese per tutte le altre). Le schede degli store vanno compilate in tutte queste lingue (passi 4 e 5): ogni lingua in più fa comparire il gioco nelle ricerche di quei paesi.
 
 ---
 

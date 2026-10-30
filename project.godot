@@ -48,7 +48,7 @@ enabled=PackedStringArray("res://addons/admob/plugin.cfg", "res://addons/InappRe
 
 [internationalization]
 
-locale/translations=PackedStringArray("res://assets/i18n/strings.en.translation", "res://assets/i18n/strings.it.translation")
+locale/translations=PackedStringArray("res://assets/i18n/strings.en.translation", "res://assets/i18n/strings.it.translation", "res://assets/i18n/strings.es.translation", "res://assets/i18n/strings.pt.translation", "res://assets/i18n/strings.de.translation", "res://assets/i18n/strings.fr.translation")
 
 [rendering]
 
