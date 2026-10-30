@@ -121,19 +121,207 @@ Optional purchases: styles for the colours and the ball, tokens to continue with
 
 ---
 
+## Español
+
+**Name** (30)
+One More Tap: Arcade & Hockey
+
+**App Store subtitle** (30)
+Juegos sin internet con amigos
+
+**Google Play short description** (80)
+3 juegos arcade de un dedo y AIR HOCKEY con amigos. Reto diario. Sin internet.
+
+**App Store keywords** (100)
+air,mesa,multijugador,2,jugadores,dino,offline,wifi,reto,diario,dedo,toque,reflejos,zigzag,torre
+
+**App Store promotional text** (170)
+Nuevo: ¡el RETO del día! La misma pista para todos, una nueva cada día. Haz tu puntuación y manda el reto a tus amigos.
+
+**Full description**
+
+Juegos arcade de un dedo y AIR HOCKEY con amigos, en una sola app. Se aprende en tres segundos y se juega sin internet.
+
+ZIGZAG: la bola sube sola y tienes un solo control. Toca y gira 90°. Gira dentro de la esquina: demasiado pronto y caes por un lado, demasiado tarde y sales volando de la plataforma. Justo en el centro de la esquina haces un PERFECTO: punto extra y el combo sube de nota. Las plataformas se estrechan, la bola acelera, los colores cambian.
+
+TORRE: sube una espiral alrededor de una torre que gira y salta los huecos de la rampa, cada vez más rápido, al ritmo.
+
+DINO: corre y salta cactus y pájaros, como en el juego del navegador sin internet. Se abre jugando tres días seguidos.
+
+AIR HOCKEY con amigos: crea una sala en el mismo Wi-Fi (no hace falta internet) u online y manda el código por chat. Se juega por equipos, 1 contra 1 o 2 contra 2: arrastra tu paleta y mete gol. Si falta alguien, juega la CPU, así también puedes entrenar solo. Sin cuenta.
+
+RETO DEL DÍA: cada día una pista nueva, la misma para todos. Sin CONTINUAR: solo cuenta tu habilidad. Haz tu puntuación y reta a tus amigos a superarla.
+
+• Tres modos arcade de un dedo, cada uno con su récord
+• AIR HOCKEY multijugador con amigos, por Wi-Fi o por internet, sin cuenta
+• Reto diario: la misma pista para todos, una nueva cada día
+• Juegos sin internet: ZIGZAG, TORRE y DINO funcionan offline, sin wifi
+• Partidas de pocos segundos, perfectas para una pausa
+• PERFECTO y combos musicales para quien busca precisión
+• Gráficos neón, música y sonidos arcade
+• Estilos coleccionables para los colores y la bola, de común a legendario: algunos se desbloquean con tus récords
+• Comparte la imagen de tu récord y reta a tus amigos
+
+Juego gratis con anuncios. Después de una caída puedes ver un video corto para seguir desde donde estabas, una vez por partida.
+
+Compras opcionales: estilos para los colores y la bola, fichas para continuar sin video, Sin anuncios (cero publicidad y partidas ilimitadas) y la Colección completa con todos los estilos. Siempre compras exactamente lo que ves, sin cajas sorpresa, y ninguna compra ayuda a ganar.
+
+---
+
+## Português (Brasil)
+
+**Name** (30)
+One More Tap: Arcade & Hockey
+
+**App Store subtitle** (30)
+Jogos sem internet com amigos
+
+**Google Play short description** (80)
+3 jogos arcade de um dedo e AIR HOCKEY com amigos. Desafio diário. Offline.
+
+**App Store keywords** (100)
+air,aero,hoquei,multiplayer,2,jogadores,dino,offline,wifi,desafio,diario,dedo,reflexo,zigzag,torre
+
+**App Store promotional text** (170)
+Novidade: o DESAFIO do dia! O mesmo percurso para todos, um novo a cada dia. Faça sua pontuação e mande o desafio para os amigos.
+
+**Full description**
+
+Jogos arcade de um dedo e AIR HOCKEY com amigos, em um só app. Você aprende em três segundos e joga até sem internet.
+
+ZIGZAG: a bola sobe sozinha e você tem um só comando. Toque, e ela vira 90°. Vire dentro da curva: cedo demais e você cai de lado, tarde demais e voa para fora da plataforma. Bem no centro da curva você faz um PERFEITO: ponto extra e o combo sobe de nota. As plataformas ficam mais estreitas, a bola acelera, as cores mudam.
+
+TORRE: suba uma espiral em volta de uma torre que gira e pule os buracos da rampa, cada vez mais rápido, no ritmo.
+
+DINO: corra e pule cactos e pássaros, como no jogo do navegador sem internet. Ele é liberado quando você joga três dias seguidos.
+
+AIR HOCKEY com amigos: crie uma sala no mesmo Wi-Fi (não precisa de internet) ou online, mande o código no chat, dividam-se em times, 1 contra 1 ou 2 contra 2, e arraste seu batedor. Se faltar alguém, a CPU joga, então dá para treinar sozinho também. Sem conta.
+
+DESAFIO DO DIA: todo dia um percurso novo, o mesmo para todos. Sem CONTINUAR: só a sua habilidade conta. Faça sua pontuação e desafie os amigos a bater.
+
+• Três modos arcade de um dedo, cada um com seu recorde
+• AIR HOCKEY multiplayer com amigos, no Wi-Fi ou pela internet, sem conta
+• Desafio diário: o mesmo percurso para todos, um novo todo dia
+• Jogos offline: ZIGZAG, TORRE e DINO funcionam sem internet
+• Partidas de poucos segundos, perfeitas para uma pausa
+• PERFEITO e combos musicais para quem busca precisão
+• Visual neon, música e sons de arcade
+• Estilos colecionáveis para as cores e a bola, do comum ao lendário: alguns são liberados com seus recordes
+• Compartilhe a imagem do seu recorde e desafie os amigos
+
+Jogo gratuito com anúncios. Depois de uma queda, você pode ver um vídeo curto para continuar de onde estava, uma vez por partida.
+
+Compras opcionais: estilos para as cores e a bola, fichas para continuar sem vídeo, Sem anúncios (zero publicidade e partidas sem limite) e a Coleção completa com todos os estilos. Você sempre compra exatamente o que vê, sem caixas surpresa, e nenhuma compra ajuda a vencer.
+
+---
+
+## Deutsch
+
+**Name** (30)
+One More Tap: Arcade & Hockey
+
+**App Store subtitle** (30)
+Offline-Spiele mit Freunden
+
+**Google Play short description** (80)
+3 Ein-Finger-Arcade-Spiele + AIR HOCKEY mit Freunden. Tages-Challenge. Offline.
+
+**App Store keywords** (100)
+air,airhockey,multiplayer,2,spieler,dino,ohne,internet,wlan,täglich,challenge,reaktion,zickzack
+
+**App Store promotional text** (170)
+Neu: TÄGLICH, die Tages-Challenge! Gleiche Strecke für alle, jeden Tag eine neue. Hol deinen Score und schick die Challenge an deine Freunde.
+
+**Full description**
+
+Arcade-Spiele für einen Finger und AIR HOCKEY mit Freunden, in einer App. In drei Sekunden gelernt, auch offline spielbar.
+
+ZIGZAG: Der Ball steigt von allein, und du hast nur einen Befehl. Tippe, und er dreht um 90°. Lenk in der Ecke: zu früh und du fällst seitlich runter, zu spät und du fliegst über das Ende hinaus. Genau in der Mitte der Ecke gibt's ein PERFEKT: einen Extrapunkt, und die Combo steigt um einen Ton. Die Plattformen werden schmaler, der Ball schneller, die Farben wechseln.
+
+TURM: Steig eine Spirale um einen drehenden Turm hinauf und spring über die Löcher in der Rampe, immer schneller, im Rhythmus.
+
+DINO: Lauf und spring über Kakteen und Vögel, wie im Browserspiel ohne Internet. Er wird freigeschaltet, wenn du drei Tage in Folge spielst.
+
+AIR HOCKEY mit Freunden: Erstell eine Lobby im selben WLAN (kein Internet nötig) oder online, schick den Code im Chat, teilt euch in Teams auf, 1 gegen 1 oder 2 gegen 2, und zieh deinen Schläger. Fehlt jemand, spielt die CPU, so kannst du auch allein trainieren. Ohne Konto.
+
+TAGES-CHALLENGE: Tippe auf TÄGLICH und spiel die Strecke des Tages, für alle gleich und jeden Tag neu. Kein WEITER: Nur dein Können zählt. Hol deinen Score und fordere deine Freunde heraus, ihn zu schlagen.
+
+• Drei Arcade-Modi für einen Finger, jeder mit eigenem Rekord
+• Multiplayer-AIR HOCKEY mit Freunden, im WLAN oder übers Internet, ohne Konto
+• Tages-Challenge: gleiche Strecke für alle, jeden Tag eine neue
+• Spiele ohne Internet: ZIGZAG, TURM und DINO laufen offline
+• Runden von wenigen Sekunden, perfekt für zwischendurch
+• PERFEKT und musikalische Combos für alle, die Präzision lieben
+• Neon-Grafik, Arcade-Musik und -Sounds
+• Sammelbare Stile für Farben und Ball, von gewöhnlich bis legendär: Einige schaltest du mit deinen Rekorden frei
+• Teile ein Bild deines Rekords und fordere deine Freunde heraus
+
+Kostenlos spielbar mit Werbung. Nach einem Sturz kannst du ein kurzes Video ansehen und dort weitermachen, wo du warst, einmal pro Runde.
+
+Optionale Käufe: Stile für Farben und Ball, Münzen zum Weiterspielen ohne Video, Werbefrei (keine Werbung und unbegrenzt spielen) und die Komplette Kollektion mit allen Stilen. Du kaufst immer genau das, was du siehst, keine Überraschungskisten, und kein Kauf hilft beim Gewinnen.
+
+---
+
+## Français
+
+**Name** (30)
+One More Tap: Arcade & Hockey
+
+**App Store subtitle** (30)
+Jeux sans wifi et entre amis
+
+**Google Play short description** (80)
+3 jeux d'arcade à un doigt + AIR HOCKEY entre amis. Défi du jour. Hors ligne.
+
+**App Store keywords** (100)
+air,multijoueur,2,joueurs,dino,hors,ligne,internet,offline,défi,jour,quotidien,réflexe,zigzag,tour
+
+**App Store promotional text** (170)
+Nouveau : le DÉFI du jour ! Le même tracé pour tous, un nouveau chaque jour. Fais ton score et envoie le défi à tes amis.
+
+**Full description**
+
+Des jeux d'arcade à un doigt et l'AIR HOCKEY entre amis, dans une seule appli. On apprend en trois secondes, on joue même hors ligne.
+
+ZIGZAG : la balle monte toute seule et tu n'as qu'une commande. Touche, et elle tourne de 90°. Tourne dans l'angle : trop tôt, tu tombes sur le côté ; trop tard, tu t'envoles au bout de la plateforme. Pile au centre de l'angle, c'est un PARFAIT : un point bonus, et le combo monte d'une note. Les plateformes rétrécissent, la balle accélère, les couleurs changent.
+
+TOUR : grimpe une spirale autour d'une tour qui tourne et saute les trous de la rampe, de plus en plus vite, en rythme.
+
+DINO : cours et saute par-dessus cactus et oiseaux, comme dans le jeu du navigateur sans internet. Il se débloque quand tu joues trois jours d'affilée.
+
+AIR HOCKEY entre amis : crée un salon sur le même Wi-Fi (pas besoin d'internet) ou en ligne, envoie le code dans un chat, formez les équipes, 1 contre 1 ou 2 contre 2, et fais glisser ton maillet. S'il manque quelqu'un, le CPU joue : tu peux aussi t'entraîner seul. Sans compte.
+
+DÉFI DU JOUR : chaque jour un nouveau tracé, le même pour tous. Pas de CONTINUER : seul ton talent compte. Fais ton score et défie tes amis de le battre.
+
+• Trois modes d'arcade à un doigt, chacun avec son record
+• AIR HOCKEY multijoueur entre amis, en Wi-Fi ou par internet, sans compte
+• Défi du jour : le même tracé pour tous, un nouveau chaque jour
+• Jeux sans wifi ni internet : ZIGZAG, TOUR et DINO marchent hors ligne
+• Des parties de quelques secondes, parfaites pour une pause
+• PARFAIT et combos musicaux pour les joueurs précis
+• Graphismes néon, musique et sons d'arcade
+• Des styles à collectionner pour les couleurs et la balle, de commun à légendaire : certains se débloquent avec tes records
+• Partage l'image de ton record et défie tes amis
+
+Jeu gratuit avec publicités. Après une chute, tu peux regarder une courte vidéo pour repartir d'où tu étais, une fois par partie.
+
+Achats facultatifs : des styles pour les couleurs et la balle, des jetons pour continuer sans vidéo, Sans pub (aucune publicité et parties illimitées) et la Collection complète avec tous les styles. Tu achètes toujours exactement ce que tu vois, pas de coffres surprise, et aucun achat n'aide à gagner.
+
+---
+
 ## Screenshot da rifare
 
 Gli store mostrano i primi 2–3 screenshot nei risultati di ricerca: lì si decide se uno apre la scheda. Uno screenshot per idea, con una **didascalia grande in alto** (font Bungee, colore neon del gioco) sopra la schermata vera. Ordine consigliato:
 
-| # | Schermata da catturare | Didascalia IT | Didascalia EN |
-|---|---|---|---|
-| 1 | ZIGZAG in partita, con PERFETTO ×3 a schermo | UN DITO. OGNI TAP CONTA. | ONE FINGER. EVERY TAP COUNTS. |
-| 2 | AIR HOCKEY 2 contro 2 in partita | AIR HOCKEY CON GLI AMICI | AIR HOCKEY WITH FRIENDS |
-| 3 | Game over della SFIDA con il punteggio | SFIDA DEL GIORNO: BATTI I TUOI AMICI | DAILY CHALLENGE: BEAT YOUR FRIENDS |
-| 4 | TORRE in partita, a metà di un salto | SALTA I BUCHI DELLA TORRE | JUMP THE HOLES IN THE TOWER |
-| 5 | DINO in partita, sopra un gruppo di cactus | DINO: ANCHE SENZA INTERNET | DINO: NO INTERNET NEEDED |
-| 6 | Lobby di AIR HOCKEY con le squadre e il codice | WI-FI O ONLINE, SENZA ACCOUNT | WI-FI OR ONLINE, NO ACCOUNT |
-| 7 | Negozio con uno stile leggendario provato sul gioco | STILI DA COLLEZIONARE | COLLECT NEON STYLES |
+| # | Schermata da catturare | Didascalia IT | Didascalia EN | Didascalia ES | Didascalia PT | Didascalia DE | Didascalia FR |
+|---|---|---|---|---|---|---|---|
+| 1 | ZIGZAG in partita, con PERFETTO ×3 a schermo | UN DITO. OGNI TAP CONTA. | ONE FINGER. EVERY TAP COUNTS. | UN DEDO. CADA TOQUE CUENTA. | UM DEDO. CADA TOQUE CONTA. | EIN FINGER. JEDER TAP ZÄHLT. | UN DOIGT. CHAQUE TAP COMPTE. |
+| 2 | AIR HOCKEY 2 contro 2 in partita | AIR HOCKEY CON GLI AMICI | AIR HOCKEY WITH FRIENDS | AIR HOCKEY CON AMIGOS | AIR HOCKEY COM AMIGOS | AIR HOCKEY MIT FREUNDEN | AIR HOCKEY ENTRE AMIS |
+| 3 | Game over della SFIDA con il punteggio | SFIDA DEL GIORNO: BATTI I TUOI AMICI | DAILY CHALLENGE: BEAT YOUR FRIENDS | RETO DEL DÍA: GANA A TUS AMIGOS | DESAFIO DO DIA: VENÇA OS AMIGOS | TÄGLICH: SCHLAG DEINE FREUNDE | DÉFI DU JOUR : BATS TES AMIS |
+| 4 | TORRE in partita, a metà di un salto | SALTA I BUCHI DELLA TORRE | JUMP THE HOLES IN THE TOWER | SALTA LOS HUECOS DE LA TORRE | PULE OS BURACOS DA TORRE | SPRING ÜBER DIE LÖCHER IM TURM | SAUTE LES TROUS DE LA TOUR |
+| 5 | DINO in partita, sopra un gruppo di cactus | DINO: ANCHE SENZA INTERNET | DINO: NO INTERNET NEEDED | DINO: JUEGA SIN INTERNET | DINO: JOGUE SEM INTERNET | DINO: SPIELEN OHNE INTERNET | DINO : MÊME SANS WIFI |
+| 6 | Lobby di AIR HOCKEY con le squadre e il codice | WI-FI O ONLINE, SENZA ACCOUNT | WI-FI OR ONLINE, NO ACCOUNT | WI-FI U ONLINE, SIN CUENTA | WI-FI OU ONLINE, SEM CONTA | WI-FI ODER ONLINE, OHNE KONTO | WI-FI OU ONLINE, SANS COMPTE |
+| 7 | Negozio con uno stile leggendario provato sul gioco | STILI DA COLLEZIONARE | COLLECT NEON STYLES | COLECCIONA ESTILOS NEÓN | COLECIONE ESTILOS NEON | SAMMLE NEON-STILE | COLLECTIONNE DES STYLES NÉON |
 
 Anche la **grafica in evidenza** di Google Play (1024×500) va rifatta con le quattro modalità, per esempio la pallina di ZIGZAG a sinistra e il tavolo di AIR HOCKEY a destra, con "3 GIOCHI A UN DITO + AIR HOCKEY".
 
@@ -157,6 +345,6 @@ Per l'App Store la musica deve essere quella del gioco. Su YouTube attenzione al
 - **Tag di Google Play** (*Presenza nello store → Tag dello store*): Arcade, Casual, Multiplayer, Offline, Single player
 - **Contiene annunci**: Sì
 - **Acquisti in-app**: Sì, da 0,99 € a 9,99 € (prodotti e ID in `PUBBLICAZIONE.md`, passo 7)
-- **Sito web / email di supporto**: `https://sindi98.github.io/one-more-tap/` · [EMAIL DI CONTATTO]
+- **Sito web / email di supporto**: `https://sindi98.github.io/one-more-tap/` · onemoretap1998@gmail.com
 - **Informativa privacy**: `https://sindi98.github.io/one-more-tap/privacy.html`
 - **Note per la revisione Apple**: "Free arcade game with AdMob ads. Ads never appear during play. Interstitials appear only when a run has ended (at most every 3 runs and 90 seconds); a banner shows on the mode selection screen only. Each run costs one of 5 lives, which come back over time or all at once with an optional rewarded video; another optional rewarded video lets the player continue a run once. No login required. In-app purchases are in STILI on the start screen: cosmetic styles (non-consumable), Remove Ads (non-consumable: no ads, no banner and no lives limit from then on), Full Collection (non-consumable) and token packs (consumable, one token continues a run without a video). RIPRISTINA restores purchases. The third mode, DINO, opens after the game is opened on three days in a row; the other two modes are available at once. SFIDA (next to STILI) turns on the daily challenge: the same track for every player that day, with no continue. AIR HOCKEY (next to SFIDA) is a multiplayer mode: one player creates a lobby, on the same Wi-Fi (WI-FI: direct, no server; the others join from the list or with its 4-character code) or online (ONLINE: through our relay server; the others type its 5-character code). Online lobbies are private, joined by code only, with no chat. Empty places are played by the CPU, so it can be tried on a single device: AIR HOCKEY, then WI-FI or ONLINE, then INIZIA. The Local Network permission is used only for Wi-Fi lobbies."

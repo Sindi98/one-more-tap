@@ -1,205 +1,221 @@
-keys,en,it
-MODE_ZIGZAG,ZIGZAG,ZIGZAG
-MODE_TOWER,TOWER,TORRE
-MODE_RUNNER,DINO,DINO
-RULES_ZIGZAG_1,Tap: the ball changes direction.,Tocca: la pallina cambia direzione.
-RULES_ZIGZAG_2,"Turn on the corners: not early, not late.","Gira sugli angoli, mai prima, mai dopo."
-RULES_ZIGZAG_3,"Dead centre: PERFECT, +1.","Al centro esatto: PERFETTO, +1."
-RULES_TOWER_1,Tap: the ball jumps.,Tocca: la pallina salta.
-RULES_TOWER_2,Jump the holes in the tower.,Salta i buchi della torre.
-RULES_TOWER_3,"At the edge of the hole: PERFECT, +1.","Sul bordo del buco: PERFETTO, +1."
-RULES_RUNNER_1,Tap: the dino jumps.,Tocca: il dino salta.
-RULES_RUNNER_2,Jump the cacti and the low birds.,Salta cactus e uccelli bassi.
-RULES_RUNNER_3,High ones fly over: stay down.,Quelli alti passano sopra: resta giù.
-REASON_EARLY,TOO EARLY,TROPPO PRESTO
-REASON_LATE,TOO LATE,TROPPO TARDI
-REASON_HIGH,DON'T JUMP,NON SALTARE
-REASON_ZIGZAG_EARLY,You turned before the corner,Hai girato prima dell'angolo
-REASON_ZIGZAG_LATE,You didn't turn at the corner,Non hai girato all'angolo
-REASON_TOWER_EARLY,You landed in the hole,Sei atterrato nel buco
-REASON_TOWER_LATE,You didn't jump the hole,Non hai saltato il buco
-REASON_RUNNER_EARLY,You came down on the obstacle,Sei ricaduto sull'ostacolo
-REASON_RUNNER_LATE,Jump before the obstacle,Salta prima dell'ostacolo
-REASON_RUNNER_HIGH,High ones fly over you,Quelli alti passano sopra
-BEST,BEST,RECORD
-FIRST_RECORD,Set your first best score,Il primo record è tuo
-NEW_RECORD,NEW RECORD,NUOVO RECORD
-PERFECT,PERFECT,PERFETTO
-TAP_TO_START,TAP TO START,TOCCA PER INIZIARE
-CONTINUE,CONTINUE,CONTINUA
-RETRY,RETRY,RIPROVA
-MODES,MODES,MODALITÀ
-SHARE,SHARE,CONDIVIDI
-CONTINUE_HINT,CONTINUE: watch a short video and carry on from here,CONTINUA: guarda un breve video e riparti da qui
-TAP_TO_RETRY,tap the screen to retry,tocca lo schermo per riprovare
-OR_TAP,or tap the screen,oppure tocca lo schermo
-PAUSED,PAUSED,PAUSA
-TAP_TO_RESUME,Tap to resume,Tocca per riprendere
-ONE_MORE,ONE MORE,ANCORA UNA
-TAP_WHEN_READY,Tap when you're ready,Tocca quando sei pronto
-STARTS_SLOW,the ball starts off slow,la pallina riparte piano
-NO_LIVES,NO LIVES,VITE FINITE
-REFILL,REFILL,RICARICA
-REFILL_HINT,Watch a video: they all come back,"Guarda un video: tornano tutte"
-NO_VIDEO,"No video available, try again soon","Video non disponibile, riprova tra poco"
-WAIT_FOR_LIVES,or wait for them to come back,oppure aspetta che tornino da sole
-NEXT_LIFE,+1 in %d:%02d,+1 tra %d:%02d
-SOUND_ON,SOUND ON,SUONO ON
-SOUND_OFF,SOUND OFF,SUONO OFF
-PRIVACY,PRIVACY,PRIVACY
-CONSENT,CONSENT,CONSENSO
-GET_APP,GET APP,SCARICA
-STATS_ZIGZAG,%d platforms  ·  %d perfect  ·  best combo %d,%d piattaforme  ·  %d perfetti  ·  combo max %d
-STATS_TOWER,%d holes  ·  %d perfect  ·  best combo %d,%d buchi  ·  %d perfetti  ·  combo max %d
-STATS_RUNNER,%d obstacles  ·  %d jumps,%d ostacoli  ·  %d salti
-CARD_CHALLENGE,CAN YOU BEAT ME?,RIESCI A BATTERMI?
-CARD_FREE,Free on Google Play and the App Store,Gratis su Google Play e App Store
-SHARE_TEXT,I scored %d in %s on One More Tap. Can you beat me? %s,Ho fatto %d a %s su One More Tap. Riesci a battermi? %s
-STYLES,STYLES,STILI
-NEW_STYLE,NEW STYLE: %s,NUOVO STILE: %s
-CONTINUE_TOKEN,CONTINUE: use 1 token and carry on (you have %d),CONTINUA: usa 1 gettone e riparti (ne hai %d)
-CONTINUE_SHOP,Out of tokens: CONTINUE takes you to the shop,Gettoni finiti: CONTINUA ti porta al negozio
+keys,en,it,es,pt,de,fr
+MODE_ZIGZAG,ZIGZAG,ZIGZAG,ZIGZAG,ZIGZAG,ZIGZAG,ZIGZAG
+MODE_TOWER,TOWER,TORRE,TORRE,TORRE,TURM,TOUR
+MODE_RUNNER,DINO,DINO,DINO,DINO,DINO,DINO
+RULES_ZIGZAG_1,Tap: the ball changes direction.,Tocca: la pallina cambia direzione.,Toca: la bola cambia de dirección.,Toque: a bola muda de direção.,Tippe: Der Ball ändert die Richtung.,Touche : la balle change de direction.
+RULES_ZIGZAG_2,"Turn on the corners: not early, not late.","Gira sugli angoli, mai prima, mai dopo.","Gira en las esquinas, ni antes ni después.","Vire nas curvas, nem antes nem depois.","Lenk an den Ecken, nie früher, nie später.","Tourne aux angles, ni avant ni après."
+RULES_ZIGZAG_3,"Dead centre: PERFECT, +1.","Al centro esatto: PERFETTO, +1.","Justo en el centro: PERFECTO, +1.","Bem no centro: PERFEITO, +1.","Genau in der Mitte: PERFEKT, +1.","Pile au centre : PARFAIT, +1."
+RULES_TOWER_1,Tap: the ball jumps.,Tocca: la pallina salta.,Toca: la bola salta.,Toque: a bola pula.,Tippe: Der Ball springt.,Touche : la balle saute.
+RULES_TOWER_2,Jump the holes in the tower.,Salta i buchi della torre.,Salta los huecos de la torre.,Pule os buracos da torre.,Spring über die Löcher im Turm.,Saute les trous de la tour.
+RULES_TOWER_3,"At the edge of the hole: PERFECT, +1.","Sul bordo del buco: PERFETTO, +1.","Al borde del hueco: PERFECTO, +1.","Na borda do buraco: PERFEITO, +1.","Am Rand vom Loch: PERFEKT, +1.","Au bord du trou : PARFAIT, +1."
+RULES_RUNNER_1,Tap: the dino jumps.,Tocca: il dino salta.,Toca: el dino salta.,Toque: o dino pula.,Tippe: Der Dino springt.,Touche : le dino saute.
+RULES_RUNNER_2,Jump the cacti and the low birds.,Salta cactus e uccelli bassi.,Salta los cactus y los pájaros bajos.,Pule os cactos e os pássaros baixos.,Spring über Kakteen und tiefe Vögel.,Saute les cactus et les oiseaux bas.
+RULES_RUNNER_3,High ones fly over: stay down.,Quelli alti passano sopra: resta giù.,Los altos pasan sobre ti: quédate abajo.,Os altos passam: fique no chão.,Hohe fliegen drüber: Bleib unten.,Les hauts passent : reste au sol.
+REASON_EARLY,TOO EARLY,TROPPO PRESTO,DEMASIADO PRONTO,CEDO DEMAIS,ZU FRÜH,TROP TÔT
+REASON_LATE,TOO LATE,TROPPO TARDI,DEMASIADO TARDE,TARDE DEMAIS,ZU SPÄT,TROP TARD
+REASON_HIGH,DON'T JUMP,NON SALTARE,NO SALTES,NÃO PULE,SPRING NICHT,NE SAUTE PAS
+REASON_ZIGZAG_EARLY,You turned before the corner,Hai girato prima dell'angolo,Giraste antes de la esquina,Você virou antes da curva,Du hast vor der Ecke gelenkt,Tu as tourné avant l'angle
+REASON_ZIGZAG_LATE,You didn't turn at the corner,Non hai girato all'angolo,No giraste en la esquina,Você não virou na curva,Du hast die Ecke verpasst,Tu n'as pas tourné à l'angle
+REASON_TOWER_EARLY,You landed in the hole,Sei atterrato nel buco,Caíste en el hueco,Você caiu no buraco,Du bist im Loch gelandet,Tu as atterri dans le trou
+REASON_TOWER_LATE,You didn't jump the hole,Non hai saltato il buco,No saltaste el hueco,Você não pulou o buraco,Nicht übers Loch gesprungen,Tu n'as pas sauté le trou
+REASON_RUNNER_EARLY,You came down on the obstacle,Sei ricaduto sull'ostacolo,Caíste sobre el obstáculo,Você caiu no obstáculo,Du bist aufs Hindernis gefallen,Tu es retombé sur l'obstacle
+REASON_RUNNER_LATE,Jump before the obstacle,Salta prima dell'ostacolo,Salta antes del obstáculo,Pule antes do obstáculo,Spring vor dem Hindernis,Saute avant l'obstacle
+REASON_RUNNER_HIGH,High ones fly over you,Quelli alti passano sopra,Los altos pasan por encima,Os altos passam por cima,Hohe fliegen über dich,Les hauts passent au-dessus
+BEST,BEST,RECORD,RÉCORD,RECORDE,REKORD,RECORD
+FIRST_RECORD,Set your first best score,Il primo record è tuo,Marca tu primer récord,Faça seu primeiro recorde,Dein erster Rekord wartet,Établis ton premier record
+NEW_RECORD,NEW RECORD,NUOVO RECORD,NUEVO RÉCORD,NOVO RECORDE,NEUER REKORD,NOUVEAU RECORD
+PERFECT,PERFECT,PERFETTO,PERFECTO,PERFEITO,PERFEKT,PARFAIT
+TAP_TO_START,TAP TO START,TOCCA PER INIZIARE,TOCA PARA EMPEZAR,TOQUE PARA COMEÇAR,ZUM STARTEN TIPPEN,TOUCHE POUR JOUER
+CONTINUE,CONTINUE,CONTINUA,CONTINUAR,CONTINUAR,WEITER,CONTINUER
+RETRY,RETRY,RIPROVA,REPETIR,DE NOVO,NOCHMAL,REJOUER
+MODES,MODES,MODALITÀ,MODOS,MODOS,MODI,MODES
+SHARE,SHARE,CONDIVIDI,COMPARTIR,COMPARTILHAR,TEILEN,PARTAGER
+CONTINUE_HINT,CONTINUE: watch a short video and carry on from here,CONTINUA: guarda un breve video e riparti da qui,CONTINUAR: mira un video corto y sigue desde aquí,CONTINUAR: veja um vídeo curto e siga daqui,WEITER: Schau ein kurzes Video und spiel hier weiter,CONTINUER : regarde une courte vidéo et repars d'ici
+TAP_TO_RETRY,tap the screen to retry,tocca lo schermo per riprovare,toca la pantalla para repetir,toque na tela para jogar de novo,tippe irgendwo zum Neustart,touche l'écran pour rejouer
+OR_TAP,or tap the screen,oppure tocca lo schermo,o toca la pantalla,ou toque na tela,oder tippe irgendwo,ou touche l'écran
+PAUSED,PAUSED,PAUSA,PAUSA,PAUSA,PAUSE,PAUSE
+TAP_TO_RESUME,Tap to resume,Tocca per riprendere,Toca para seguir,Toque para continuar,Tippe zum Fortsetzen,Touche pour reprendre
+ONE_MORE,ONE MORE,ANCORA UNA,UNA MÁS,MAIS UMA,NOCH EINE,ENCORE UNE
+TAP_WHEN_READY,Tap when you're ready,Tocca quando sei pronto,Toca cuando estés listo,Toque quando quiser,"Tippe, wenn du bereit bist",Touche quand tu es prêt
+STARTS_SLOW,the ball starts off slow,la pallina riparte piano,la bola arranca despacio,a bola volta devagar,der Ball startet langsam,la balle repart doucement
+NO_LIVES,NO LIVES,VITE FINITE,SIN VIDAS,SEM VIDAS,KEINE LEBEN,PLUS DE VIES
+REFILL,REFILL,RICARICA,RECARGAR,RECARREGAR,AUFFÜLLEN,RECHARGER
+REFILL_HINT,Watch a video: they all come back,Guarda un video: tornano tutte,Mira un video: vuelven todas,Veja um vídeo: todas voltam,Schau ein Video: Alle kommen zurück,Regarde une vidéo : toutes reviennent
+NO_VIDEO,"No video available, try again soon","Video non disponibile, riprova tra poco","No hay video ahora, prueba en un rato","Nenhum vídeo agora, tente daqui a pouco","Gerade kein Video, versuch es gleich","Pas de vidéo dispo, réessaie bientôt"
+WAIT_FOR_LIVES,or wait for them to come back,oppure aspetta che tornino da sole,o espera a que vuelvan solas,ou espere elas voltarem sozinhas,"oder warte, bis sie wiederkommen",ou attends qu'elles reviennent seules
+NEXT_LIFE,+1 in %d:%02d,+1 tra %d:%02d,+1 en %d:%02d,+1 em %d:%02d,+1 in %d:%02d,+1 dans %d:%02d
+SOUND_ON,SOUND ON,SUONO ON,SONIDO ON,SOM ON,TON AN,SON ON
+SOUND_OFF,SOUND OFF,SUONO OFF,SONIDO OFF,SOM OFF,TON AUS,SON OFF
+PRIVACY,PRIVACY,PRIVACY,PRIVACIDAD,PRIVACIDADE,DATENSCHUTZ,VIE PRIVÉE
+CONSENT,CONSENT,CONSENSO,CONSENTIMIENTO,CONSENTIMENTO,ZUSTIMMUNG,CONSENTEMENT
+GET_APP,GET APP,SCARICA,DESCARGAR,BAIXAR APP,ZUR APP,TÉLÉCHARGER
+STATS_ZIGZAG,%d platforms  ·  %d perfect  ·  best combo %d,%d piattaforme  ·  %d perfetti  ·  combo max %d,%d plataformas  ·  %d perfectos  ·  combo máx %d,%d plataformas  ·  %d perfeitos  ·  combo máx %d,%d Plattformen  ·  %d perfekt  ·  beste Combo %d,%d plateformes  ·  %d parfaits  ·  combo max %d
+STATS_TOWER,%d holes  ·  %d perfect  ·  best combo %d,%d buchi  ·  %d perfetti  ·  combo max %d,%d huecos  ·  %d perfectos  ·  combo máx %d,%d buracos  ·  %d perfeitos  ·  combo máx %d,%d Löcher  ·  %d perfekt  ·  beste Combo %d,%d trous  ·  %d parfaits  ·  combo max %d
+STATS_RUNNER,%d obstacles  ·  %d jumps,%d ostacoli  ·  %d salti,%d obstáculos  ·  %d saltos,%d obstáculos  ·  %d pulos,%d Hindernisse  ·  %d Sprünge,%d obstacles  ·  %d sauts
+CARD_CHALLENGE,CAN YOU BEAT ME?,RIESCI A BATTERMI?,¿ME PUEDES GANAR?,CONSEGUE ME VENCER?,SCHLÄGST DU MICH?,TU PEUX ME BATTRE ?
+CARD_FREE,Free on Google Play and the App Store,Gratis su Google Play e App Store,Gratis en Google Play y App Store,Grátis no Google Play e na App Store,Gratis bei Google Play und im App Store,Gratuit sur Google Play et l'App Store
+SHARE_TEXT,I scored %d in %s on One More Tap. Can you beat me? %s,Ho fatto %d a %s su One More Tap. Riesci a battermi? %s,Hice %d puntos en %s de One More Tap. ¿Me puedes ganar? %s,Fiz %d pontos em %s no One More Tap. Consegue me vencer? %s,%d Punkte in %s bei One More Tap! Schlägst du mich? %s,J'ai fait %d points en %s sur One More Tap. Tu peux me battre ? %s
+STYLES,STYLES,STILI,ESTILOS,ESTILOS,STILE,STYLES
+NEW_STYLE,NEW STYLE: %s,NUOVO STILE: %s,NUEVO ESTILO: %s,NOVO ESTILO: %s,NEUER STIL: %s,NOUVEAU STYLE : %s
+CONTINUE_TOKEN,CONTINUE: use 1 token and carry on (you have %d),CONTINUA: usa 1 gettone e riparti (ne hai %d),CONTINUAR: usa 1 ficha y sigue (tienes %d),CONTINUAR: use 1 ficha e siga (você tem %d),WEITER: Nimm 1 Münze und spiel weiter (du hast %d),CONTINUER : utilise 1 jeton et repars (tu en as %d)
+CONTINUE_SHOP,Out of tokens: CONTINUE takes you to the shop,Gettoni finiti: CONTINUA ti porta al negozio,Sin fichas: CONTINUAR te lleva a la tienda,Sem fichas: CONTINUAR te leva à loja,Keine Münzen mehr: WEITER führt zum Shop,Plus de jetons : CONTINUER t'emmène à la boutique
 DINO_LOCKED,"DINO opens after %d days in a row.
 You're on day %d: come back tomorrow!","DINO si apre dopo %d giorni di fila.
-Sei al giorno %d: torna domani!"
+Sei al giorno %d: torna domani!","DINO se abre tras %d días seguidos.
+Vas por el día %d: ¡vuelve mañana!","DINO abre depois de %d dias seguidos.
+Você está no dia %d: volte amanhã!","DINO öffnet nach %d Tagen in Folge.
+Du bist bei Tag %d: Komm morgen wieder!","DINO s'ouvre après %d jours d'affilée.
+Tu en es au jour %d : reviens demain !"
 DINO_OPEN,"DINO IS OPEN!
 Jump cacti and birds: tap DINO below","DINO È APERTO!
-Salta cactus e uccelli: tocca DINO in basso"
-TOKENS_COUNT,TOKENS: %d,GETTONI: %d
-TAB_COLORS,COLOURS,COLORI
-TAB_BALL,BALL,PALLINA
-TAB_EXTRA,EXTRA,EXTRA
-BACK,BACK,INDIETRO
-RESTORE,RESTORE,RIPRISTINA
-RARITY_COMMON,COMMON,COMUNE
-RARITY_RARE,RARE,RARO
-RARITY_EPIC,EPIC,EPICO
-RARITY_LEGENDARY,LEGENDARY,LEGGENDARIO
-LOOK_NEON,NEON,NEON
-LOOK_NEON_ABOUT,The colours you know,I colori di sempre
-LOOK_GHIACCIO,ICE,GHIACCIO
-LOOK_GHIACCIO_ABOUT,Cold blues and cyans,Azzurri e blu freddi
-LOOK_DESERTO,DESERT,DESERTO
-LOOK_DESERTO_ABOUT,"Sand, ochre and earth","Sabbia, ocra e terra"
-LOOK_TRAMONTO,SUNSET,TRAMONTO
-LOOK_TRAMONTO_ABOUT,"Reds, pinks and oranges","Rossi, rosa e arancioni"
-LOOK_ACIDO,ACID,ACIDO
-LOOK_ACIDO_ABOUT,"Lime, yellow and green","Lime, giallo e verde"
-LOOK_ORO,GOLD,ORO
-LOOK_ORO_ABOUT,Gold that keeps shimmering,Oro che luccica sempre
-LOOK_ARCOBALENO,RAINBOW,ARCOBALENO
-LOOK_ARCOBALENO_ABOUT,"Every colour, flowing without a stop","Tutti i colori, che scorrono senza fermarsi"
-LOOK_CLASSICA,CLASSIC,CLASSICA
-LOOK_CLASSICA_ABOUT,The ball you know,La pallina di sempre
-LOOK_ANELLO,RING,ANELLO
-LOOK_ANELLO_ABOUT,A ring of light,Un anello di luce
-LOOK_DIAMANTE,DIAMOND,DIAMANTE
-LOOK_DIAMANTE_ABOUT,A spinning diamond,Un diamante che gira
-LOOK_PIXEL,PIXEL,PIXEL
-LOOK_PIXEL_ABOUT,"Square, with a stepped trail","Quadrata, scia a gradini"
-LOOK_COMETA,COMET,COMETA
-LOOK_COMETA_ABOUT,A long tail of light and sparks,Lunga coda di luce e scintille
-LOOK_SUPERNOVA,SUPERNOVA,SUPERNOVA
-LOOK_SUPERNOVA_ABOUT,"A pulsing star, a trail of stars and PERFECTs that burst","Una stella che pulsa, scia di stelle e PERFETTO che esplodono"
-EVERY_MODE,In every mode,In tutte le modalità
-BALL_MODES,In ZIGZAG and TOWER,In ZIGZAG e TORRE
-CARD_NO_ADS,NO ADS,NO ANNUNCI
-CARD_COLLECTION,COLLECTION,COLLEZIONE
-CARD_TOKENS,%d TOKENS,%d GETTONI
-TAG_FOREVER,FOREVER,PER SEMPRE
-TAG_ALL_STYLES,EVERY STYLE,TUTTI GLI STILI
-TAG_FOR_CONTINUE,FOR CONTINUE,PER CONTINUA
-EXTRA_NO_ADS_ABOUT,No ads. CONTINUE uses tokens: the first 10 are free,Niente annunci. CONTINUA usa i gettoni: i primi 10 sono in regalo
-EXTRA_COLLECTION_ABOUT,"Every style, those still to come too, and no ads","Tutti gli stili, anche quelli che verranno, e niente annunci"
-TOKENS_ABOUT,One token is one CONTINUE without a video. You have %d,Un gettone è un CONTINUA senza video. Ne hai %d
-UNLOCK_AT,%d IN %s,%d IN %s
-UNLOCK_HOW,Score %d in %s to unlock it. Your best: %d,Fai %d punti in %s per sbloccarlo. Il tuo record: %d
-WEARING,IN USE,IN USO
-OWNED,YOURS,TUO
-OWNED_COLLECTION,YOURS,TUA
-ACTIVE,ACTIVE,ATTIVO
-WEAR,USE,USA
-LOCKED,LOCKED,BLOCCATO
-ALREADY_YOURS,ALREADY YOURS,GIÀ TUA
-WAIT,WAIT…,ATTENDI…
-BUY,BUY  %s,ACQUISTA  %s
-UNAVAILABLE,NOT AVAILABLE,NON DISPONIBILE
-STORE_OFFLINE,Store not reachable: try again later,Negozio non raggiungibile: riprova più tardi
-RESTORED,Purchases restored,Acquisti ripristinati
-LOOK_BOUGHT,%s is yours!,%s è tuo!
-NO_ADS_BOUGHT,Ads removed! You have %d tokens for CONTINUE,Annunci rimossi! Hai %d gettoni per CONTINUA
-COLLECTION_BOUGHT,Full collection: it's all yours now!,Collezione completa: ora è tutto tuo!
-TOKENS_BOUGHT,+%d tokens,+%d gettoni
-PAYMENT_PENDING,Payment pending: it arrives once confirmed,Pagamento in attesa: arriva appena è confermato
-NOTHING_TO_RESTORE,Nothing to restore,Nessun acquisto da ripristinare
-RESTORE_FAILED,"Restore failed, try again later","Ripristino non riuscito, riprova più tardi"
-PURCHASE_FAILED,"Purchase failed, try again later","Acquisto non riuscito, riprova più tardi"
-STORE_IN_APP,In the app on Google Play and the App Store,Nell'app su Google Play e App Store
-MODE_HOCKEY,AIR HOCKEY,AIR HOCKEY
+Salta cactus e uccelli: tocca DINO in basso","¡DINO ABIERTO!
+Salta cactus y pájaros: toca DINO abajo","DINO LIBERADO!
+Pule cactos e aves: toque em DINO abaixo","DINO IST OFFEN!
+Kakteen und Vögel warten: Tippe auf DINO","DINO DÉBLOQUÉ !
+Saute cactus et oiseaux : touche DINO"
+TOKENS_COUNT,TOKENS: %d,GETTONI: %d,FICHAS: %d,FICHAS: %d,MÜNZEN: %d,JETONS : %d
+TAB_COLORS,COLOURS,COLORI,COLORES,CORES,FARBEN,COULEURS
+TAB_BALL,BALL,PALLINA,BOLA,BOLA,BALL,BALLE
+TAB_EXTRA,EXTRA,EXTRA,EXTRAS,EXTRAS,EXTRAS,EXTRAS
+BACK,BACK,INDIETRO,ATRÁS,VOLTAR,ZURÜCK,RETOUR
+RESTORE,RESTORE,RIPRISTINA,RESTAURAR,RESTAURAR,KÄUFE LADEN,RESTAURER
+RARITY_COMMON,COMMON,COMUNE,COMÚN,COMUM,GEWÖHNLICH,COMMUN
+RARITY_RARE,RARE,RARO,RARO,RARO,SELTEN,RARE
+RARITY_EPIC,EPIC,EPICO,ÉPICO,ÉPICO,EPISCH,ÉPIQUE
+RARITY_LEGENDARY,LEGENDARY,LEGGENDARIO,LEGENDARIO,LENDÁRIO,LEGENDÄR,LÉGENDAIRE
+LOOK_NEON,NEON,NEON,NEÓN,NEON,NEON,NÉON
+LOOK_NEON_ABOUT,The colours you know,I colori di sempre,Los colores de siempre,As cores de sempre,Die klassischen Farben,Les couleurs de toujours
+LOOK_GHIACCIO,ICE,GHIACCIO,HIELO,GELO,EIS,GLACE
+LOOK_GHIACCIO_ABOUT,Cold blues and cyans,Azzurri e blu freddi,Azules y cianes fríos,Azuis e cianos frios,Kühles Blau und Cyan,Bleus et cyans froids
+LOOK_DESERTO,DESERT,DESERTO,DESIERTO,DESERTO,WÜSTE,DÉSERT
+LOOK_DESERTO_ABOUT,"Sand, ochre and earth","Sabbia, ocra e terra","Arena, ocre y tierra","Areia, ocre e terra","Sand, Ocker und Erde","Sable, ocre et terre"
+LOOK_TRAMONTO,SUNSET,TRAMONTO,ATARDECER,PÔR DO SOL,ABENDROT,CRÉPUSCULE
+LOOK_TRAMONTO_ABOUT,"Reds, pinks and oranges","Rossi, rosa e arancioni","Rojos, rosas y naranjas","Vermelhos, rosas e laranjas","Rot, Rosa und Orange","Rouges, roses et oranges"
+LOOK_ACIDO,ACID,ACIDO,ÁCIDO,ÁCIDO,GIFTIG,ACIDE
+LOOK_ACIDO_ABOUT,"Lime, yellow and green","Lime, giallo e verde","Lima, amarillo y verde","Lima, amarelo e verde","Limette, Gelb und Grün","Citron vert, jaune et vert"
+LOOK_ORO,GOLD,ORO,ORO,OURO,GOLD,OR
+LOOK_ORO_ABOUT,Gold that keeps shimmering,Oro che luccica sempre,Oro que siempre brilla,Ouro que não para de brilhar,"Gold, das immer glänzt",De l'or qui scintille sans fin
+LOOK_ARCOBALENO,RAINBOW,ARCOBALENO,ARCOÍRIS,ARCO-ÍRIS,REGENBOGEN,ARC-EN-CIEL
+LOOK_ARCOBALENO_ABOUT,"Every colour, flowing without a stop","Tutti i colori, che scorrono senza fermarsi","Todos los colores, fluyendo sin parar","Todas as cores, fluindo sem parar","Alle Farben, die ohne Pause fließen","Toutes les couleurs, qui défilent sans fin"
+LOOK_CLASSICA,CLASSIC,CLASSICA,CLÁSICA,CLÁSSICA,KLASSIK,CLASSIQUE
+LOOK_CLASSICA_ABOUT,The ball you know,La pallina di sempre,La bola de siempre,A bola de sempre,Der klassische Ball,La balle de toujours
+LOOK_ANELLO,RING,ANELLO,ANILLO,ANEL,RING,ANNEAU
+LOOK_ANELLO_ABOUT,A ring of light,Un anello di luce,Un anillo de luz,Um anel de luz,Ein Ring aus Licht,Un anneau lumineux
+LOOK_DIAMANTE,DIAMOND,DIAMANTE,DIAMANTE,DIAMANTE,DIAMANT,DIAMANT
+LOOK_DIAMANTE_ABOUT,A spinning diamond,Un diamante che gira,Un diamante que gira,Um diamante que gira,Ein drehender Diamant,Un diamant qui tourne
+LOOK_PIXEL,PIXEL,PIXEL,PÍXEL,PIXEL,PIXEL,PIXEL
+LOOK_PIXEL_ABOUT,"Square, with a stepped trail","Quadrata, scia a gradini","Cuadrada, estela escalonada","Quadrada, rastro em degraus","Eckig, mit Stufenspur","Carrée, traînée en escalier"
+LOOK_COMETA,COMET,COMETA,COMETA,COMETA,KOMET,COMÈTE
+LOOK_COMETA_ABOUT,A long tail of light and sparks,Lunga coda di luce e scintille,Larga cola de luz y chispas,Longa cauda de luz e faíscas,Ein Schweif aus Licht und Funken,Traîne de lumière et d'étincelles
+LOOK_SUPERNOVA,SUPERNOVA,SUPERNOVA,SUPERNOVA,SUPERNOVA,SUPERNOVA,SUPERNOVA
+LOOK_SUPERNOVA_ABOUT,"A pulsing star, a trail of stars and PERFECTs that burst","Una stella che pulsa, scia di stelle e PERFETTO che esplodono","Estrella que late, estela de estrellas y PERFECTO que estallan","Estrela pulsante, rastro de estrelas e PERFEITO que explodem","Pulsierender Stern, Sternenspur und PERFEKT mit Explosion","Étoile qui pulse, traînée d'étoiles et PARFAIT qui explosent"
+EVERY_MODE,In every mode,In tutte le modalità,En todos los modos,Em todos os modos,In allen Modi,Dans tous les modes
+BALL_MODES,In ZIGZAG and TOWER,In ZIGZAG e TORRE,En ZIGZAG y TORRE,Em ZIGZAG e TORRE,In ZIGZAG und TURM,En ZIGZAG et TOUR
+CARD_NO_ADS,NO ADS,NO ANNUNCI,SIN ANUNCIOS,SEM ANÚNCIOS,WERBEFREI,SANS PUB
+CARD_COLLECTION,COLLECTION,COLLEZIONE,COLECCIÓN,COLEÇÃO,KOLLEKTION,COLLECTION
+CARD_TOKENS,%d TOKENS,%d GETTONI,%d FICHAS,%d FICHAS,%d MÜNZEN,%d JETONS
+TAG_FOREVER,FOREVER,PER SEMPRE,PARA SIEMPRE,PARA SEMPRE,FÜR IMMER,À VIE
+TAG_ALL_STYLES,EVERY STYLE,TUTTI GLI STILI,TODOS LOS ESTILOS,TODOS OS ESTILOS,ALLE STILE,TOUS LES STYLES
+TAG_FOR_CONTINUE,FOR CONTINUE,PER CONTINUA,PARA CONTINUAR,PARA CONTINUAR,FÜR WEITER,POUR CONTINUER
+EXTRA_NO_ADS_ABOUT,No ads. CONTINUE uses tokens: the first 10 are free,Niente annunci. CONTINUA usa i gettoni: i primi 10 sono in regalo,Sin anuncios. CONTINUAR usa fichas: las primeras 10 son gratis,Sem anúncios. CONTINUAR usa fichas: as 10 primeiras são grátis,Werbefrei. WEITER kostet Münzen: Die ersten 10 sind gratis,Sans pub. CONTINUER utilise des jetons : les 10 premiers sont offerts
+EXTRA_COLLECTION_ABOUT,"Every style, those still to come too, and no ads","Tutti gli stili, anche quelli che verranno, e niente annunci","Todos los estilos, también los que vendrán, y sin anuncios","Todos os estilos, até os que ainda virão, e sem anúncios","Alle Stile, auch die kommenden, und werbefrei","Tous les styles, même ceux à venir, et sans pub"
+TOKENS_ABOUT,One token is one CONTINUE without a video. You have %d,Un gettone è un CONTINUA senza video. Ne hai %d,Una ficha es un CONTINUAR sin video. Tienes %d,Uma ficha é um CONTINUAR sem vídeo. Você tem %d,Eine Münze ist ein WEITER ohne Video. Du hast %d,"Un jeton, c'est un CONTINUER sans vidéo. Tu en as %d"
+UNLOCK_AT,%d IN %s,%d IN %s,%d EN %s,%d EM %s,%d IN %s,%d EN %s
+UNLOCK_HOW,Score %d in %s to unlock it. Your best: %d,Fai %d punti in %s per sbloccarlo. Il tuo record: %d,Haz %d puntos en %s para desbloquearlo. Tu récord: %d,Faça %d pontos em %s para desbloquear. Seu recorde: %d,Hol %d Punkte in %s zum Freischalten. Dein Rekord: %d,Fais %d points en %s pour le débloquer. Ton record : %d
+WEARING,IN USE,IN USO,EN USO,EM USO,AUSGERÜSTET,ÉQUIPÉ
+OWNED,YOURS,TUO,TUYO,SEU,GEHÖRT DIR,À TOI
+OWNED_COLLECTION,YOURS,TUA,TUYA,SUA,GEHÖRT DIR,À TOI
+ACTIVE,ACTIVE,ATTIVO,ACTIVO,ATIVO,AKTIV,ACTIF
+WEAR,USE,USA,USAR,USAR,AUSRÜSTEN,ÉQUIPER
+LOCKED,LOCKED,BLOCCATO,BLOQUEADO,BLOQUEADO,GESPERRT,BLOQUÉ
+ALREADY_YOURS,ALREADY YOURS,GIÀ TUA,YA ES TUYA,JÁ É SUA,SCHON GEKAUFT,DÉJÀ À TOI
+WAIT,WAIT…,ATTENDI…,ESPERA…,AGUARDE…,WARTE…,ATTENDS…
+BUY,BUY  %s,ACQUISTA  %s,COMPRAR  %s,COMPRAR  %s,KAUFEN  %s,ACHETER  %s
+UNAVAILABLE,NOT AVAILABLE,NON DISPONIBILE,NO DISPONIBLE,INDISPONÍVEL,NICHT VERFÜGBAR,INDISPONIBLE
+STORE_OFFLINE,Store not reachable: try again later,Negozio non raggiungibile: riprova più tardi,Tienda no disponible: inténtalo más tarde,Loja fora do ar: tente mais tarde,Store nicht erreichbar: Versuch es später,Boutique injoignable : réessaie plus tard
+RESTORED,Purchases restored,Acquisti ripristinati,Compras restauradas,Compras restauradas,Käufe geladen,Achats restaurés
+LOOK_BOUGHT,%s is yours!,%s è tuo!,¡Ya tienes %s!,Agora você tem %s!,%s gehört dir!,%s est à toi !
+NO_ADS_BOUGHT,Ads removed! You have %d tokens for CONTINUE,Annunci rimossi! Hai %d gettoni per CONTINUA,¡Sin anuncios! Tienes %d fichas para CONTINUAR,Sem anúncios! Você tem %d fichas para CONTINUAR,Werbung entfernt! Du hast %d Münzen für WEITER,Pubs supprimées ! Tu as %d jetons pour CONTINUER
+COLLECTION_BOUGHT,Full collection: it's all yours now!,Collezione completa: ora è tutto tuo!,Colección completa: ¡ahora todo es tuyo!,Coleção completa: agora é tudo seu!,Ganze Kollektion: Jetzt gehört dir alles!,Collection complète : tout est à toi !
+TOKENS_BOUGHT,+%d tokens,+%d gettoni,+%d fichas,+%d fichas,+%d Münzen,+%d jetons
+PAYMENT_PENDING,Payment pending: it arrives once confirmed,Pagamento in attesa: arriva appena è confermato,Pago pendiente: llega en cuanto se confirme,Pagamento pendente: chega assim que for confirmado,Zahlung ausstehend: Es kommt nach der Bestätigung,Paiement en attente : tu l'auras une fois confirmé
+NOTHING_TO_RESTORE,Nothing to restore,Nessun acquisto da ripristinare,Nada que restaurar,Nada para restaurar,Keine Käufe gefunden,Rien à restaurer
+RESTORE_FAILED,"Restore failed, try again later","Ripristino non riuscito, riprova più tardi","No se pudo restaurar, inténtalo más tarde","Falha ao restaurar, tente mais tarde","Laden fehlgeschlagen, versuch es später","Échec de la restauration, réessaie plus tard"
+PURCHASE_FAILED,"Purchase failed, try again later","Acquisto non riuscito, riprova più tardi","No se pudo comprar, inténtalo más tarde","Falha na compra, tente mais tarde","Kauf fehlgeschlagen, versuch es später","Échec de l'achat, réessaie plus tard"
+STORE_IN_APP,In the app on Google Play and the App Store,Nell'app su Google Play e App Store,En la app de Google Play y App Store,No app do Google Play e da App Store,In der App bei Google Play und im App Store,Dans l'appli sur Google Play et l'App Store
+MODE_HOCKEY,AIR HOCKEY,AIR HOCKEY,AIR HOCKEY,AIR HOCKEY,AIR HOCKEY,AIR HOCKEY
 HOCKEY_WEB,"AIR HOCKEY is in the app,
 on Google Play and the App Store","AIR HOCKEY è nell'app,
-su Google Play e App Store"
-HOCKEY_SUB,Play in teams on the same Wi-Fi,Gioca in squadra sulla stessa Wi-Fi
-YOUR_NAME,NAME,NOME
-PLAYER_NAME,PLAYER %d,GIOCATORE %d
-NEARBY_LOBBIES,LOBBIES NEARBY,LOBBY VICINE
-NO_LOBBIES,"No lobbies on this Wi-Fi yet: create one, or type a friend's code","Ancora nessuna lobby su questa Wi-Fi: creane una, o scrivi il codice di un amico"
-LOBBY_OF,%s'S LOBBY,LOBBY DI %s
-CODE,CODE,CODICE
-JOIN,JOIN,ENTRA
-CREATE_LOBBY,CREATE A LOBBY,CREA UNA LOBBY
-LOBBY,LOBBY,LOBBY
-ROOM_HINT,"Friends on the same Wi-Fi find it in LOBBIES NEARBY, or type the code","Gli amici sulla stessa Wi-Fi la trovano tra le LOBBY VICINE, o scrivono il codice"
-TEAM_BLUE,BLUE,BLU
-TEAM_RED,RED,ROSSI
-YOU,(YOU),(TU)
-CPU,CPU,CPU
-SWITCH_TEAM,SWITCH TEAM,CAMBIA SQUADRA
-TEAM_SIZE,%d VS %d,%d VS %d
-FIRST_TO,FIRST TO %d,A %d GOL
-START,START,INIZIA
-WAITING_HOST,Waiting for %s to start,In attesa che %s inizi
-HOCKEY_RULES,Drag your mallet and score in the goal at the top. Keep the puck in your half for 7 seconds and it goes to the others.,"Trascina la racchetta e segna nella porta in alto. Se tieni il disco nella tua metà per 7 secondi, passa agli avversari."
-LEAVE,LEAVE,ESCI
-LEAVE_SURE,SURE?,SICURO?
-GOAL,GOAL!,GOL!
-HOLD_TIME,7 SECONDS!,7 SECONDI!
-VICTORY,YOU WIN!,VITTORIA!
-DEFEAT,YOU LOSE,SCONFITTA
-TEAM_WINS,%s WIN,VINCONO I %s
-REMATCH,REMATCH,RIVINCITA
-REMATCH_HINT,Whoever created the lobby can start a rematch,Chi ha creato la lobby può avviare la rivincita
-TO_LOBBY,LOBBY,LOBBY
-CONNECTING,Connecting…,Connessione…
-BAD_CODE,That code isn't right: check it,Codice sbagliato: controllalo
-HOST_FAILED,Can't create the lobby: is Wi-Fi on?,Non riesco a creare la lobby: la Wi-Fi è accesa?
-TOO_MANY,Too many players for 1 vs 1,Troppi giocatori per l'1 contro 1
-LEFT_CLOSED,The lobby was closed,La lobby è stata chiusa
-LEFT_FULL,That lobby is full,Quella lobby è piena
-LEFT_PLAYING,A match is on there: try again when it ends,Lì c'è una partita in corso: riprova quando finisce
-LEFT_VERSION,Another version of the game: update the app on every phone,Versione del gioco diversa: aggiorna l'app su tutti i telefoni
-LEFT_FAILED,Can't reach the lobby: are you on the same Wi-Fi?,Lobby non raggiungibile: siete sulla stessa Wi-Fi?
-PLAYER_LEFT,A player left: the CPU takes over,Un giocatore è uscito: gioca la CPU
-HOCKEY_SUB_ONLINE,"Play in teams with friends, wherever they are","Gioca in squadra con gli amici, ovunque siano"
-HOCKEY_SUB_BOTH,Play in teams: on the same Wi-Fi or over the internet,Gioca in squadra: sulla stessa Wi-Fi o via Internet
-WIFI_LOBBY,WI-FI,WI-FI
-ONLINE_LOBBY,ONLINE,ONLINE
-ROOM_ONLINE,ONLINE LOBBY,LOBBY ONLINE
-ROOM_HINT_ONLINE,Friends join from anywhere: they type this code in JOIN,Gli amici entrano da dove vogliono: scrivono questo codice in ENTRA
-COPY,COPY,COPIA
-CODE_COPIED,Invite copied: paste it in a chat,Invito copiato: incollalo in una chat
-INVITE_TEXT,Play AIR HOCKEY with me on One More Tap! Lobby code: %s  %s,Gioca ad AIR HOCKEY con me su One More Tap! Codice della lobby: %s  %s
-CONNECTING_SERVER,Connecting to the server…,Connessione al server…
-LEFT_OFFLINE,Can't reach the server: check the connection and try again,Server non raggiungibile: controlla la connessione e riprova
-LEFT_NOT_FOUND,No lobby with that code: check it,Nessuna lobby con quel codice: controllalo
-LEFT_BUSY,The server is busy: try again in a minute,Il server è occupato: riprova tra un minuto
-DAILY,DAILY CHALLENGE,SFIDA DEL GIORNO
-DAILY_NUMBER,DAILY CHALLENGE #%d,SFIDA DEL GIORNO #%d
+su Google Play e App Store","AIR HOCKEY está en la app,
+en Google Play y App Store","AIR HOCKEY está no app,
+no Google Play e na App Store","AIR HOCKEY ist in der App,
+bei Google Play und im App Store","AIR HOCKEY est dans l'appli,
+sur Google Play et l'App Store"
+HOCKEY_SUB,Play in teams on the same Wi-Fi,Gioca in squadra sulla stessa Wi-Fi,Juega en equipo en el mismo Wi-Fi,Jogue em equipe no mesmo Wi-Fi,Spiel im Team im selben WLAN,Joue en équipe sur le même Wi-Fi
+YOUR_NAME,NAME,NOME,NOMBRE,NOME,NAME,NOM
+PLAYER_NAME,PLAYER %d,GIOCATORE %d,JUGADOR %d,JOGADOR %d,SPIELER %d,JOUEUR %d
+NEARBY_LOBBIES,LOBBIES NEARBY,LOBBY VICINE,SALAS CERCANAS,SALAS PRÓXIMAS,LOBBYS IN DER NÄHE,SALONS PROCHES
+NO_LOBBIES,"No lobbies on this Wi-Fi yet: create one, or type a friend's code","Ancora nessuna lobby su questa Wi-Fi: creane una, o scrivi il codice di un amico",Aún no hay salas en este Wi-Fi: crea una o escribe el código de un amigo,Ainda não há salas neste Wi-Fi: crie uma ou digite o código de um amigo,Noch keine Lobbys in diesem WLAN: Erstell eine oder gib den Code eines Freundes ein,"Aucun salon sur ce Wi-Fi pour l'instant : crées-en un, ou tape le code d'un ami"
+LOBBY_OF,%s'S LOBBY,LOBBY DI %s,SALA DE %s,SALA DE %s,LOBBY VON %s,SALON DE %s
+CODE,CODE,CODICE,CÓDIGO,CÓDIGO,CODE,CODE
+JOIN,JOIN,ENTRA,ENTRAR,ENTRAR,BEITRETEN,ENTRER
+CREATE_LOBBY,CREATE A LOBBY,CREA UNA LOBBY,CREA UNA SALA,CRIE UMA SALA,LOBBY ERSTELLEN,CRÉE UN SALON
+LOBBY,LOBBY,LOBBY,SALA,SALA,LOBBY,SALON
+ROOM_HINT,"Friends on the same Wi-Fi find it in LOBBIES NEARBY, or type the code","Gli amici sulla stessa Wi-Fi la trovano tra le LOBBY VICINE, o scrivono il codice","Tus amigos en el mismo Wi-Fi la ven en SALAS CERCANAS, o escriben el código","Amigos no mesmo Wi-Fi a encontram em SALAS PRÓXIMAS, ou digitam o código",Freunde im selben WLAN finden sie unter LOBBYS IN DER NÄHE oder geben den Code ein,"Tes amis sur le même Wi-Fi le trouvent dans SALONS PROCHES, ou tapent le code"
+TEAM_BLUE,BLUE,BLU,AZUL,AZUL,BLAU,BLEU
+TEAM_RED,RED,ROSSI,ROJO,VERMELHO,ROT,ROUGE
+YOU,(YOU),(TU),(TÚ),(VOCÊ),(DU),(TOI)
+CPU,CPU,CPU,CPU,CPU,CPU,CPU
+SWITCH_TEAM,SWITCH TEAM,CAMBIA SQUADRA,CAMBIAR EQUIPO,TROCAR DE TIME,TEAM WECHSELN,CHANGER D'ÉQUIPE
+TEAM_SIZE,%d VS %d,%d VS %d,%d VS %d,%d VS %d,%d VS %d,%d VS %d
+FIRST_TO,FIRST TO %d,A %d GOL,A %d GOLES,ATÉ %d GOLS,BIS %d TORE,EN %d BUTS
+START,START,INIZIA,EMPEZAR,COMEÇAR,STARTEN,LANCER
+WAITING_HOST,Waiting for %s to start,In attesa che %s inizi,Esperando a que %s empiece,Esperando %s começar,"Warten, bis %s startet",%s va lancer la partie
+HOCKEY_RULES,Drag your mallet and score in the goal at the top. Keep the puck in your half for 7 seconds and it goes to the others.,"Trascina la racchetta e segna nella porta in alto. Se tieni il disco nella tua metà per 7 secondi, passa agli avversari.","Arrastra tu paleta y mete gol arriba. Si tienes el disco en tu mitad 7 segundos, pasa a los rivales.","Arraste seu batedor e faça gol lá em cima. Se segurar o disco no seu campo por 7 segundos, ele vai para os rivais.","Zieh deinen Schläger und triff oben ins Tor. Hältst du den Puck 7 Sekunden in deiner Hälfte, geht er an die anderen.","Fais glisser ton maillet et marque dans le but en haut. Si tu gardes le palet 7 secondes dans ta moitié, il passe aux autres."
+LEAVE,LEAVE,ESCI,SALIR,SAIR,VERLASSEN,QUITTER
+LEAVE_SURE,SURE?,SICURO?,¿SEGURO?,CERTEZA?,SICHER?,SÛR ?
+GOAL,GOAL!,GOL!,¡GOL!,GOL!,TOR!,BUT !
+HOLD_TIME,7 SECONDS!,7 SECONDI!,¡7 SEGUNDOS!,7 SEGUNDOS!,7 SEKUNDEN!,7 SECONDES !
+VICTORY,YOU WIN!,VITTORIA!,¡VICTORIA!,VITÓRIA!,SIEG!,VICTOIRE !
+DEFEAT,YOU LOSE,SCONFITTA,DERROTA,DERROTA,NIEDERLAGE,DÉFAITE
+TEAM_WINS,%s WIN,VINCONO I %s,GANA EL %s,%s VENCE,%s GEWINNT,%s GAGNE
+REMATCH,REMATCH,RIVINCITA,REVANCHA,REVANCHE,REVANCHE,REVANCHE
+REMATCH_HINT,Whoever created the lobby can start a rematch,Chi ha creato la lobby può avviare la rivincita,Quien creó la sala puede empezar la revancha,Quem criou a sala pode começar a revanche,"Wer die Lobby erstellt hat, startet die Revanche",Qui a créé le salon peut lancer la revanche
+TO_LOBBY,LOBBY,LOBBY,SALA,SALA,LOBBY,SALON
+CONNECTING,Connecting…,Connessione…,Conectando…,Conectando…,Verbinde…,Connexion…
+BAD_CODE,That code isn't right: check it,Codice sbagliato: controllalo,Código incorrecto: revísalo,Esse código está errado: confira,Der Code stimmt nicht: Prüf ihn,Ce code n'est pas bon : vérifie-le
+HOST_FAILED,Can't create the lobby: is Wi-Fi on?,Non riesco a creare la lobby: la Wi-Fi è accesa?,No se pudo crear la sala: ¿Wi-Fi activado?,Não deu para criar a sala: o Wi-Fi está ligado?,Kann keine Lobby erstellen: Ist das WLAN an?,Impossible de créer le salon : Wi-Fi activé ?
+TOO_MANY,Too many players for 1 vs 1,Troppi giocatori per l'1 contro 1,Demasiados jugadores para 1 vs 1,Jogadores demais para 1 vs 1,Zu viele Spieler für 1 vs 1,Trop de joueurs pour du 1 vs 1
+LEFT_CLOSED,The lobby was closed,La lobby è stata chiusa,La sala se cerró,A sala foi fechada,Lobby geschlossen,Le salon a été fermé
+LEFT_FULL,That lobby is full,Quella lobby è piena,Esa sala está llena,Essa sala está cheia,Diese Lobby ist voll,Ce salon est plein
+LEFT_PLAYING,A match is on there: try again when it ends,Lì c'è una partita in corso: riprova quando finisce,Hay una partida en curso: inténtalo cuando acabe,Tem uma partida rolando: tente quando acabar,"Dort läuft ein Spiel: Versuch es, wenn es vorbei ist",Une partie est en cours : réessaie quand elle finit
+LEFT_VERSION,Another version of the game: update the app on every phone,Versione del gioco diversa: aggiorna l'app su tutti i telefoni,Otra versión del juego: actualiza la app en todos los teléfonos,Versão diferente do jogo: atualize o app em todos os celulares,Andere Spielversion: Aktualisiere die App auf allen Handys,Autre version du jeu : mets l'appli à jour sur chaque téléphone
+LEFT_FAILED,Can't reach the lobby: are you on the same Wi-Fi?,Lobby non raggiungibile: siete sulla stessa Wi-Fi?,Sala inaccesible: ¿estás en el mismo Wi-Fi?,Sala inacessível: vocês estão no mesmo Wi-Fi?,Lobby nicht erreichbar: Seid ihr im selben WLAN?,Salon injoignable : vous êtes sur le même Wi-Fi ?
+PLAYER_LEFT,A player left: the CPU takes over,Un giocatore è uscito: gioca la CPU,Un jugador salió: juega la CPU,Um jogador saiu: a CPU assume,Ein Spieler ist raus: Die CPU übernimmt,Un joueur est parti : le CPU joue
+HOCKEY_SUB_ONLINE,"Play in teams with friends, wherever they are","Gioca in squadra con gli amici, ovunque siano","Juega en equipo con amigos, estén donde estén","Jogue em equipe com amigos, onde eles estiverem","Spiel im Team mit Freunden, egal wo sie sind","Joue en équipe avec tes amis, où qu'ils soient"
+HOCKEY_SUB_BOTH,Play in teams: on the same Wi-Fi or over the internet,Gioca in squadra: sulla stessa Wi-Fi o via Internet,Juega en equipo: en el mismo Wi-Fi o por internet,Jogue em equipe: no mesmo Wi-Fi ou pela internet,Spiel im Team: im selben WLAN oder übers Internet,Joue en équipe : sur le même Wi-Fi ou par Internet
+WIFI_LOBBY,WI-FI,WI-FI,WI-FI,WI-FI,WI-FI,WI-FI
+ONLINE_LOBBY,ONLINE,ONLINE,ONLINE,ONLINE,ONLINE,ONLINE
+ROOM_ONLINE,ONLINE LOBBY,LOBBY ONLINE,SALA ONLINE,SALA ONLINE,ONLINE-LOBBY,SALON ONLINE
+ROOM_HINT_ONLINE,Friends join from anywhere: they type this code in JOIN,Gli amici entrano da dove vogliono: scrivono questo codice in ENTRA,Tus amigos entran desde cualquier lugar: escriben este código en ENTRAR,Amigos entram de qualquer lugar: digitam este código em ENTRAR,Freunde machen von überall mit: Sie geben den Code bei BEITRETEN ein,Tes amis viennent d'où ils veulent : ils tapent ce code dans ENTRER
+COPY,COPY,COPIA,COPIAR,COPIAR,KOPIEREN,COPIER
+CODE_COPIED,Invite copied: paste it in a chat,Invito copiato: incollalo in una chat,Invitación copiada: pégala en un chat,Convite copiado: cole numa conversa,Einladung kopiert: Füg sie im Chat ein,Invitation copiée : colle-la dans un chat
+INVITE_TEXT,Play AIR HOCKEY with me on One More Tap! Lobby code: %s  %s,Gioca ad AIR HOCKEY con me su One More Tap! Codice della lobby: %s  %s,¡Juega AIR HOCKEY conmigo en One More Tap! Código de la sala: %s  %s,Jogue AIR HOCKEY comigo no One More Tap! Código da sala: %s  %s,Spiel AIR HOCKEY mit mir in One More Tap! Lobby-Code: %s  %s,Joue à AIR HOCKEY avec moi sur One More Tap ! Code du salon : %s  %s
+CONNECTING_SERVER,Connecting to the server…,Connessione al server…,Conectando al servidor…,Conectando ao servidor…,Verbinde mit dem Server…,Connexion au serveur…
+LEFT_OFFLINE,Can't reach the server: check the connection and try again,Server non raggiungibile: controlla la connessione e riprova,Servidor inaccesible: revisa la conexión y vuelve a intentarlo,Servidor fora de alcance: confira a conexão e tente de novo,Server nicht erreichbar: Prüf die Verbindung und versuch es nochmal,Serveur injoignable : vérifie ta connexion et réessaie
+LEFT_NOT_FOUND,No lobby with that code: check it,Nessuna lobby con quel codice: controllalo,Ninguna sala con ese código: revísalo,Nenhuma sala com esse código: confira,Keine Lobby mit diesem Code: Prüf ihn,Aucun salon avec ce code : vérifie-le
+LEFT_BUSY,The server is busy: try again in a minute,Il server è occupato: riprova tra un minuto,Servidor ocupado: inténtalo en un minuto,O servidor está ocupado: tente em um minuto,Server ausgelastet: Versuch es in einer Minute,Serveur occupé : réessaie dans une minute
+DAILY,DAILY,SFIDA,RETO,DESAFIO,TÄGLICH,DÉFI
+DAILY_NUMBER,DAILY #%d,SFIDA #%d,RETO #%d,DIA #%d,TAG #%d,DÉFI #%d
 DAILY_ON,"Same track for everyone, today only.
 No CONTINUE: challenge your friends!","Stesso percorso per tutti, solo oggi.
-Niente CONTINUA: sfida gli amici!"
-DAILY_BEST,TODAY,OGGI
-DAILY_FIRST,Set today's score to beat,Fai il punteggio da battere oggi
-DAILY_NEW_RECORD,NEW BEST TODAY,NUOVO RECORD DI OGGI
-DAILY_CARD,DAILY #%d · %s,SFIDA #%d · %s
-DAILY_SHARE_TEXT,Daily challenge #%d on One More Tap: I scored %d in %s. Can you beat me? %s,Sfida del giorno #%d su One More Tap: ho fatto %d a %s. Riesci a battermi? %s
+Niente CONTINUA: sfida gli amici!","Misma pista para todos, solo por hoy.
+Sin CONTINUAR: ¡reta a tus amigos!","Mesmo percurso para todos, só hoje.
+Sem CONTINUAR: desafie seus amigos!","Gleiche Strecke für alle, nur heute.
+Kein WEITER: Fordere Freunde heraus!","Même tracé pour tous, juste aujourd'hui.
+Pas de CONTINUER : défie tes amis !"
+DAILY_BEST,TODAY,OGGI,HOY,HOJE,HEUTE,AUJOURD'HUI
+DAILY_FIRST,Set today's score to beat,Fai il punteggio da battere oggi,Marca el récord de hoy,Faça o recorde de hoje,Stell den Tagesrekord auf,Établis le record du jour
+DAILY_NEW_RECORD,NEW BEST TODAY,NUOVO RECORD DI OGGI,NUEVO RÉCORD DE HOY,NOVO RECORDE DE HOJE,NEUER TAGESREKORD,NOUVEAU RECORD DU JOUR
+DAILY_CARD,DAILY #%d · %s,SFIDA #%d · %s,RETO #%d · %s,DESAFIO #%d · %s,TAG #%d · %s,DÉFI #%d · %s
+DAILY_SHARE_TEXT,Daily challenge #%d on One More Tap: I scored %d in %s. Can you beat me? %s,Sfida del giorno #%d su One More Tap: ho fatto %d a %s. Riesci a battermi? %s,Reto del día #%d en One More Tap: hice %d puntos en %s. ¿Me puedes ganar? %s,Desafio do dia #%d no One More Tap: fiz %d pontos em %s. Consegue me vencer? %s,Tages-Challenge #%d in One More Tap: %d Punkte in %s. Schlägst du mich? %s,Défi du jour #%d sur One More Tap : j'ai fait %d points en %s. Tu peux me battre ? %s
