@@ -193,3 +193,13 @@ CONNECTING_SERVER,Connecting to the server…,Connessione al server…
 LEFT_OFFLINE,Can't reach the server: check the connection and try again,Server non raggiungibile: controlla la connessione e riprova
 LEFT_NOT_FOUND,No lobby with that code: check it,Nessuna lobby con quel codice: controllalo
 LEFT_BUSY,The server is busy: try again in a minute,Il server è occupato: riprova tra un minuto
+DAILY,DAILY CHALLENGE,SFIDA DEL GIORNO
+DAILY_NUMBER,DAILY CHALLENGE #%d,SFIDA DEL GIORNO #%d
+DAILY_ON,"Same track for everyone, today only.
+No CONTINUE: challenge your friends!","Stesso percorso per tutti, solo oggi.
+Niente CONTINUA: sfida gli amici!"
+DAILY_BEST,TODAY,OGGI
+DAILY_FIRST,Set today's score to beat,Fai il punteggio da battere oggi
+DAILY_NEW_RECORD,NEW BEST TODAY,NUOVO RECORD DI OGGI
+DAILY_CARD,DAILY #%d · %s,SFIDA #%d · %s
+DAILY_SHARE_TEXT,Daily challenge #%d on One More Tap: I scored %d in %s. Can you beat me? %s,Sfida del giorno #%d su One More Tap: ho fatto %d a %s. Riesci a battermi? %s

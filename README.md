@@ -1,6 +1,6 @@
 # One More Tap
 
-Gioco arcade verticale a un dito, Godot 4.7 / GDScript. Tre modalità infinite (ZIGZAG, TORRE, DINO), un solo controllo, percorsi generati, game over, record locale per modalità, restart immediato, grafica neon. In più **AIR HOCKEY**, a squadre, con gli amici sulla stessa Wi-Fi o via Internet, in lobby create da uno di loro. In italiano e in inglese. Gratuito con annunci AdMob e acquisti in-app facoltativi (stili, gettoni, niente annunci), pronto per Google Play e App Store, con una versione web senza annunci per itch.io: i passi per pubblicarlo sono in **[PUBBLICAZIONE.md](PUBBLICAZIONE.md)**.
+Gioco arcade verticale a un dito, Godot 4.7 / GDScript. Tre modalità infinite (ZIGZAG, TORRE, DINO), un solo controllo, percorsi generati, game over, record locale per modalità, restart immediato, grafica neon. Ogni giorno una **SFIDA**: lo stesso percorso per tutti, da confrontare con gli amici. In più **AIR HOCKEY**, a squadre, con gli amici sulla stessa Wi-Fi o via Internet, in lobby create da uno di loro. In italiano e in inglese. Gratuito con annunci AdMob e acquisti in-app facoltativi (stili, gettoni, niente annunci), pronto per Google Play e App Store, con una versione web senza annunci per itch.io: i passi per pubblicarlo sono in **[PUBBLICAZIONE.md](PUBBLICAZIONE.md)**.
 
 ## Aprire e giocare
 
@@ -12,7 +12,7 @@ Su desktop: clic sinistro, Spazio, Invio o Freccia su. Su telefono: tap ovunque.
 
 ## Regole
 
-La modalità si sceglie con i pulsanti in basso nella schermata iniziale; dal game over il pulsante MODALITÀ riporta lì. Ogni modalità ha il suo record e il gioco ricorda l'ultima scelta. AIR HOCKEY si apre dal pulsante accanto a STILI.
+La modalità si sceglie con i pulsanti in basso nella schermata iniziale; dal game over il pulsante MODALITÀ riporta lì. Ogni modalità ha il suo record e il gioco ricorda l'ultima scelta. Sopra le modalità ci sono STILI (il negozio), SFIDA (la sfida del giorno) e AIR HOCKEY.
 
 ### ZIGZAG
 
@@ -43,6 +43,15 @@ La modalità si sceglie con i pulsanti in basso nella schermata iniziale; dal ga
 - **Catene**: da 400 punti un ostacolo può arrivare subito dopo l'atterraggio del salto precedente, fino a tre di fila, da saltare a ritmo (il tap poco prima di atterrare fa risaltare appena il dino tocca terra); più vai avanti, più sono frequenti.
 - Quando sbatti: cornice rossa su quello che ti ha preso. "Troppo presto" se ci sei ricaduto sopra, "troppo tardi" se non hai saltato in tempo.
 - **CONTINUA** (da 150 punti): riparti piano da dove eri, con la strada libera finché non torni alla velocità piena.
+
+### SFIDA DEL GIORNO
+
+- Il pulsante **SFIDA** nella schermata iniziale la accende (si riempie e mostra il numero della sfida, per esempio "SFIDA #12") e la spegne. Vale per la modalità scelta: ZIGZAG, TORRE o DINO.
+- **Lo stesso percorso per tutti**, per tutto il giorno: piattaforme, buchi e ostacoli escono da un seed ricavato dalla data e dalla modalità (`scripts/daily.gd`), uguale su ogni telefono e ogni schermo. A mezzanotte (ora del telefono) arriva la sfida nuova.
+- Si può riprovare quante volte si vuole: conta il **record di oggi** ("OGGI 42"), separato dal record normale. I record della sfida non sbloccano stili e non chiedono recensioni.
+- **Niente CONTINUA**, né con il video né con i gettoni: i punteggi restano confrontabili e nessun acquisto aiuta.
+- **CONDIVIDI** manda l'immagine con "SFIDA #12 · ZIGZAG" e il testo "Sfida del giorno #12 su One More Tap: ho fatto 42 a ZIGZAG. Riesci a battermi?", con il link alla pagina del gioco. Chi la riceve, quel giorno, gioca lo stesso percorso.
+- La sfida #1 è il giorno `FIRST_DAY` in cima a `scripts/daily.gd`: **va messo al giorno del lancio** (vedi [PUBBLICAZIONE.md](PUBBLICAZIONE.md#controllo-finale-prima-di-inviare)).
 
 ### AIR HOCKEY
 
@@ -124,7 +133,7 @@ Brani da [Pixabay Music](https://pixabay.com/music/) in `assets/music`, uno dopo
 
 ## Condivisione, recensioni, versione web
 
-- **CONDIVIDI** (nel game over): crea un'immagine 1080 px della partita (il percorso, il punto dell'errore, la modalità, il punteggio, il record e "Riesci a battermi?") e apre il menu di condivisione del telefono, con un testo e il link alla pagina del gioco (`SITE_URL` in `scripts/social.gd`, cioè `docs/index.html` pubblicata con GitHub Pages). Su telefono usa il plugin [Share](https://github.com/godot-mobile-plugins/godot-share) v6.0 (`addons/SharePlugin`, iOS 16 o successivo), sul web il menu di condivisione del browser. Dove non si può condividere, il pulsante non compare.
+- **CONDIVIDI** (nel game over): crea un'immagine 1080 px della partita (il percorso, il punto dell'errore, la modalità o il numero della sfida del giorno, il punteggio, il record e "Riesci a battermi?") e apre il menu di condivisione del telefono, con un testo e il link alla pagina del gioco (`SITE_URL` in `scripts/social.gd`, cioè `docs/index.html` pubblicata con GitHub Pages). Su telefono usa il plugin [Share](https://github.com/godot-mobile-plugins/godot-share) v6.0 (`addons/SharePlugin`, iOS 16 o successivo), sul web il menu di condivisione del browser. Dove non si può condividere, il pulsante non compare.
 - **Recensione**: dopo un nuovo record che batte quello precedente, a gioco fermo, il gioco chiede allo store di mostrare la sua finestra di recensione (plugin [In-App Review](https://github.com/godot-mobile-plugins/godot-inapp-review) v5.3, `addons/InappReviewPlugin`). Solo dopo almeno 15 partite, al massimo 3 volte e a 30 giorni di distanza (`scripts/review_pacing.gd`), mai subito dopo un interstitial e mai se il giocatore ha già ripreso a giocare. Google e Apple decidono poi se mostrarla davvero: la finestra compare solo nelle app scaricate dallo store, non nelle build di prova.
 - **Versione web**: preset *Web* in `export_presets.cfg`, senza annunci e senza vite. Il negozio c'è ma non vende: gli stili gratis e quelli dei record si usano anche lì, gli altri rimandano all'app. Al posto del pulsante CONSENSO c'è SCARICA, che porta alla pagina del gioco. Come caricarla su itch.io: [PUBBLICAZIONE.md](PUBBLICAZIONE.md#8-versione-web-su-itchio).
 
@@ -169,6 +178,7 @@ I due plugin (licenza MIT) sono già nel progetto, con i file nativi per Android
 | `scripts/catalog.gd` | Cosa c'è nel negozio: stili con rarità, colori di ogni palette, extra, ID dei prodotti, fasce di prezzo |
 | `scripts/inventory.gd` | Regole pure di cosa possiedi e indossi: stili, gettoni, niente annunci, salvataggio |
 | `scripts/streak.gd` | Regole pure dei giorni di fila che aprono DINO |
+| `scripts/daily.gd` | Regole pure della sfida del giorno: numero, seed del percorso per modalità e giorno, record di oggi |
 | `scripts/shop.gd` | Quello che il gioco sa degli acquisti: prezzi, compra, ripristina; acquisti finti in editor |
 | `scripts/iap_backend.gd` | Unico file che usa il plugin godot-iap: connessione, prezzi, acquisti, ripristino |
 | `tests/test_track.gd` | Test headless delle regole di ZIGZAG, compreso il "continua" |
@@ -182,6 +192,7 @@ I due plugin (licenza MIT) sono già nel progetto, con i file nativi per Android
 | `tests/test_lives.gd` | Test headless delle vite |
 | `tests/test_review_pacing.gd` | Test headless di quando chiedere una recensione |
 | `tests/test_shop.gd` | Test headless del negozio: catalogo, possesso, gettoni, salvataggio, giorni di fila |
+| `tests/test_daily.gd` | Test headless della sfida del giorno |
 | `tests/test_iap_backend.gd` | Test headless del collegamento agli store, con un finto plugin (`tests/fake_iap.gd`, `tests/fake_iap_types.gd`) |
 | `tools/make_icons.gd` | Rigenera le icone PNG da `assets/icons/*.svg` |
 | `export_presets.cfg` | Preset Android (AAB), iOS e Web |
@@ -205,9 +216,10 @@ godot --headless --path . --script res://tests/test_lives.gd
 godot --headless --path . --script res://tests/test_review_pacing.gd
 godot --headless --path . --script res://tests/test_shop.gd
 godot --headless --path . --script res://tests/test_iap_backend.gd
+godot --headless --path . --script res://tests/test_daily.gd
 ```
 
-Controllano che un giocatore perfetto sopravviva su 60 percorsi diversi per modalità (in DINO fino alla velocità massima), che gli angoli restino sempre nello schermo, che dopo ogni buco ci sia rampa per reagire (anche nelle catene), che in TORRE e in DINO velocità, tempo per reagire e margine per saltare peggiorino sempre senza mai superare i limiti e senza essere mai più facili di prima, che un giocatore perfetto regga 400 secondi in entrambe, che ogni gruppo di cactus sia superabile con un margine, che "presto/tardi/non saltare" sia corretto, il conteggio dei perfetti e la rampa di difficoltà. Controllano anche che "continua" valga una volta sola, mantenga il punteggio e riparta piano, che gli interstitial rispettino le pause, che le vite si spendano, tornino col tempo senza superare il massimo e non si possano ottenere spostando l'orologio, e che la recensione si chieda solo dopo un record, non nelle prime partite e di rado. Per il negozio: che ogni prodotto abbia un ID valido e un prezzo, che gli stili si sblocchino coi record giusti, che i gettoni non si contino due volte e non vadano sotto zero, che i 10 gettoni in regalo arrivino una volta sola, che il salvataggio ignori dati strani, e che DINO si apra al terzo giorno di fila e non prima. Il collegamento agli store è provato contro un finto plugin: prezzi, acquisto, annullato, errore, pagamento approvato dopo, prodotto già posseduto, ripristino. Per AIR HOCKEY: che le racchette non escano dalla propria metà e non vadano più veloci del limite, che un disco a velocità massima non attraversi mai una racchetta, gol, pali e sponde, il servizio a chi ha subito il gol, la regola dei 7 secondi, che i telefoni ospiti lascino gol e servizi all'host, che gli snapshot arrivino interi e quelli rotti siano ignorati, che il bot pari la maggior parte dei tiri forti ma non tutti, e che due bot finiscano sempre una partita senza far uscire il disco dal tavolo. Per le lobby: squadre bilanciate, posti, cambio squadra, CPU nei posti vuoti, dati strani dalla rete scartati, nomi, indirizzo locale, codici (andata e ritorno, errori di battitura) e annunci in rete. Per il collegamento al relay: intestazione dei pacchetti, messaggi del relay, che l'host ascolti solo i suoi ospiti e gli ospiti solo l'host; con il relay avviato (`npm start` in `server/`) anche una prova vera: lobby, ingresso, pacchetti nei due sensi, codice sbagliato, host che esce. Durano qualche secondo (AIR HOCKEY un po' di più: gioca venti partite tra bot).
+Controllano che un giocatore perfetto sopravviva su 60 percorsi diversi per modalità (in DINO fino alla velocità massima), che gli angoli restino sempre nello schermo, che dopo ogni buco ci sia rampa per reagire (anche nelle catene), che in TORRE e in DINO velocità, tempo per reagire e margine per saltare peggiorino sempre senza mai superare i limiti e senza essere mai più facili di prima, che un giocatore perfetto regga 400 secondi in entrambe, che ogni gruppo di cactus sia superabile con un margine, che "presto/tardi/non saltare" sia corretto, il conteggio dei perfetti e la rampa di difficoltà. Controllano anche che "continua" valga una volta sola, mantenga il punteggio e riparta piano, che gli interstitial rispettino le pause, che le vite si spendano, tornino col tempo senza superare il massimo e non si possano ottenere spostando l'orologio, e che la recensione si chieda solo dopo un record, non nelle prime partite e di rado. Per il negozio: che ogni prodotto abbia un ID valido e un prezzo, che gli stili si sblocchino coi record giusti, che i gettoni non si contino due volte e non vadano sotto zero, che i 10 gettoni in regalo arrivino una volta sola, che il salvataggio ignori dati strani, e che DINO si apra al terzo giorno di fila e non prima. Per la sfida del giorno: che ogni modalità e ogni giorno abbiano un seed diverso e mai 0, che due telefoni con schermi diversi ricevano le stesse piattaforme, gli stessi buchi e gli stessi ostacoli, che il record di oggi salga solo con un punteggio più alto, non conti le partite iniziate ieri e riparta da zero il giorno dopo, e il salvataggio. Il collegamento agli store è provato contro un finto plugin: prezzi, acquisto, annullato, errore, pagamento approvato dopo, prodotto già posseduto, ripristino. Per AIR HOCKEY: che le racchette non escano dalla propria metà e non vadano più veloci del limite, che un disco a velocità massima non attraversi mai una racchetta, gol, pali e sponde, il servizio a chi ha subito il gol, la regola dei 7 secondi, che i telefoni ospiti lascino gol e servizi all'host, che gli snapshot arrivino interi e quelli rotti siano ignorati, che il bot pari la maggior parte dei tiri forti ma non tutti, e che due bot finiscano sempre una partita senza far uscire il disco dal tavolo. Per le lobby: squadre bilanciate, posti, cambio squadra, CPU nei posti vuoti, dati strani dalla rete scartati, nomi, indirizzo locale, codici (andata e ritorno, errori di battitura) e annunci in rete. Per il collegamento al relay: intestazione dei pacchetti, messaggi del relay, che l'host ascolti solo i suoi ospiti e gli ospiti solo l'host; con il relay avviato (`npm start` in `server/`) anche una prova vera: lobby, ingresso, pacchetti nei due sensi, codice sbagliato, host che esce. Durano qualche secondo (AIR HOCKEY un po' di più: gioca venti partite tra bot).
 
 Il relay ha i suoi test, in Node.js: `npm test` in `server/` (stanze, codici, inoltro, rifiuti, limiti).
 
@@ -220,10 +232,9 @@ Prova veloce su Android: template di export, JDK 17 e Android SDK installati, *P
 ## Prossimi passi
 
 1. Playtest su telefono vero: tarare `W_START`, `W_STEP`, `V_START`, `V_STEP`, `PERFECT_FRAC` in `track.gd`, le costanti in cima a `tower.gd` e `runner.gd`, più `REVIVE_SLOW`, la frequenza degli annunci in `ad_pacing.gd` e le vite in `lives.gd` (`MAX`, `REFILL_SECONDS`).
-2. Sfida giornaliera: `Track.new(width, height, seed)` accetta già un seed, basta derivarlo dalla data.
-3. Creare i prodotti negli store e provarli con un account di test ([PUBBLICAZIONE.md](PUBBLICAZIONE.md#7-acquisti-in-app)).
-4. Skin del Dino nel negozio.
-5. AIR HOCKEY con due o più telefoni veri, in Wi-Fi e online: tarare in cima a `hockey.gd` dimensioni, attrito e bot (`BOT_SPEED`, `BOT_STRIKE`, `BOT_THINK`, `BOT_EYES`).
-6. Mettere online il relay e scriverne l'indirizzo in `RELAY_URL` ([server/README.md](server/README.md)).
+2. Creare i prodotti negli store e provarli con un account di test ([PUBBLICAZIONE.md](PUBBLICAZIONE.md#7-acquisti-in-app)).
+3. Skin del Dino nel negozio.
+4. AIR HOCKEY con due o più telefoni veri, in Wi-Fi e online: tarare in cima a `hockey.gd` dimensioni, attrito e bot (`BOT_SPEED`, `BOT_STRIKE`, `BOT_THINK`, `BOT_EYES`).
+5. Mettere online il relay e scriverne l'indirizzo in `RELAY_URL` ([server/README.md](server/README.md)).
 
 Font: Bungee e Chakra Petch, licenza SIL Open Font License (file in `assets/fonts`). Musica: brani di Pixabay, licenza Pixabay Content License (elenco in [Musica](#musica)).
