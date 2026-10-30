@@ -58,9 +58,53 @@
   <img class="shot" src="screen_en.jpg" alt="A run in ZIGZAG">
 </div>
 
+<div lang="es" data-lang="es" hidden>
+  <p class="tagline">Un toque para cambiar de dirección. Cada toque cuenta.<br>Tres juegos de un dedo, AIR HOCKEY con amigos y un reto nuevo cada día. Gratis.</p>
+  <div class="links">
+    <a data-link="play" href="#" hidden>Disponible en Google Play</a>
+    <a data-link="appstore" href="#" hidden>Descárgalo en el App Store</a>
+    <a data-link="web" href="#" hidden>Juega en el navegador</a>
+    <p class="soon" data-soon hidden>Muy pronto en Google Play y App Store.</p>
+  </div>
+  <img class="shot" src="screen_en.jpg" alt="Una partida de ZIGZAG">
+</div>
+
+<div lang="pt" data-lang="pt" hidden>
+  <p class="tagline">Um toque para mudar de direção. Cada toque conta.<br>Três jogos de um dedo, AIR HOCKEY com amigos e um desafio novo todo dia. Grátis.</p>
+  <div class="links">
+    <a data-link="play" href="#" hidden>Disponível no Google Play</a>
+    <a data-link="appstore" href="#" hidden>Baixar na App Store</a>
+    <a data-link="web" href="#" hidden>Jogue no navegador</a>
+    <p class="soon" data-soon hidden>Em breve no Google Play e na App Store.</p>
+  </div>
+  <img class="shot" src="screen_en.jpg" alt="Uma partida de ZIGZAG">
+</div>
+
+<div lang="de" data-lang="de" hidden>
+  <p class="tagline">Ein Tap, und die Richtung wechselt. Jeder Tap zählt.<br>Drei Spiele für einen Finger, AIR HOCKEY mit Freunden und jeden Tag eine neue Challenge. Gratis.</p>
+  <div class="links">
+    <a data-link="play" href="#" hidden>Jetzt bei Google Play</a>
+    <a data-link="appstore" href="#" hidden>Laden im App Store</a>
+    <a data-link="web" href="#" hidden>Im Browser spielen</a>
+    <p class="soon" data-soon hidden>Bald bei Google Play und im App Store.</p>
+  </div>
+  <img class="shot" src="screen_en.jpg" alt="Eine Runde ZIGZAG">
+</div>
+
+<div lang="fr" data-lang="fr" hidden>
+  <p class="tagline">Un tap pour changer de direction. Chaque tap compte.<br>Trois jeux à un doigt, AIR HOCKEY entre amis et un nouveau défi chaque jour. Gratuit.</p>
+  <div class="links">
+    <a data-link="play" href="#" hidden>Disponible sur Google Play</a>
+    <a data-link="appstore" href="#" hidden>Télécharger dans l'App Store</a>
+    <a data-link="web" href="#" hidden>Jouer dans le navigateur</a>
+    <p class="soon" data-soon hidden>Bientôt sur Google Play et l'App Store.</p>
+  </div>
+  <img class="shot" src="screen_en.jpg" alt="Une partie de ZIGZAG">
+</div>
+
 <footer>
   <a href="privacy.html">Informativa sulla privacy · Privacy policy</a><br>
-  Contatti · Contact: [EMAIL DI CONTATTO]
+  Contatti · Contact: <a href="mailto:onemoretap1998@gmail.com">onemoretap1998@gmail.com</a>
 </footer>
 </main>
 <script>
@@ -74,8 +118,11 @@ const LINKS = {
   web: "",
 };
 
-// Italian for Italian browsers, English for everyone else.
-const lang = (navigator.language || "en").toLowerCase().startsWith("it") ? "it" : "en";
+// The browser's language when the page has it (Italian, Spanish, Portuguese,
+// German, French), English for everyone else.
+const LANGS = ["it", "es", "pt", "de", "fr"];
+const code = (navigator.language || "en").toLowerCase().slice(0, 2);
+const lang = LANGS.includes(code) ? code : "en";
 document.documentElement.lang = lang;
 for (const block of document.querySelectorAll("[data-lang]")) {
   block.hidden = block.dataset.lang !== lang;

@@ -16,7 +16,7 @@ Il codice è pronto. Quello che resta sono account, chiavi e moduli che solo tu 
 | Preset di export Android (AAB firmato), iOS (progetto Xcode) e Web (itch.io) | `export_presets.cfg` |
 | Icone (iOS 1024, Android adattiva e monocromatica) | `assets/icons/` (le rigeneri con `tools/make_icons.gd`) |
 | Pagina del gioco (dove porta il link condiviso) e informativa privacy (IT + EN), da pubblicare online | `docs/index.html`, `docs/privacy.html` |
-| Testi, screenshot, icona 512 e grafica 1024×500 per gli store, in italiano e inglese | `store/` |
+| Testi per gli store in italiano, inglese, spagnolo, portoghese, tedesco e francese; screenshot, icona 512 e grafica 1024×500 in italiano e inglese | `store/` |
 
 Finché non inserisci i tuoi ID, il gioco mostra **annunci di prova di Google**. Nelle build di debug li mostra sempre, anche dopo. È voluto: toccare i tuoi annunci veri può far sospendere l'account AdMob.
 
@@ -105,6 +105,7 @@ In *Project → Export → Android → Keystore → Release* inserisci file, ali
    - **Sicurezza dei dati**: dichiara quello che raccoglie l'SDK di Google, come indicato in [questa pagina di Google](https://developers.google.com/admob/android/privacy/play-data-disclosure). In pratica: dati raccolti e condivisi, cifrati in transito. Tipi: *Posizione approssimativa* (dall'IP), *ID dispositivo o altri ID*, *Attività nell'app* (interazioni), *Informazioni e prestazioni dell'app* (arresti anomali, diagnostica). Finalità: pubblicità o marketing, analisi, prevenzione delle frodi. Il gioco non ha account, quindi non c'è un meccanismo di cancellazione dati. Il nome scelto in AIR HOCKEY passa solo agli altri telefoni della lobby: in Wi-Fi direttamente; online attraverso il tuo relay (passo 10), che lo inoltra senza salvarlo, come l'indirizzo IP del telefono. Se pubblichi il relay, dichiara il nome come *Informazioni personali → Nome* (o *Altri dati*, se lo consideri un soprannome), facoltativo, usato per la funzionalità dell'app, **trattato in modo temporaneo** e non condiviso con terze parti; cifrato in transito (`wss://`). Senza relay, in Wi-Fi soltanto, di solito non va dichiarato.
 5. *Scheda dello store principale*: testi in `store/scheda_store.md`, icona `store/icon_512.png`, grafica `store/feature_graphic_1024x500.png`, screenshot `store/screenshots/android/`.
    - Poi *Gestisci traduzioni → Aggiungi traduzioni → Inglese (Stati Uniti)* (e, se vuoi, Inglese (Regno Unito)): testi inglesi dalla stessa scheda, grafica `store/feature_graphic_1024x500_en.png`, screenshot `store/screenshots/android_en/`.
+   - Allo stesso modo aggiungi **Spagnolo (America Latina)** e **Spagnolo (Spagna)**, **Portoghese (Brasile)** (e, se vuoi, Portoghese (Portogallo)), **Tedesco** e **Francese (Francia)**, con i testi delle loro sezioni nella scheda. Finché non ci sono screenshot in quelle lingue, Play mostra quelli inglesi.
 6. *Produzione → Crea nuova release*, carica l'AAB e invia per la revisione (di solito da qualche ora a qualche giorno).
 7. Torna in AdMob e collega l'app Android alla scheda Play.
 
@@ -258,7 +259,7 @@ Con il piano gratuito di Render il server si addormenta dopo un po' senza traffi
 - [ ] Gioco provato con il telefono in inglese (testi inglesi) e in italiano
 - [ ] AIR HOCKEY provato con almeno due telefoni sulla stessa Wi-Fi: la lobby compare nell'elenco (su Android), si entra col codice, 2 contro 2 con la CPU nei posti vuoti, rivincita, e chi esce viene sostituito dalla CPU
 - [ ] Se c'è il relay: `RELAY_URL` impostato con `wss://`, e una partita online provata tra due telefoni su reti diverse
-- [ ] Schede degli store compilate in italiano e in inglese
+- [ ] Schede degli store compilate in italiano, inglese, spagnolo, portoghese, tedesco e francese
 - [ ] Keystore Android salvato in un posto sicuro
 - [ ] Versione aumentata
 - [ ] Prodotti creati e attivi su entrambi gli store, con gli stessi ID della tabella del passo 7
